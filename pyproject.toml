@@ -1,0 +1,34 @@
+[tool.ruff]
+extend = "~/.config/ruff/config.toml"
+target-version = "py311"
+
+[tool.poetry]
+name = "confidentllm"
+version = "0.1.0"
+description = "Evaluate the confidence of various LLM models using different confidence methods and generation techniques."
+authors = ["Carel van Niekerk <cvanniekerk@hhu.de>"]
+license = "Apache2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+hydra-zen = "^0.13.0"
+transformers = "^4.39"
+torch = [
+    { version = "*", python = ">=3.12" },
+    { version = "2.0.1", python = "==3.11.4" },
+]
+datasets = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.1.1"
+py-mon = "^2.0.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "hhu"
+url = "http://pypi.repo.test.hhu.de/simple/"
+priority = "primary"

@@ -1,0 +1,10 @@
+# Pyenv environment
+.python-version
+
+# Poetry virtual environment
+.venv
+poetry.lock
+
+# Hydra generated dirs
+multirun
+outputs
