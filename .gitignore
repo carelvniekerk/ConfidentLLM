@@ -8,3 +8,9 @@ poetry.lock
 # Hydra generated dirs
 multirun
 outputs
+
+# Python cache
+*__pycache__*
+
+# Apple Finder files
+.DS_Store
