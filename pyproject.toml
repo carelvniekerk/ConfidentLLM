@@ -1,6 +1,6 @@
 [tool.ruff]
 extend = "~/.config/ruff/config.toml"
-target-version = "py311"
+target-version = "py312"
 
 [tool.poetry]
 name = "confidentllm"
@@ -11,13 +11,10 @@ license = "Apache2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 hydra-zen = "^0.13.0"
 transformers = "^4.39"
-torch = [
-    { version = "*", python = ">=3.12" },
-    { version = "2.0.1", python = "==3.11.4" },
-]
+torch = "^2.2"
 datasets = "*"
 
 [tool.poetry.group.dev.dependencies]
@@ -31,4 +28,3 @@ build-backend = "poetry.core.masonry.api"
 [[tool.poetry.source]]
 name = "hhu"
 url = "http://pypi.repo.test.hhu.de/simple/"
-priority = "primary"
