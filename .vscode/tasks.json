@@ -5,6 +5,15 @@
             "label": "Sync Project",
             "command": "hpc sync_project",
             "type": "shell",
+            "options": {
+                "shell": {
+                    "args": [
+                        "-c",
+                        "-l",
+                        "-i"
+                    ],
+                }
+            },
             "group": {
                 "kind": "none",
                 "isDefault": true
