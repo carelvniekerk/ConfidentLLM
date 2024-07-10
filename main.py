@@ -23,27 +23,25 @@
 from datasets import Dataset
 from hydra_zen import store, zen
 
-from confidentllm import data  # noqa: F401
+from confidentllm import data, decoding_strategies, generation  # noqa: F401
+from confidentllm.scripts.question_answering_runner import run_question_answering
 
-
-@store(
-    name="run_extraction",
+store(
+    run_question_answering,
+    name="question_answering",
     hydra_defaults=[
         "_self_",
+        {"generation_method": "causal_lm_generation_method"},
+        {"output_processor": "answer_processor"},
         {"data": "gsm8k"},
+        # {"override hydra/launcher": "hpc_submission"},
     ],
 )
-def run_extraction(data: Dataset) -> None:
-    # Print the extracted answers
-    print(data)
-
 
 if __name__ == "__main__":
     store.add_to_hydra_store()
 
     # Generate the CLI for run_extraction
-    zen(run_extraction).hydra_main(
-        config_name="run_extraction",
-        config_path=None,
-        version_base="1.3",
+    zen(run_question_answering).hydra_main(
+        config_name="question_answering",
     )
