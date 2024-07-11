@@ -20,6 +20,7 @@
 # limitations under the License."
 """Model output answer processor."""
 
+import logging
 import re
 
 import torch
@@ -33,6 +34,8 @@ from confidentllm.generation.types import (
 )
 
 __all__ = []
+
+logger = logging.getLogger("__main__")
 
 builds = make_custom_builds_fn(populate_full_signature=True)
 
@@ -113,7 +116,7 @@ class AnswerProcessor(OutputProcessor):
                 search_term,
             )
         except NoOverlappingSpanFoundError as err:
-            raise Warning(err.message) from err
+            logger.exception(err.message)
 
         conf = output_probs[0][output_probs[0] >= 0.0][best_span[0] : best_span[1] + 1]
 
