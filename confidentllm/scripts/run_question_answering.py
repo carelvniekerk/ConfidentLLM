@@ -34,6 +34,9 @@ from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     OutputProcessor,
 )
+from hydra_plugins.hpc_submission_launcher.launcher import (
+    HPCSubmissionLauncher,  # noqa: F401
+)
 
 __all__ = ["run_question_answering"]
 logger = logging.getLogger("__main__")
@@ -114,7 +117,7 @@ class QuestionAnsweringRunner:
         {"output_processor": "answer_processor"},
         {"data": "gsm8k"},
         {"evaluator": "accuracy"},
-        # {"override hydra/launcher": "hpc_submission"},
+        {"override hydra/launcher": "hpc_submission"},
     ],
 )
 def run_question_answering(
