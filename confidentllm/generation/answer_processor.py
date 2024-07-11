@@ -117,6 +117,7 @@ class AnswerProcessor(OutputProcessor):
             )
         except NoOverlappingSpanFoundError as err:
             logger.exception(err.message)
+            return None, torch.tensor(0.0)
 
         conf = output_probs[0][output_probs[0] >= 0.0][best_span[0] : best_span[1] + 1]
 
