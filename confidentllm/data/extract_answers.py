@@ -22,6 +22,8 @@
 
 import re
 
+__all__ = ["extract_answers"]
+
 
 class AnswerNotFoundError(Exception):
     """Exception raised when the answer is not found in the input string."""
