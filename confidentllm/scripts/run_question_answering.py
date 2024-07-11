@@ -22,8 +22,11 @@
 
 import torch
 from datasets import Dataset
+from hydra_zen import store, zen
+from tqdm import tqdm
 from transformers import PreTrainedTokenizer
 
+from confidentllm import data, models  # noqa: F401
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     OutputProcessor,
@@ -77,19 +80,36 @@ class QuestionAnsweringRunner:
         answer, confidence = self.answer_processor(generated_ids, generation_probs)
         return answer, confidence
 
-    def run(self, data: Dataset) -> None:
+    def run(self, data: Dataset) -> None:  # noqa: F811
         """Run the question answering process."""
-        for example in data:
+        results = []
+
+        for example in tqdm(data, desc="Answering questions"):
             question: str = example.get("question", "")  # type: ignore  # noqa: PGH003
             answer, confidence = self.answer_question(question)
-            print(f"Question: {question}")
-            print(f"Answer: {answer}")
-            print(f"Confidence: {confidence}")
-            print()
+            results.append(
+                {
+                    "question": question,
+                    "answer": answer,
+                    "confidence": confidence.mean().item(),
+                },
+            )
 
 
+@store(
+    name="question_answering",
+    hydra_defaults=[
+        "_self_",
+        {"model": "gemma_11_2b_it"},
+        {"tokenizer": "gemma_11_2b_it"},
+        {"generation_method": "greedy_causal_lm_generation_method"},
+        {"output_processor": "answer_processor"},
+        {"data": "gsm8k"},
+        # {"override hydra/launcher": "hpc_submission"},
+    ],
+)
 def run_question_answering(
-    data: Dataset,
+    data: Dataset,  # noqa: F811
     model: torch.nn.Module,
     tokenizer: PreTrainedTokenizer,
     generation_method: CausalLMGenerationMethod,
@@ -103,3 +123,12 @@ def run_question_answering(
         output_processor,
     )
     runner.run(data)
+
+
+if __name__ == "__main__":
+    store.add_to_hydra_store()
+
+    # Generate the CLI for run_extraction
+    zen(run_question_answering).hydra_main(
+        config_name="question_answering",
+    )
