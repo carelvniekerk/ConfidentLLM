@@ -24,10 +24,12 @@ from typing import Protocol
 
 from torch import Tensor
 
+__all__ = ["DecodingStrategy"]
+
 
 class DecodingStrategy(Protocol):
     """Base type for decoding strategies."""
 
     def __call__(self, scores: Tensor) -> tuple[Tensor, Tensor]:
-        """Decodes the logits into a sequence of tokens."""
+        """Decode the logits into a sequence of tokens."""
         ...

@@ -22,6 +22,8 @@
 
 from torch import Tensor, argmax, softmax, topk
 
+__all__ = ["greedy_decoding_strategy", "greedy_decoding_with_disparity"]
+
 
 def greedy_decoding_strategy(scores: Tensor) -> tuple[Tensor, Tensor]:
     """Greedy decoding strategy."""
