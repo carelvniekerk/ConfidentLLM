@@ -22,12 +22,14 @@
 
 import torch
 from datasets import Dataset
-from hydra_zen import store
+from transformers import PreTrainedTokenizer
 
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     OutputProcessor,
 )
+
+__all__ = ["run_question_answering"]
 
 
 class QuestionAnsweringRunner:
@@ -35,12 +37,21 @@ class QuestionAnsweringRunner:
 
     def __init__(
         self,
+        model: torch.nn.Module,
+        tokenizer: PreTrainedTokenizer,
         generation_method: CausalLMGenerationMethod,
         answer_processor: OutputProcessor,
     ) -> None:
         """Initialize the runner."""
+        self.model = model
+        self.tokenizer = tokenizer
         self.generation_method = generation_method
         self.answer_processor = answer_processor
+
+        self.generation_method.set_model(model)
+        self.answer_processor.set_model(model)
+        self.generation_method.set_tokenizer(tokenizer)
+        self.answer_processor.set_tokenizer(tokenizer)
 
     def answer_question(
         self,
@@ -79,9 +90,16 @@ class QuestionAnsweringRunner:
 
 def run_question_answering(
     data: Dataset,
+    model: torch.nn.Module,
+    tokenizer: PreTrainedTokenizer,
     generation_method: CausalLMGenerationMethod,
     output_processor: OutputProcessor,
 ) -> None:
     """Run the question answering process."""
-    runner = QuestionAnsweringRunner(generation_method, output_processor)
+    runner = QuestionAnsweringRunner(
+        model,
+        tokenizer,
+        generation_method,
+        output_processor,
+    )
     runner.run(data)
