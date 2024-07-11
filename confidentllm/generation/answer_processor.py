@@ -22,10 +22,18 @@
 import re
 
 import torch
-from numpy import extract
-from transformers.tokenization_utils import PreTrainedTokenizer
+from hydra_zen import make_custom_builds_fn, store
 
-from confidentllm.generation.generation_function import GenerateFunction
+from confidentllm.generation.generation_function import greedy_generate_function
+from confidentllm.generation.types import (
+    GenerateFunction,
+    OutputProcessor,
+    TokenizerNotSetError,
+)
+
+__all__ = []
+
+builds = make_custom_builds_fn(populate_full_signature=True)
 
 
 class NoOverlappingSpanFoundError(Exception):
@@ -46,17 +54,16 @@ class NoOverlappingSpanFoundError(Exception):
         super().__init__(self.message)
 
 
-class AnswerProcessor:
+class AnswerProcessor(OutputProcessor):
     """Class for processing the generated answers."""
 
     def __init__(
         self,
-        tokenizer: PreTrainedTokenizer,
         generator: GenerateFunction,
         prompt: str = "So the answer is:",
     ) -> None:
         """Initialize the processor."""
-        self.tokenizer = tokenizer
+        super().__init__()
         self.generator = generator
         self.prompt = prompt
 
@@ -80,6 +87,8 @@ class AnswerProcessor:
             torch.Tensor: The confidence of the answer.
 
         """
+        if isinstance(self.tokenizer, type(None)):
+            raise TokenizerNotSetError(self.tokenizer)
         output_text = self.tokenizer.decode(output[0], skip_special_tokens=True)
         output_text = f"{output_text} {self.prompt} "
 
@@ -132,11 +141,11 @@ class AnswerProcessor:
 
         if not best_span:
             raise NoOverlappingSpanFoundError(
-                search_term=self.tokenizer.decode(
+                search_term=self.tokenizer.decode(  # type: ignore  # noqa: PGH003
                     search_span,
                     skip_special_tokens=True,
                 ),
-                search_space=self.tokenizer.decode(
+                search_space=self.tokenizer.decode(  # type: ignore  # noqa: PGH003
                     search_space,
                     skip_special_tokens=True,
                 ),
@@ -147,3 +156,13 @@ class AnswerProcessor:
     def extract_numbers(text: str) -> list:
         """Extract numbers from the text."""
         return [int(num) for num in re.findall(r"\b\d+\b", text)]
+
+
+AnswerProcessorConfig = builds(AnswerProcessor)
+
+answer_processor = AnswerProcessorConfig(
+    generator=greedy_generate_function,  # type: ignore  # noqa: PGH003
+)
+
+output_processor_store = store(group="output_processor")
+output_processor_store(answer_processor, name="answer_processor")

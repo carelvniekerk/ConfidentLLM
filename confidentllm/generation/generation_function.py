@@ -21,9 +21,15 @@
 """Generation Function."""
 
 import torch
+from hydra_zen import just, make_custom_builds_fn, store
 
+from confidentllm.decoding_strategies.greedy import greedy_decoding_strategy
 from confidentllm.decoding_strategies.types import DecodingStrategy
-from confidentllm.generation.types import GenerateFunction
+from confidentllm.generation.types import GenerateFunction, ModelNotSetError
+
+__all__ = []
+
+builds = make_custom_builds_fn(populate_full_signature=True)
 
 
 def calc_banned_ngram_tokens(
@@ -179,24 +185,21 @@ def postprocess_next_token_scores(  # noqa: PLR0913
     return scores
 
 
-def create_generate_function(
-    model: torch.nn.Module,
-    decoding_strategy: DecodingStrategy,
-) -> GenerateFunction:
-    """Create a generator for generating sequences.
+class GreedyGenerateFunction(GenerateFunction):
+    """Greedy (single beam) generate function."""
 
-    Args:
-    ----
-        model (torch.nn.Module): The language model used for generation.
-        decoding_strategy (DecodingStrategy): The decoding strategy to use.
+    def __init__(self, decoding_strategy: DecodingStrategy) -> None:
+        """Initialize the generate function.
 
-    Returns:
-    -------
-        Generator: The generator object.
+        Args:
+        ----
+            decoding_strategy (DecodingStrategy): The decoding strategy to use.
 
-    """
+        """
+        super().__init__(decoding_strategy)
 
-    def generate(  # noqa: PLR0913
+    def __call__(  # noqa: PLR0913
+        self,
         input_ids: torch.Tensor,  # type: ignore  # noqa: PGH003
         max_length: int,
         min_length: int = 5,
@@ -213,9 +216,12 @@ def create_generate_function(
 
         All returned sequence are generated independantly.
         """
-        input_ids: torch.Tensor = input_ids.to(model.device)  # type: ignore  # noqa: PGH003
+        if isinstance(self.model, type(None)):
+            raise ModelNotSetError(self.model)
+
+        input_ids: torch.Tensor = input_ids.to(self.model.device)  # type: ignore  # noqa: PGH003
         attention_mask: torch.Tensor = (
-            attention_mask.to(model.device) if attention_mask is not None else None  # type: ignore  # noqa: PGH003
+            attention_mask.to(self.model.device) if attention_mask is not None else None  # type: ignore  # noqa: PGH003
         )
         # length of generated sentences / unfinished sentences
         unfinished_sents = input_ids.new(batch_size).fill_(1)
@@ -241,13 +247,13 @@ def create_generate_function(
             if attention_mask is not None:
                 inputs["attention_mask"] = attention_mask
 
-            inputs = model.prepare_inputs_for_generation(
+            inputs = self.model.prepare_inputs_for_generation(
                 **inputs,
                 **model_specific_kwargs,
             )  # type: ignore  # noqa: PGH003
 
             with torch.no_grad():
-                outputs = model(**inputs)
+                outputs = self.model(**inputs)
             next_token_logits = outputs[0][:, -1, :]
 
             scores = postprocess_next_token_scores(
@@ -263,7 +269,7 @@ def create_generate_function(
                 num_beams=1,
             )
 
-            next_token, next_token_probs = decoding_strategy(
+            next_token, next_token_probs = self.decoding_strategy(
                 scores=scores,
             )
 
@@ -313,4 +319,18 @@ def create_generate_function(
 
         return input_ids, torch.cat(generation_probs, dim=-1)
 
-    return generate
+
+GeneratorConfig = builds(GreedyGenerateFunction)
+
+greedy_generate_function = GeneratorConfig(
+    decoding_strategy=just(greedy_decoding_strategy),  # type: ignore  # noqa: PGH003
+)
+
+generate_function_store = [
+    store(group="generation_method/generator"),
+    store(group="output_processor/generator"),
+]
+[
+    store(greedy_generate_function, name="greedy_generate_function")
+    for store in generate_function_store
+]
