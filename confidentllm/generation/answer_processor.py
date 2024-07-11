@@ -107,10 +107,13 @@ class AnswerProcessor(OutputProcessor):
 
         search_term = generated_ids[0][generation_probs[0] >= 0.0]
 
-        best_span = self._find_largest_overlap_span(
-            output[0][output_probs[0] >= 0.0],
-            search_term,
-        )
+        try:
+            best_span = self._find_largest_overlap_span(
+                output[0][output_probs[0] >= 0.0],
+                search_term,
+            )
+        except NoOverlappingSpanFoundError as err:
+            raise Warning(err.message) from err
 
         conf = output_probs[0][output_probs[0] >= 0.0][best_span[0] : best_span[1] + 1]
 
