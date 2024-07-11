@@ -1,6 +1,6 @@
 # coding=utf-8
 # --------------------------------------------------------------------------------
-# Project: Training Project
+# Project: ConfidentLLM
 # Author: Carel van Niekerk
 # Year: 2024
 # Group: Dialogue Systems and Machine Learning Group

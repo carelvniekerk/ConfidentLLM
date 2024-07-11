@@ -20,6 +20,8 @@
 # limitations under the License."
 """Runner for question answering using the ConfidentLLM package."""
 
+import logging
+
 import torch
 from datasets import Dataset
 from hydra_zen import store, zen
@@ -27,12 +29,14 @@ from tqdm import tqdm
 from transformers import PreTrainedTokenizer
 
 from confidentllm import data, models  # noqa: F401
+from confidentllm.evaluation.types import Evaluator
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     OutputProcessor,
 )
 
 __all__ = ["run_question_answering"]
+logger = logging.getLogger("__main__")
 
 
 class QuestionAnsweringRunner:
@@ -44,12 +48,14 @@ class QuestionAnsweringRunner:
         tokenizer: PreTrainedTokenizer,
         generation_method: CausalLMGenerationMethod,
         answer_processor: OutputProcessor,
+        evaluator: Evaluator,
     ) -> None:
         """Initialize the runner."""
         self.model = model
         self.tokenizer = tokenizer
         self.generation_method = generation_method
         self.answer_processor = answer_processor
+        self.evaluator = evaluator
 
         self.generation_method.set_model(model)
         self.answer_processor.set_model(model)
@@ -82,18 +88,20 @@ class QuestionAnsweringRunner:
 
     def run(self, data: Dataset) -> None:  # noqa: F811
         """Run the question answering process."""
-        results = []
-
-        for example in tqdm(data, desc="Answering questions"):
+        for idx, example in enumerate(tqdm(data, desc="Answering questions")):
             question: str = example.get("question", "")  # type: ignore  # noqa: PGH003
             answer, confidence = self.answer_question(question)
-            results.append(
+            self.evaluator.add_batch(
                 {
-                    "question": question,
-                    "answer": answer,
-                    "confidence": confidence.mean().item(),
+                    "labels": [example.get("answer", "")],  # type: ignore  # noqa: PGH003
+                    "predictions": [answer],
+                    "confidence": [confidence.mean().item()],
                 },
             )
+
+        (acc,) = self.evaluator.evaluate()
+        logging_message: str = f"Accuracy: {acc}"
+        logger.info(logging_message)
 
 
 @store(
@@ -105,6 +113,7 @@ class QuestionAnsweringRunner:
         {"generation_method": "greedy_causal_lm_generation_method"},
         {"output_processor": "answer_processor"},
         {"data": "gsm8k"},
+        {"evaluator": "accuracy"},
         # {"override hydra/launcher": "hpc_submission"},
     ],
 )
@@ -114,6 +123,7 @@ def run_question_answering(
     tokenizer: PreTrainedTokenizer,
     generation_method: CausalLMGenerationMethod,
     output_processor: OutputProcessor,
+    evaluator: Evaluator,
 ) -> None:
     """Run the question answering process."""
     runner = QuestionAnsweringRunner(
@@ -121,6 +131,7 @@ def run_question_answering(
         tokenizer,
         generation_method,
         output_processor,
+        evaluator,
     )
     runner.run(data)
 
