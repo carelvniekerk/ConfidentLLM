@@ -25,6 +25,8 @@ from typing import Protocol
 
 from datasets import Dataset
 
+__all__ = ["DatasetSplit", "DatasetLoader"]
+
 
 class DatasetSplit(StrEnum):
     """Split of the dataset."""
