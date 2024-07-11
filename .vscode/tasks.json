@@ -29,6 +29,15 @@
             "label": "Sync Huggingface",
             "command": "hpc sync_hf",
             "type": "shell",
+            "options": {
+                "shell": {
+                    "args": [
+                        "-c",
+                        "-l",
+                        "-i"
+                    ],
+                }
+            },
             "group": {
                 "kind": "none",
                 "isDefault": true
@@ -36,6 +45,30 @@
             "presentation": {
                 "reveal": "always",
                 "panel": "new",
+                "focus": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Sync Results",
+            "command": "hpc sync_results; hpc sync_job_logs",
+            "type": "shell",
+            "options": {
+                "shell": {
+                    "args": [
+                        "-c",
+                        "-l",
+                        "-i"
+                    ],
+                }
+            },
+            "group": {
+                "kind": "none",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "never",
+                "panel": "shared",
                 "focus": false
             },
             "problemMatcher": []
