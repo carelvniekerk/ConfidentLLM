@@ -38,7 +38,7 @@ builds = make_custom_builds_fn(populate_full_signature=True)
 class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
     """Greedy generation method for causal language models."""
 
-    def __init__(self, generator: GenerateFunction) -> None:  # noqa: D107
+    def __init__(self, generator: GenerateFunction) -> None:
         super().__init__(generator)
 
     def __call__(

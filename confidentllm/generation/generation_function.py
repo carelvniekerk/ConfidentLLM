@@ -101,7 +101,10 @@ def calc_banned_bad_words_ids(
 
         for banned_token_seq in bad_words_ids:
             if len(banned_token_seq) == 0:
-                msg = f"Banned words token sequences {bad_words_ids} cannot have an empty list"
+                msg = (
+                    f"Banned words token sequences {bad_words_ids}"
+                    " cannot have an empty list"
+                )
                 raise ValueError(msg)
 
             if (
@@ -128,7 +131,8 @@ def enforce_repetition_penalty_(
     """Repetition penalty (from CTRL paper https://arxiv.org/abs/1909.05858)."""
     for i in range(batch_size * num_beams):
         for previous_token in set(prev_output_tokens[i].tolist()):
-            # if score < 0 then repetition penalty has to multiplied to reduce the previous token probability
+            # if score < 0 then repetition penalty has to multiplied to reduce
+            # the previous token probability
             if lprobs[i, previous_token] < 0:
                 lprobs[i, previous_token] *= repetition_penalty
             else:
@@ -147,7 +151,7 @@ def postprocess_next_token_scores(  # noqa: PLR0913
     batch_size: int,
     num_beams: int,
 ) -> torch.Tensor:
-    """Postprocess the next token scores as a combination of current scores and penalties."""
+    """Postprocess the next token scores using of current scores and penalties."""
     # repetition penalty (from CTRL paper https://arxiv.org/abs/1909.05858)
     if repetition_penalty != 1.0:
         enforce_repetition_penalty_(
@@ -163,7 +167,8 @@ def postprocess_next_token_scores(  # noqa: PLR0913
         scores[:, eos_token_id] = -float("inf")
 
     if no_repeat_ngram_size > 0:
-        # calculate a list of banned tokens to prevent repetitively generating the same ngrams
+        # calculate a list of banned tokens to prevent repetitively generating
+        # the same ngrams
         num_batch_hypotheses = batch_size * num_beams
         # from fairseq: https://github.com/pytorch/fairseq/blob/a07cb6f40480928c9e0548b737aadd36ee66ac76/fairseq/sequence_generator.py#L345
         banned_batch_tokens = calc_banned_ngram_tokens(
@@ -290,7 +295,8 @@ class GreedyGenerateFunction(GenerateFunction):
 
             if eos_token_id is not None:
                 eos_in_sents = tokens_to_add == eos_token_id
-                # if sentence is unfinished and the token to add is eos, sent_lengths is filled with current length
+                # if sentence is unfinished and the token to add is eos, sent_lengths
+                # is filled with current length
                 is_sents_unfinished_and_token_to_add_is_eos = unfinished_sents.mul(
                     eos_in_sents.long(),
                 ).bool()
@@ -301,7 +307,8 @@ class GreedyGenerateFunction(GenerateFunction):
                 # unfinished_sents is set to zero if eos in sentence
                 unfinished_sents.mul_((~eos_in_sents).long())
 
-            # stop when there is a </s> in each sentence, or if we exceed the maximul length
+            # stop when there is a </s> in each sentence, or if we exceed the
+            # maximul length
             if unfinished_sents.max() == 0:
                 break
 
