@@ -8,3 +8,6 @@ outputs
 # Poetry virtual environment
 .venv
 poetry.lock
+
+# Python cache
+__pycache__
