@@ -96,7 +96,7 @@ class QuestionAnsweringRunner:
             answer, confidence = self.answer_question(question)
             self.evaluator.add_batch(
                 {
-                    "labels": [int(example.get("answer", "-1"))],  # type: ignore  # noqa: PGH003
+                    "labels": [int(example.get("answer", "-1").replace(",", ""))],  # type: ignore  # noqa: PGH003
                     "predictions": [answer if answer else -1],
                     "confidence": [confidence.mean().item()],
                 },
