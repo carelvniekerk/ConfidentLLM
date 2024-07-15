@@ -117,10 +117,10 @@ class QuestionAnsweringRunner:
         {"output_processor": "answer_processor"},
         {"data": "gsm8k"},
         {"evaluator": "accuracy"},
-        {"override hydra/launcher": "hpc_submission"},
+        {"hydra/launcher": "hpc_submission"},
     ],
 )
-def run_question_answering(
+def run_question_answering(  # noqa: PLR0913
     data: Dataset,  # noqa: F811
     model: torch.nn.Module,
     tokenizer: PreTrainedTokenizer,
