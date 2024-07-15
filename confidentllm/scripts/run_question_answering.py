@@ -24,6 +24,7 @@ import logging
 
 import torch
 from datasets import Dataset
+from hydra.conf import HydraConf, JobConf
 from hydra_zen import store, zen
 from tqdm import tqdm
 from transformers import PreTrainedTokenizer
@@ -34,6 +35,7 @@ from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     OutputProcessor,
 )
+from confidentllm.logging import create_logging_config
 from hydra_plugins.hpc_submission_launcher.launcher import (
     HPCSubmissionLauncher,  # noqa: F401
 )
@@ -117,7 +119,7 @@ class QuestionAnsweringRunner:
         {"output_processor": "answer_processor"},
         {"data": "gsm8k"},
         {"evaluator": "accuracy"},
-        {"hydra/launcher": "hpc_submission"},
+        {"override hydra/launcher": "hpc_submission"},
     ],
 )
 def run_question_answering(  # noqa: PLR0913
@@ -140,6 +142,14 @@ def run_question_answering(  # noqa: PLR0913
 
 
 if __name__ == "__main__":
+    store(
+        HydraConf(
+            job=JobConf(chdir=True, name="question_answering"),
+            job_logging=create_logging_config(),
+        ),
+        name="config",
+        group="hydra",
+    )
     store.add_to_hydra_store()
 
     # Generate the CLI for run_extraction
