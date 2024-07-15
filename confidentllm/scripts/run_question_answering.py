@@ -35,7 +35,7 @@ from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     OutputProcessor,
 )
-from confidentllm.logging import create_logging_config
+from confidentllm.logging import create_logging_config, setup_exception_logging
 from hydra_plugins.hpc_submission_launcher.launcher import (
     HPCSubmissionLauncher,  # noqa: F401
 )
@@ -142,6 +142,8 @@ def run_question_answering(  # noqa: PLR0913
 
 
 if __name__ == "__main__":
+    setup_exception_logging(logger)
+
     store(
         HydraConf(
             job=JobConf(chdir=True, name="question_answering"),
