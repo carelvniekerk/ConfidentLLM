@@ -71,8 +71,14 @@ gemma_11_2b_it = CausalLMConfig(
     device="cuda" if torch.cuda.is_available() else "cpu",
 )
 
+gpt2 = CausalLMConfig(
+    pretrained_model_name_or_path=ModelName.GPT2.value,
+    device="cuda" if torch.cuda.is_available() else "cpu",
+)
+
 model_store = store(group="model")
 model_store(gemma_11_2b_it, name="gemma_11_2b_it")
+model_store(gpt2, name="gpt2")
 
 
 def load_tokenizer(
@@ -102,5 +108,10 @@ gemma_11_2b_it = TokenizerConfig(
     pretrained_model_name_or_path=ModelName.GEMMA_11_2B_IT,
 )
 
+gpt2 = TokenizerConfig(
+    pretrained_model_name_or_path=ModelName.GPT2,
+)
+
 tokenizer_store = store(group="tokenizer")
 tokenizer_store(gemma_11_2b_it, name="gemma_11_2b_it")
+tokenizer_store(gpt2, name="gpt2")
