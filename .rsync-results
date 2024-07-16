@@ -1,3 +1,6 @@
 # Hydra results dirs
 outputs
 # multirun
+
+# Weights and Biases logs
+wandb

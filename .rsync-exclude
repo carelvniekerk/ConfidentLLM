@@ -11,3 +11,6 @@ poetry.lock
 
 # Python cache
 __pycache__
+
+# Weights and Biases logs
+wandb

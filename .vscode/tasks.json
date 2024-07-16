@@ -51,7 +51,7 @@
         },
         {
             "label": "Sync Results",
-            "command": "hpc sync_results; hpc sync_job_logs",
+            "command": "hpc sync_results; hpc sync_job_logs; wandb sync --sync-all",
             "type": "shell",
             "options": {
                 "shell": {

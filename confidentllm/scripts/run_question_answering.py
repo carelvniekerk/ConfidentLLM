@@ -25,17 +25,23 @@ import logging
 import torch
 from datasets import Dataset
 from hydra.conf import HydraConf, JobConf
+from hydra.core.hydra_config import HydraConfig
 from hydra_zen import store, zen
 from tqdm import tqdm
 from transformers import PreTrainedTokenizer
 
+import wandb
 from confidentllm import data, models  # noqa: F401
 from confidentllm.evaluation.types import Evaluator
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     OutputProcessor,
 )
-from confidentllm.logging import create_logging_config, setup_exception_logging
+from confidentllm.logging import (
+    create_logging_config,
+    initialize_wandb,
+    setup_exception_logging,
+)
 from hydra_plugins.hpc_submission_launcher.launcher import (
     HPCSubmissionLauncher,  # noqa: F401
 )
@@ -93,9 +99,11 @@ class QuestionAnsweringRunner:
 
     def run(self, data: Dataset) -> None:  # noqa: F811
         """Run the question answering process."""
-        for idx, example in enumerate(tqdm(data, desc="Answering questions")):
+        for example in tqdm(data, desc="Answering questions"):
             question: str = example.get("question", "")  # type: ignore  # noqa: PGH003
             answer, confidence = self.answer_question(question)
+
+            # Add the batch to the evaluator
             self.evaluator.add_batch(
                 {
                     "labels": [int(example.get("answer", "-1").replace(",", ""))],  # type: ignore  # noqa: PGH003
@@ -103,6 +111,15 @@ class QuestionAnsweringRunner:
                     "confidence": [confidence.mean().item()],
                 },
             )
+
+            # Log the answers and predictions
+            log_info: dict[str, str | int | float] = {
+                "question": question,
+                "answer": answer if answer else -1,
+                "confidence": confidence.mean().item(),
+                "true_answer": example.get("answer", "-1").replace(",", ""),  # type: ignore  # noqa: PGH003
+            }
+            wandb.log(log_info)
 
         (acc,) = self.evaluator.evaluate()
         logging_message: str = f"Accuracy: {acc}"
@@ -131,6 +148,8 @@ def run_question_answering(  # noqa: PLR0913
     evaluator: Evaluator,
 ) -> None:
     """Run the question answering process."""
+    initialize_wandb(config=HydraConfig.get())  # type: ignore  # noqa: PGH003
+
     runner = QuestionAnsweringRunner(
         model,
         tokenizer,

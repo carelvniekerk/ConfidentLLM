@@ -21,4 +21,5 @@
 """Set up logging configuration for project."""
 
 from confidentllm.logging.exception_logging import setup_exception_logging  # noqa: F401
+from confidentllm.logging.init_wandb import initialize_wandb  # noqa: F401
 from confidentllm.logging.logger_config import create_logging_config  # noqa: F401

@@ -14,3 +14,6 @@ outputs
 
 # Apple Finder files
 .DS_Store
+
+# Weights and Biases logs
+wandb
