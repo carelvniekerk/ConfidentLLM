@@ -11,7 +11,7 @@
                         "-c",
                         "-l",
                         "-i"
-                    ],
+                    ]
                 }
             },
             "group": {
@@ -35,7 +35,7 @@
                         "-c",
                         "-l",
                         "-i"
-                    ],
+                    ]
                 }
             },
             "group": {
@@ -59,7 +59,7 @@
                         "-c",
                         "-l",
                         "-i"
-                    ],
+                    ]
                 }
             },
             "group": {
@@ -73,5 +73,16 @@
             },
             "problemMatcher": []
         },
+        {
+            "label": "Open WANDB",
+            "type": "shell",
+            "command": "open 'https://wandb.ai/dialgroup-hhu/ConfidentLLM/table?nw=nwusercarelvniekerk'",
+            "presentation": {
+                "reveal": "never",
+                "panel": "shared",
+                "focus": false
+            },
+            "problemMatcher": []
+        }
     ]
 }
