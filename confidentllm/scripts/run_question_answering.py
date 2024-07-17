@@ -100,6 +100,9 @@ class QuestionAnsweringRunner:
 
     def run(self, data: Dataset) -> None:  # noqa: F811
         """Run the question answering process."""
+        results_table = wandb.Table(
+            columns=["Question", "Answer", "True Answer", "Confidence"],
+        )
         for example in tqdm(data, desc="Answering questions"):
             question: str = example.get("question", "")  # type: ignore  # noqa: PGH003
             answer, confidence = self.answer_question(question)
@@ -114,17 +117,17 @@ class QuestionAnsweringRunner:
             )
 
             # Log the answers and predictions
-            log_info: dict[str, str | int | float] = {
-                "question": question,
-                "answer": answer if answer else -1,
-                "confidence": confidence.mean().item(),
-                "true_answer": example.get("answer", "-1").replace(",", ""),  # type: ignore  # noqa: PGH003
-            }
-            wandb.log(log_info)
+            results_table.add_data(
+                question,
+                answer if answer else -1,
+                example.get("answer", "-1").replace(",", ""),  # type: ignore  # noqa: PGH003
+                confidence.mean().item(),
+            )
 
         (acc,) = self.evaluator.evaluate()
         logging_message: str = f"Accuracy: {acc}"
         logger.info(logging_message)
+        wandb.log({"accuracy": acc, "results": results_table})
 
 
 @store(
