@@ -31,7 +31,7 @@ from tqdm import tqdm
 from transformers import PreTrainedTokenizer
 
 import wandb
-from confidentllm import data, models  # noqa: F401
+from confidentllm import data  # noqa: F401
 from confidentllm.evaluation.types import Evaluator
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
@@ -42,6 +42,7 @@ from confidentllm.logging import (
     initialize_wandb,
     setup_exception_logging,
 )
+from confidentllm.models import ModelLoader
 from hydra_plugins.hpc_submission_launcher.launcher import (
     HPCSubmissionLauncher,  # noqa: F401
 )
@@ -55,23 +56,21 @@ class QuestionAnsweringRunner:
 
     def __init__(
         self,
-        model: torch.nn.Module,
-        tokenizer: PreTrainedTokenizer,
+        model: ModelLoader,
         generation_method: CausalLMGenerationMethod,
         answer_processor: OutputProcessor,
         evaluator: Evaluator,
     ) -> None:
         """Initialize the runner."""
-        self.model = model
-        self.tokenizer = tokenizer
+        self.model, self.tokenizer = model.load()
         self.generation_method = generation_method
         self.answer_processor = answer_processor
         self.evaluator = evaluator
 
-        self.generation_method.set_model(model)
-        self.answer_processor.set_model(model)
-        self.generation_method.set_tokenizer(tokenizer)
-        self.answer_processor.set_tokenizer(tokenizer)
+        self.generation_method.set_model(self.model)
+        self.answer_processor.set_model(self.model)
+        self.generation_method.set_tokenizer(self.tokenizer)
+        self.answer_processor.set_tokenizer(self.tokenizer)
 
     def answer_question(
         self,
@@ -131,7 +130,6 @@ class QuestionAnsweringRunner:
     hydra_defaults=[
         "_self_",
         {"model": "gemma_11_2b_it"},
-        {"tokenizer": "gemma_11_2b_it"},
         {"generation_method": "greedy_causal_lm_generation_method"},
         {"output_processor": "answer_processor"},
         {"data": "gsm8k"},
@@ -139,10 +137,9 @@ class QuestionAnsweringRunner:
         {"override hydra/launcher": "hpc_submission"},
     ],
 )
-def run_question_answering(  # noqa: PLR0913
+def run_question_answering(
     data: Dataset,  # noqa: F811
-    model: torch.nn.Module,
-    tokenizer: PreTrainedTokenizer,
+    model: ModelLoader,
     generation_method: CausalLMGenerationMethod,
     output_processor: OutputProcessor,
     evaluator: Evaluator,
@@ -152,7 +149,6 @@ def run_question_answering(  # noqa: PLR0913
 
     runner = QuestionAnsweringRunner(
         model,
-        tokenizer,
         generation_method,
         output_processor,
         evaluator,

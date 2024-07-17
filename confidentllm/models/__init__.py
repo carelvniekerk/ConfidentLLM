@@ -29,7 +29,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenize
 
 builds = make_custom_builds_fn(populate_full_signature=True)
 
-__all__ = []
+__all__ = ["ModelName", "ModelLoader"]
 
 
 class ModelName(StrEnum):
@@ -39,79 +39,50 @@ class ModelName(StrEnum):
     GPT2 = "gpt2"
 
 
-def load_model(
-    pretrained_model_name_or_path: str,  # type: ignore  # noqa: PGH003
-    device: str,  # type: ignore  # noqa: PGH003 # Workaround for omegaconf primitives
-) -> Module:
-    """Load a pretrained model from Hugging Face's model hub.
+class ModelLoader:
+    """Abstract class to load a pretrained model and tokenizer."""
 
-    Args:
-    ----
-        pretrained_model_name_or_path (str): The name of or the path to the model.
-        device (str): The device to load the model on.
+    def __init__(self, pretrained_model_name_or_path: ModelName, device: str) -> None:
+        """Initialize the model loader."""
+        self.pretrained_model_name_or_path: str = pretrained_model_name_or_path.value
+        self.device: torch.device = torch.device(device)
 
-    Returns:
-    -------
-        Module: The model loaded on the specified device.
+    def load(self) -> tuple[Module, PreTrainedTokenizer]:
+        """Load a pretrained model from Hugging Face's model hub.
 
-    """
-    device: torch.device = torch.device(device)
+        Args:
+        ----
+            pretrained_model_name_or_path (str): The name of or the path to the model.
+            device (str): The device to load the model on.
 
-    model: Module = AutoModelForCausalLM.from_pretrained(
-        pretrained_model_name_or_path,
-    )
+        Returns:
+        -------
+            Module: The model loaded on the specified device.
 
-    return model.to(device)
+        """
+        model: Module = AutoModelForCausalLM.from_pretrained(
+            self.pretrained_model_name_or_path,
+        )
+
+        tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(
+            self.pretrained_model_name_or_path,  # type: ignore  # noqa: PGH003 - Tokenizer is a PreTrainedTokenizer
+        )
+
+        return model.to(self.device), tokenizer
 
 
-CausalLMConfig = builds(load_model)
+CausalLMConfig = builds(ModelLoader)
 
 gemma_11_2b_it = CausalLMConfig(
-    pretrained_model_name_or_path=ModelName.GEMMA_11_2B_IT.value,
+    pretrained_model_name_or_path=ModelName.GEMMA_11_2B_IT,
     device="cuda" if torch.cuda.is_available() else "cpu",
 )
 
 gpt2 = CausalLMConfig(
-    pretrained_model_name_or_path=ModelName.GPT2.value,
+    pretrained_model_name_or_path=ModelName.GPT2,
     device="cuda" if torch.cuda.is_available() else "cpu",
 )
 
 model_store = store(group="model")
 model_store(gemma_11_2b_it, name="gemma_11_2b_it")
 model_store(gpt2, name="gpt2")
-
-
-def load_tokenizer(
-    pretrained_model_name_or_path: ModelName,
-) -> PreTrainedTokenizer:
-    """Load a pretrained tokenizer from Hugging Face's model hub.
-
-    Args:
-    ----
-        pretrained_model_name_or_path (str): The name of or the path to the tokenizer.
-
-    Returns:
-    -------
-        Module: The tokenizer.
-
-    """
-    tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(
-        pretrained_model_name_or_path.value,
-    )  # type: ignore  # noqa: PGH003
-
-    return tokenizer
-
-
-TokenizerConfig = builds(load_tokenizer)
-
-gemma_11_2b_it = TokenizerConfig(
-    pretrained_model_name_or_path=ModelName.GEMMA_11_2B_IT,
-)
-
-gpt2 = TokenizerConfig(
-    pretrained_model_name_or_path=ModelName.GPT2,
-)
-
-tokenizer_store = store(group="tokenizer")
-tokenizer_store(gemma_11_2b_it, name="gemma_11_2b_it")
-tokenizer_store(gpt2, name="gpt2")
