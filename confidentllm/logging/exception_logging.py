@@ -36,11 +36,13 @@ def setup_exception_logging(
     """Set up a custom exception handler that logs uncaught exceptions.
 
     Args:
+    ----
         logger: An instance of a logger to be used for logging exceptions.
 
     Side effects:
         - Sets the HYDRA_FULL_ERROR environment variable to "1".
         - Sets the sys.excepthook to a custom exception handler that logs exceptions.
+
     """
     # Setting this environment variable to "1" makes Hydra print the full stack trace.
     print("Setting HYDRA_FULL_ERROR environment variable to '1'.")
