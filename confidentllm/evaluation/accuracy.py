@@ -31,14 +31,17 @@ __all__ = []
 class AccuracyEvaluator(Evaluator):
     """Class to evaluate the accuracy of the model on a dataset."""
 
-    def __init__(self) -> None:
+    def __init__(self, padding_value: int = -1) -> None:
         """Initialize the evaluator."""
-        super().__init__()
+        super().__init__(padding_value=padding_value)
 
     def evaluate(self) -> tuple:
         """Evaluate the model."""
         predictions = np.array(self.buffer["predictions"])
         labels = np.array(self.buffer["labels"])
+
+        predictions = predictions[labels != self.padding_value]
+        labels = labels[labels != self.padding_value]
 
         acc = np.mean(predictions == labels)
 

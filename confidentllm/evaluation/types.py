@@ -22,14 +22,16 @@
 
 from abc import ABC, abstractmethod
 
-import torch
-
 
 class Evaluator(ABC):
     """Abstract base class for evaluators."""
 
-    def __init__(self) -> None:  # noqa: D107
+    def __init__(  # noqa: D107
+        self,
+        padding_value: int = -1,
+    ) -> None:
         self.buffer: dict = {}
+        self.padding_value = padding_value
 
     def add_batch(self, batch: dict) -> None:
         """Add a batch of data to the buffer.
