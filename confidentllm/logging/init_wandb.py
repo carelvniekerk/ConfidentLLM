@@ -1,17 +1,14 @@
-# Copyright 2024
-# Heinrich Heine University Dusseldorf,
-# Faculty of Mathematics and Natural Sciences,
-# Computer Science Department
+# coding=utf-8
+# --------------------------------------------------------------------------------
+# Project: ConfidentLLM
+# Author: Carel van Niekerk, Benjamin Ruppik, Julius von Rohrscheidt
+# Year: 2024
+# Group: Dialogue Systems and Machine Learning Group
+# Institution: Heinrich Heine University Düsseldorf
+# --------------------------------------------------------------------------------
 #
-# Authors:
-# Benjamin Ruppik (ruppik@hhu.de)
-# Julius von Rohrscheidt (julius.rohrscheidt@helmholtz-muenchen.de)
-#
-# Code generation tools and workflows:
-# First versions of this code were potentially generated
-# with the help of AI writing assistants including
-# GitHub Copilot, ChatGPT, Microsoft Copilot, Google Gemini.
-# Afterwards, the generated segments were manually reviewed and edited.
+# This code was generated with the help of AI writing assistants
+# including GitHub Copilot, ChatGPT, Bing Chat.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +20,8 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.
+# limitations under the License."
+"""Initialise the weights and biases logging."""
 
 from pathlib import Path
 

@@ -1,11 +1,11 @@
-# Copyright 2024
-# Heinrich Heine University Dusseldorf,
-# Faculty of Mathematics and Natural Sciences,
-# Computer Science Department
-#
-# Authors:
-# Julius von Rohrscheidt (julius.rohrscheidt@helmholtz-muenchen.de)
-# Benjamin Ruppik (ruppik@hhu.de)
+# coding=utf-8
+# --------------------------------------------------------------------------------
+# Project: ConfidentLLM
+# Author: Carel van Niekerk, Benjamin Ruppik, Julius von Rohrscheidt
+# Year: 2024
+# Group: Dialogue Systems and Machine Learning Group
+# Institution: Heinrich Heine University Düsseldorf
+# --------------------------------------------------------------------------------
 #
 # This code was generated with the help of AI writing assistants
 # including GitHub Copilot, ChatGPT, Bing Chat.
@@ -20,8 +20,7 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.
-
+# limitations under the License."
 """Set up exception logging."""
 
 import logging
@@ -34,34 +33,31 @@ logger = logging.getLogger(__name__)
 def setup_exception_logging(
     logger: logging.Logger = logger,
 ) -> None:
-    """Set up a custom exception handler that logs uncaught exceptions using the provided logger.
+    """Set up a custom exception handler that logs uncaught exceptions.
 
     Args:
         logger: An instance of a logger to be used for logging exceptions.
 
     Side effects:
         - Sets the HYDRA_FULL_ERROR environment variable to "1".
-        - Sets the sys.excepthook to a custom exception handler that logs uncaught exceptions using the provided logger.
+        - Sets the sys.excepthook to a custom exception handler that logs exceptions.
     """
-    # Setting this environment variable to "1" makes Hydra print the full stack trace of exceptions.
-    # This is necessary to set here, because otherwise the exceptions would not be correctly logged.
-    #
-    # We use print here instead of logging, since this function is usually called before the logging is set up,
-    # and we want to make sure that this message is printed.
-    print(f"Setting HYDRA_FULL_ERROR environment variable to '1'.")
+    # Setting this environment variable to "1" makes Hydra print the full stack trace.
+    print("Setting HYDRA_FULL_ERROR environment variable to '1'.")
     os.environ["HYDRA_FULL_ERROR"] = "1"
     print(f"{os.environ['HYDRA_FULL_ERROR'] = }")
 
     def handle_exception(
-        exc_type,
-        exc_value,
-        exc_traceback,
-    ):
+        exc_type,  # noqa: ANN001
+        exc_value,  # noqa: ANN001
+        exc_traceback,  # noqa: ANN001
+    ) -> None:
         """Handle uncaught exceptions by logging them, except for KeyboardInterrupt.
 
         This function is designed to be compatible with sys.excepthook.
-        Thus, you should not call this function directly, but rather set it as the sys.excepthook.
-        Also make sure you do not change the signature of this function, as it is called by sys.excepthook.
+        Thus, you should not call this function directly, but rather set
+        it as the sys.excepthook. Also make sure you do not change the signature of
+        this function, as it is called by sys.excepthook.
 
         Args:
         ----
