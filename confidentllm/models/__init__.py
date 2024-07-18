@@ -40,15 +40,22 @@ class ModelName(StrEnum):
 
     GEMMA_11_2B_IT = "google/gemma-1.1-2b-it"
     GPT2 = "gpt2"
+    PHI2 = "microsoft/phi-2"
 
 
 class ModelLoader:
     """Abstract class to load a pretrained model and tokenizer."""
 
-    def __init__(self, pretrained_model_name_or_path: ModelName, device: str) -> None:
+    def __init__(
+        self,
+        pretrained_model_name_or_path: ModelName,
+        device: str,
+        chat_template: str | None = None,
+    ) -> None:
         """Initialize the model loader."""
         self.pretrained_model_name_or_path: str = pretrained_model_name_or_path.value
         self.device: torch.device = torch.device(device)
+        self.chat_template: str | None = chat_template
 
     def load(self) -> tuple[Module, PreTrainedTokenizer]:
         """Load a pretrained model from Hugging Face's model hub.
@@ -71,6 +78,9 @@ class ModelLoader:
             self.pretrained_model_name_or_path,  # type: ignore  # noqa: PGH003 - Tokenizer is a PreTrainedTokenizer
         )
 
+        if self.chat_template:
+            tokenizer.chat_template = self.chat_template
+
         return model.to(self.device), tokenizer
 
 
@@ -86,6 +96,27 @@ gpt2 = CausalLMConfig(
     device="cuda" if torch.cuda.is_available() else "cpu",
 )
 
+PHI2_CHAT_TEMPLATE: str = (
+    "{{ bos_token }}"
+    "{% if messages[0]['role'] == 'system' %}"
+    "{{ raise_exception('System role not supported') }}{% endif %}"
+    "{% for message in messages %}"
+    "{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}"
+    "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"  # noqa: E501
+    "{% endif %}{% if (message['role'] == 'assistant') %}"
+    "{{ '\nOutput: ' + message['content'] | trim }}{% else %}"
+    "{{ 'Instruct: ' + message['content'] | trim + '\n' }}"
+    "{% set role = message['role'] %}{% endif %}{% endfor %}"
+    "{% if add_generation_prompt %}{{ '\nOutput: ' }}{% endif %}"
+)
+
+phi2 = CausalLMConfig(
+    pretrained_model_name_or_path=ModelName.PHI2,
+    device="cuda" if torch.cuda.is_available() else "cpu",
+    chat_template=PHI2_CHAT_TEMPLATE,
+)
+
 model_store = store(group="model")
 model_store(gemma_11_2b_it, name="gemma_11_2b_it")
 model_store(gpt2, name="gpt2")
+model_store(phi2, name="phi2")
