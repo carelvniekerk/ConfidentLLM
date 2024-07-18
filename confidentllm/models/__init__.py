@@ -81,6 +81,10 @@ class ModelLoader:
         if self.chat_template:
             tokenizer.chat_template = self.chat_template
 
+        if tokenizer.pad_token_id is None:
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+            tokenizer.pad_token = tokenizer.eos_token
+
         return model.to(self.device), tokenizer
 
 
