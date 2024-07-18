@@ -51,7 +51,7 @@
         },
         {
             "label": "Sync Results",
-            "command": "hpc sync_results; hpc sync_job_logs; wandb sync --sync-all",
+            "command": "hpc sync_results; hpc sync_job_logs; wandb sync --sync-all --project ConfidentLLM *",
             "type": "shell",
             "options": {
                 "shell": {
