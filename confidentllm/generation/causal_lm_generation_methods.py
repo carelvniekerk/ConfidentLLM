@@ -72,7 +72,7 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
         generated_ids, generation_probs = self.generator(
             input_ids=inputs["input_ids"],  # type: ignore  # noqa: PGH003
             max_length=max_length,
-            pad_token_id=self.tokenizer.eos_token_id,
+            pad_token_id=self.tokenizer.pad_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
         )  # type: ignore  # noqa: PGH003
 

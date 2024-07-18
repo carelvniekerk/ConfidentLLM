@@ -108,7 +108,7 @@ class AnswerProcessor(OutputProcessor):
         generated_ids, generation_probs = self.generator(
             input_ids=inputs["input_ids"],  # type: ignore  # noqa: PGH003
             max_length=20,
-            pad_token_id=self.tokenizer.eos_token_id,
+            pad_token_id=self.tokenizer.pad_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
         )  # type: ignore  # noqa: PGH003
 
@@ -162,7 +162,6 @@ class AnswerProcessor(OutputProcessor):
         )
 
         if not best_span:
-            logger.info(f"Search term: {search_span}, Search space: {search_space}")
             raise NoOverlappingSpanFoundError(
                 search_term=self.tokenizer.decode(  # type: ignore  # noqa: PGH003
                     search_span,
