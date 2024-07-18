@@ -78,7 +78,7 @@ class QuestionAnsweringRunner:
         self,
         question: str,
         max_length: int = 256,
-    ) -> tuple[str | int | None, torch.Tensor]:
+    ) -> tuple[str | int | None, torch.Tensor, str]:
         """Answer the given question.
 
         Args:
@@ -95,39 +95,46 @@ class QuestionAnsweringRunner:
             question,
             max_length,
         )
+        reasoning: str = self.tokenizer.decode(
+            generated_ids[0],
+            skip_special_tokens=True,
+        )
         answer, confidence = self.answer_processor(generated_ids, generation_probs)
-        return answer, confidence
+        return answer, confidence, reasoning
 
     def run(self, data: Dataset) -> None:  # noqa: F811
         """Run the question answering process."""
         results_table = wandb.Table(
-            columns=["Question", "Answer", "True Answer", "Confidence"],
+            columns=["Question", "Reasoning", "Answer", "True Answer", "Confidence"],
         )
         for example in tqdm(data, desc="Answering questions"):
             question: str = example.get("question", "")  # type: ignore  # noqa: PGH003
-            answer, confidence = self.answer_question(question)
+            answer, confidence, reasoning = self.answer_question(question)
 
             # Add the batch to the evaluator
             self.evaluator.add_batch(
                 {
                     "labels": [int(example.get("answer", "-1").replace(",", ""))],  # type: ignore  # noqa: PGH003
                     "predictions": [answer if answer else -1],
-                    "confidence": [confidence.mean().item()],
+                    "confidences": [confidence.mean().item()],
                 },
             )
 
             # Log the answers and predictions
             results_table.add_data(
                 question,
+                reasoning,
                 answer if answer else -1,
-                example.get("answer", "-1").replace(",", ""),  # type: ignore  # noqa: PGH003
+                int(example.get("answer", "-1").replace(",", "")),  # type: ignore  # noqa: PGH003
                 confidence.mean().item(),
             )
 
-        (acc,) = self.evaluator.evaluate()
-        logging_message: str = f"Accuracy: {acc}"
+        results = self.evaluator.evaluate()
+        logging_message: str = str(results)
         logger.info(logging_message)
-        wandb.log({"accuracy": acc, "results": results_table})
+        wandb_log = {"results_table": results_table}
+        wandb_log.update(results.to_dict())
+        wandb.log(wandb_log)
 
 
 @store(
@@ -138,7 +145,7 @@ class QuestionAnsweringRunner:
         {"generation_method": "greedy_causal_lm_generation_method"},
         {"output_processor": "answer_processor"},
         {"data": "gsm8k"},
-        {"evaluator": "accuracy"},
+        {"evaluator": "accuracy_and_calibration"},
         {"override hydra/launcher": "hpc_submission"},
     ],
 )

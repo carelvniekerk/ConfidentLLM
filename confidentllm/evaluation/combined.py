@@ -48,6 +48,7 @@ class CombinedResults(BaseResults):
         for results in self.combined_results.values():
             for key, value in results.to_dict().items():
                 combined_dict[key] = value
+        combined_dict["evaluator_name"] = self.evaluator_name
         return combined_dict
 
     def __str__(self) -> str:
