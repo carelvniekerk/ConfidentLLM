@@ -23,6 +23,7 @@
 # limitations under the License."
 """Model output answer processor."""
 
+import difflib
 import logging
 import re
 
@@ -106,7 +107,7 @@ class AnswerProcessor(OutputProcessor):
 
         generated_ids, generation_probs = self.generator(
             input_ids=inputs["input_ids"],  # type: ignore  # noqa: PGH003
-            max_length=5,
+            max_length=20,
             pad_token_id=self.tokenizer.eos_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
         )  # type: ignore  # noqa: PGH003
@@ -119,7 +120,7 @@ class AnswerProcessor(OutputProcessor):
                 search_term,
             )
         except NoOverlappingSpanFoundError as err:
-            logger.exception(err.message)
+            logger.warning(err.message)
             return None, torch.tensor(0.0)
 
         conf = output_probs[0][output_probs[0] >= 0.0][best_span[0] : best_span[1] + 1]
@@ -137,20 +138,31 @@ class AnswerProcessor(OutputProcessor):
         search_span: torch.Tensor,
     ) -> tuple[int, int]:
         """Find the largest overlapping span in the search space."""
-        max_overlap = 0
-        best_span = None
+        search_space_size = search_space.size(0)
+        search_span_size = search_span.size(0)
+        seq_matcher = difflib.SequenceMatcher(
+            isjunk=None,
+            a=search_space.detach().cpu().numpy()[::-1],
+            b=search_span.detach().cpu().numpy()[::-1],
+        )  # type: ignore  # noqa: PGH003 - numpy arrays can be dealt with as sequences in this method.
+        match = seq_matcher.find_longest_match(
+            alo=0,
+            ahi=search_space_size,
+            blo=0,
+            bhi=search_span_size,
+        )
+        match = difflib.Match(
+            a=search_space_size - match.a - match.size,
+            b=search_span_size - match.b - match.size,
+            size=match.size,
+        )
 
-        search_length = len(search_span)
-
-        for i in range(len(search_space) - search_length + 1):
-            current_span = search_space[i : i + search_length]
-            overlap = torch.sum(current_span == search_span)
-
-            if overlap > max_overlap:
-                max_overlap = overlap
-                best_span = (i, i + search_length - 1)
+        best_span = (
+            (match.a, match.a + match.size) if match.a < search_space_size else ()
+        )
 
         if not best_span:
+            logger.info(f"Search term: {search_span}, Search space: {search_space}")
             raise NoOverlappingSpanFoundError(
                 search_term=self.tokenizer.decode(  # type: ignore  # noqa: PGH003
                     search_span,
@@ -166,7 +178,14 @@ class AnswerProcessor(OutputProcessor):
     @staticmethod
     def extract_numbers(text: str) -> list:
         """Extract numbers from the text."""
-        return [int(num) for num in re.findall(r"\b\d+\b", text)]
+        # Use a regex pattern that matches numbers with optional commas
+        number_pattern = r"\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\b"
+        numbers = re.findall(number_pattern, text)
+        # Remove commas from the numbers and convert to integers or floats
+        return [
+            float(num.replace(",", "")) if "." in num else int(num.replace(",", ""))
+            for num in numbers
+        ]
 
 
 AnswerProcessorConfig = builds(AnswerProcessor)

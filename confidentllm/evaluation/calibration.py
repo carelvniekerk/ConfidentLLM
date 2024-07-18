@@ -187,7 +187,7 @@ class CalibrationEvaluator(Evaluator):
 
         return CalibrationResults(
             evaluator_name="Calibration",
-            ece=ece,
+            ece=ece * 100.0,
             bin_stats=bin_stats,
         )
 
