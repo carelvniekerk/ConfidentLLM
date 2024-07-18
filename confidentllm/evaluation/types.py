@@ -24,6 +24,23 @@
 """Types for the evaluation module."""
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Any
+
+
+@dataclass
+class BaseResults:
+    """Base class for evaluator results."""
+
+    evaluator_name: str
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert results to a dictionary."""
+        return {"evaluator_name": self.evaluator_name}
+
+    def __str__(self) -> str:
+        """Convert results to a string."""
+        return f"Evaluator: {self.evaluator_name}"
 
 
 class Evaluator(ABC):
@@ -50,6 +67,6 @@ class Evaluator(ABC):
             self.buffer[key] += value
 
     @abstractmethod
-    def evaluate(self) -> tuple:
+    def evaluate(self) -> BaseResults:
         """Evaluate the model."""
         ...

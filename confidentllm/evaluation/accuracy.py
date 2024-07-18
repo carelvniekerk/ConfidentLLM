@@ -23,12 +23,31 @@
 # limitations under the License."
 """Module to evaluate the accuracy of the model on a dataset."""
 
-import numpy as np
-from hydra_zen import store
+from dataclasses import dataclass
 
-from confidentllm.evaluation.types import Evaluator
+import numpy as np
+from hydra_zen import builds, store
+
+from confidentllm.evaluation.types import BaseResults, Evaluator
 
 __all__ = []
+
+
+@dataclass
+class AccuracyResults(BaseResults):
+    """Results specific to the calibration evaluator."""
+
+    accuracy: float = 0.0
+
+    def to_dict(self) -> dict[str, str | float | dict[str, dict[str, float | int]]]:
+        """Convert results to a dictionary."""
+        base_dict = super().to_dict()
+        base_dict.update({"accuracy": self.accuracy})
+        return base_dict
+
+    def __str__(self) -> str:
+        """Convert results to a string."""
+        return f"{super().__str__()}, Accuracy: {self.accuracy}"
 
 
 class AccuracyEvaluator(Evaluator):
@@ -38,7 +57,7 @@ class AccuracyEvaluator(Evaluator):
         """Initialize the evaluator."""
         super().__init__(padding_value=padding_value)
 
-    def evaluate(self) -> tuple:
+    def evaluate(self) -> AccuracyResults:
         """Evaluate the model."""
         predictions = np.array(self.buffer["predictions"])
         labels = np.array(self.buffer["labels"])
@@ -48,8 +67,11 @@ class AccuracyEvaluator(Evaluator):
 
         acc = np.mean(predictions == labels)
 
-        return (acc * 100.0,)
+        return AccuracyResults(evaluator_name="accuracy", accuracy=acc * 100.0)
 
+
+AccuracyEvaluatorConfig = builds(AccuracyEvaluator, populate_full_signature=True)
+accuracy_config = AccuracyEvaluatorConfig(padding_value=-1)
 
 evaluator_store = store(group="evaluator")
-evaluator_store(AccuracyEvaluator, name="accuracy")
+evaluator_store(accuracy_config, name="accuracy")

@@ -23,4 +23,4 @@
 # limitations under the License."
 """Evaluation module for ConfidentLLM."""
 
-from confidentllm.evaluation import accuracy  # noqa: F401
+from confidentllm.evaluation import accuracy, calibration, combined  # noqa: F401
