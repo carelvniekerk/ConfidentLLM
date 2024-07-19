@@ -25,7 +25,6 @@
 
 import logging
 
-import torch
 from datasets import Dataset
 from hydra.conf import HydraConf, JobConf
 from hydra.core.hydra_config import HydraConfig
@@ -35,8 +34,8 @@ from tqdm import tqdm
 import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.evaluation.types import Evaluator
+from confidentllm.generation.answer_processor import Answer
 from confidentllm.generation.types import (
-    Answer,
     CausalLMGenerationMethod,
     OutputProcessor,
 )
@@ -100,7 +99,7 @@ class QuestionAnsweringRunner:
             generation_output.generated_ids[0],
             skip_special_tokens=True,
         )
-        answer: Answer = self.answer_processor(generation_output)
+        answer: Answer = self.answer_processor(generation_output)  # type: ignore  # noqa: PGH003 - Answer processor here will always return answer.
         return answer, reasoning
 
     def run(self, data: Dataset) -> None:  # noqa: F811
