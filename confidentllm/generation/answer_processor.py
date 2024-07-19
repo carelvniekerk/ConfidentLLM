@@ -26,6 +26,7 @@
 import difflib
 import logging
 import re
+from dataclasses import dataclass, field
 
 import torch
 from hydra_zen import make_custom_builds_fn, store
@@ -33,7 +34,9 @@ from hydra_zen import make_custom_builds_fn, store
 from confidentllm.generation.generation_function import greedy_generate_function
 from confidentllm.generation.types import (
     GenerateFunction,
+    GenerationOutput,
     OutputProcessor,
+    ProcessedOutput,
     TokenizerNotSetError,
 )
 
@@ -62,6 +65,14 @@ class NoOverlappingSpanFoundError(Exception):
         super().__init__(self.message)
 
 
+@dataclass
+class Answer(ProcessedOutput):
+    """Dataclass for the processed output of the generation method."""
+
+    answer: int = -1
+    confidence: torch.Tensor = field(default_factory=lambda: torch.tensor(0.0))
+
+
 class AnswerProcessor(OutputProcessor):
     """Class for processing the generated answers."""
 
@@ -77,16 +88,14 @@ class AnswerProcessor(OutputProcessor):
 
     def __call__(
         self,
-        output: torch.Tensor,
-        output_probs: torch.Tensor,
+        generation_output: GenerationOutput,
         **kwargs: dict | None,  # noqa: ARG002
-    ) -> tuple[int | None, torch.Tensor]:
+    ) -> Answer:
         """Process the output.
 
         Args:
         ----
-            output (torch.Tensor): The output to process.
-            output_probs (torch.Tensor, optional): The output probabilities.
+            generation_output (GenerationOutput): The generation output.
             **kwargs (dict, optional): Additional keyword arguments.
 
         Returns:
@@ -97,7 +106,10 @@ class AnswerProcessor(OutputProcessor):
         """
         if isinstance(self.tokenizer, type(None)):
             raise TokenizerNotSetError(self.tokenizer)
-        output_text = self.tokenizer.decode(output[0], skip_special_tokens=True)
+        output_text = self.tokenizer.decode(
+            generation_output.generated_ids[0],
+            skip_special_tokens=True,
+        )
         output_text = f"{output_text} {self.prompt} "
 
         inputs = self.tokenizer(
@@ -105,32 +117,38 @@ class AnswerProcessor(OutputProcessor):
             return_tensors="pt",
         )
 
-        generated_ids, generation_probs = self.generator(
+        answer_output = self.generator(
             input_ids=inputs["input_ids"],  # type: ignore  # noqa: PGH003
             max_length=20,
             pad_token_id=self.tokenizer.pad_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
         )  # type: ignore  # noqa: PGH003
 
-        search_term = generated_ids[0][generation_probs[0] >= 0.0]
+        search_term = answer_output.generated_ids[0][
+            answer_output.generation_scores[0] >= 0.0
+        ]
 
         try:
             best_span = self._find_largest_overlap_span(
-                output[0][output_probs[0] >= 0.0],
+                generation_output.generated_ids[0][
+                    generation_output.generation_scores[0] >= 0.0
+                ],
                 search_term,
             )
         except NoOverlappingSpanFoundError as err:
             logger.warning(err.message)
-            return None, torch.tensor(0.0)
+            return Answer()
 
-        conf = output_probs[0][output_probs[0] >= 0.0][best_span[0] : best_span[1] + 1]
+        conf = generation_output.generation_scores[0][
+            generation_output.generation_scores[0] >= 0.0
+        ][best_span[0] : best_span[1] + 1]
 
         answer = self.tokenizer.decode(search_term, skip_special_tokens=True)
         answer = answer.replace("\n", "").strip()
         answer = self.extract_numbers(answer)
-        answer = answer[0] if answer else None
+        answer = answer[0] if answer else -1
 
-        return answer, conf
+        return Answer(answer=answer, confidence=conf)
 
     def _find_largest_overlap_span(
         self,

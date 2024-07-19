@@ -25,19 +25,24 @@
 
 from torch import Tensor, argmax, softmax, topk
 
+from confidentllm.decoding_strategies.types import DecodingStrategyOutput
+
 __all__ = ["greedy_decoding_strategy", "greedy_decoding_with_disparity"]
 
 
-def greedy_decoding_strategy(scores: Tensor) -> tuple[Tensor, Tensor]:
+def greedy_decoding_strategy(scores: Tensor) -> DecodingStrategyOutput:
     """Greedy decoding strategy."""
     probs = softmax(scores, dim=-1)
     next_token = argmax(probs, dim=-1)
     next_token_prob = probs[range(probs.size(0)), next_token]
 
-    return next_token, next_token_prob
+    return DecodingStrategyOutput(
+        next_token=next_token,
+        next_token_score=next_token_prob,
+    )
 
 
-def greedy_decoding_with_disparity(scores: Tensor) -> tuple[Tensor, Tensor]:
+def greedy_decoding_with_disparity(scores: Tensor) -> DecodingStrategyOutput:
     """Greedy decoding strategy with disparity."""
     probs = softmax(scores, dim=-1)
     next_token = argmax(probs, dim=-1)
@@ -47,4 +52,7 @@ def greedy_decoding_with_disparity(scores: Tensor) -> tuple[Tensor, Tensor]:
 
     disparity = next_token_prob - second_highest_prob
 
-    return next_token, disparity
+    return DecodingStrategyOutput(
+        next_token=next_token,
+        next_token_score=disparity,
+    )

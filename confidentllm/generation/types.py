@@ -24,6 +24,7 @@
 """Types for the generation module."""
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
 from torch import Tensor
 from torch.nn import Module
@@ -37,7 +38,21 @@ __all__ = [
     "OutputProcessor",
     "ModelNotSetError",
     "TokenizerNotSetError",
+    "GenerationOutput",
 ]
+
+
+@dataclass
+class GenerationOutput:
+    """Dataclass for the output of the generation method."""
+
+    generated_ids: Tensor
+    generation_scores: Tensor
+
+
+@dataclass
+class ProcessedOutput:
+    """Dataclass for the processed output of the generation method."""
 
 
 class GenerateFunction(ABC):
@@ -72,7 +87,7 @@ class GenerateFunction(ABC):
         batch_size: int,
         attention_mask: Tensor | None,
         model_specific_kwargs: dict | None,
-    ) -> tuple[Tensor, Tensor]:
+    ) -> GenerationOutput:
         """Generate sequences based on the given input.
 
         Args:
@@ -114,7 +129,7 @@ class CausalLMGenerationMethod(ABC):
         self.generator.set_model(model)
 
     @abstractmethod
-    def __call__(self, prompt: str, max_length: int = 256) -> tuple[Tensor, Tensor]:
+    def __call__(self, prompt: str, max_length: int = 256) -> GenerationOutput:
         """Generate text based on the given prompt.
 
         Args:
@@ -154,10 +169,9 @@ class OutputProcessor(ABC):
     @abstractmethod
     def __call__(
         self,
-        output: Tensor,
-        output_probs: Tensor,
+        generation_output: GenerationOutput,
         **kwargs: dict | None,
-    ) -> tuple[int | str | None, Tensor]:
+    ) -> ProcessedOutput:
         """Process the generated answer."""
         ...
 

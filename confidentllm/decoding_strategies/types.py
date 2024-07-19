@@ -23,16 +23,25 @@
 # limitations under the License."
 """Base type for decoding strategies."""
 
+from dataclasses import dataclass
 from typing import Protocol
 
 from torch import Tensor
 
-__all__ = ["DecodingStrategy"]
+__all__ = ["DecodingStrategy", "DecodingStrategyOutput"]
+
+
+@dataclass
+class DecodingStrategyOutput:
+    """Output of a decoding strategy."""
+
+    next_token: Tensor
+    next_token_score: Tensor
 
 
 class DecodingStrategy(Protocol):
     """Base type for decoding strategies."""
 
-    def __call__(self, scores: Tensor) -> tuple[Tensor, Tensor]:
+    def __call__(self, scores: Tensor) -> DecodingStrategyOutput:
         """Decode the logits into a sequence of tokens."""
         ...

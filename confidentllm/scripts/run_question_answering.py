@@ -36,6 +36,7 @@ import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.evaluation.types import Evaluator
 from confidentllm.generation.types import (
+    Answer,
     CausalLMGenerationMethod,
     OutputProcessor,
 )
@@ -74,11 +75,11 @@ class QuestionAnsweringRunner:
         self.generation_method.set_tokenizer(self.tokenizer)
         self.answer_processor.set_tokenizer(self.tokenizer)
 
-    def answer_question(
+    def _answer_question(
         self,
         question: str,
         max_length: int = 256,
-    ) -> tuple[str | int | None, torch.Tensor, str]:
+    ) -> tuple[Answer, str]:
         """Answer the given question.
 
         Args:
@@ -91,16 +92,16 @@ class QuestionAnsweringRunner:
             tuple[str, torch.Tensor]: The generated answer and its confidence.
 
         """
-        generated_ids, generation_probs = self.generation_method(
+        generation_output = self.generation_method(
             question,
             max_length,
         )
         reasoning: str = self.tokenizer.decode(
-            generated_ids[0],
+            generation_output.generated_ids[0],
             skip_special_tokens=True,
         )
-        answer, confidence = self.answer_processor(generated_ids, generation_probs)
-        return answer, confidence, reasoning
+        answer: Answer = self.answer_processor(generation_output)
+        return answer, reasoning
 
     def run(self, data: Dataset) -> None:  # noqa: F811
         """Run the question answering process."""
@@ -109,14 +110,14 @@ class QuestionAnsweringRunner:
         )
         for example in tqdm(data, desc="Answering questions"):
             question: str = example.get("question", "")  # type: ignore  # noqa: PGH003
-            answer, confidence, reasoning = self.answer_question(question)
+            answer, reasoning = self._answer_question(question)
 
             # Add the batch to the evaluator
             self.evaluator.add_batch(
                 {
                     "labels": [int(example.get("answer", "-1").replace(",", ""))],  # type: ignore  # noqa: PGH003
-                    "predictions": [answer if answer else -1],
-                    "confidences": [confidence.mean().item()],
+                    "predictions": [answer.answer],
+                    "confidences": [answer.confidence.mean().item()],
                 },
             )
 
@@ -124,9 +125,9 @@ class QuestionAnsweringRunner:
             results_table.add_data(
                 question,
                 reasoning,
-                answer if answer else -1,
+                answer.answer,
                 int(example.get("answer", "-1").replace(",", "")),  # type: ignore  # noqa: PGH003
-                confidence.mean().item(),
+                answer.confidence.mean().item(),
             )
 
         results = self.evaluator.evaluate()

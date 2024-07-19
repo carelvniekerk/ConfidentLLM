@@ -31,7 +31,11 @@ from confidentllm.decoding_strategies.greedy import (
     greedy_decoding_with_disparity,
 )
 from confidentllm.decoding_strategies.types import DecodingStrategy
-from confidentllm.generation.types import GenerateFunction, ModelNotSetError
+from confidentllm.generation.types import (
+    GenerateFunction,
+    GenerationOutput,
+    ModelNotSetError,
+)
 
 __all__ = []
 
@@ -222,7 +226,7 @@ class GreedyGenerateFunction(GenerateFunction):
         batch_size: int = 1,
         attention_mask: torch.Tensor | None = None,  # type: ignore  # noqa: PGH003
         model_specific_kwargs: dict | None = None,
-    ) -> tuple[torch.Tensor, torch.Tensor]:
+    ) -> GenerationOutput:
         """Generate sequences for each example without beam search (num_beams == 1).
 
         All returned sequence are generated independantly.
@@ -264,11 +268,10 @@ class GreedyGenerateFunction(GenerateFunction):
             )  # type: ignore  # noqa: PGH003
 
             with torch.no_grad():
-                outputs = self.model(**inputs)
-            next_token_logits = outputs[0][:, -1, :]
+                model_output = self.model(**inputs)
 
-            scores = postprocess_next_token_scores(
-                scores=next_token_logits,
+            scores: torch.Tensor = postprocess_next_token_scores(
+                scores=model_output.logits[0][:, -1, :],
                 input_ids=input_ids,
                 no_repeat_ngram_size=no_repeat_ngram_size,
                 bad_words_ids=bad_words_ids,
@@ -280,20 +283,20 @@ class GreedyGenerateFunction(GenerateFunction):
                 num_beams=1,
             )
 
-            next_token, next_token_probs = self.decoding_strategy(
+            decoding_output = self.decoding_strategy(
                 scores=scores,
             )
 
-            generation_probs.append(next_token_probs.unsqueeze(-1))
+            generation_probs.append(decoding_output.next_token_score.unsqueeze(-1))
 
             # update generations and finished sentences
             if eos_token_id is not None:
                 # pad finished sentences if eos_token_id exist
-                tokens_to_add = next_token * unfinished_sents + (pad_token_id) * (
-                    1 - unfinished_sents
-                )
+                tokens_to_add = decoding_output.next_token * unfinished_sents + (
+                    pad_token_id
+                ) * (1 - unfinished_sents)
             else:
-                tokens_to_add = next_token
+                tokens_to_add = decoding_output.next_token
 
             # add token and increase length by one
             input_ids = torch.cat([input_ids, tokens_to_add.unsqueeze(-1)], dim=-1)
@@ -330,7 +333,10 @@ class GreedyGenerateFunction(GenerateFunction):
                 else None
             )  # type: ignore  # noqa: PGH003
 
-        return input_ids, torch.cat(generation_probs, dim=-1)
+        return GenerationOutput(
+            generated_ids=input_ids,
+            generation_scores=torch.cat(generation_probs, dim=-1),
+        )
 
 
 GeneratorConfig = builds(GreedyGenerateFunction)

@@ -30,6 +30,7 @@ from confidentllm.generation.generation_function import greedy_generate_function
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     GenerateFunction,
+    GenerationOutput,
     TokenizerNotSetError,
 )
 
@@ -48,7 +49,7 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
         self,
         prompt: str,
         max_length: int = 256,
-    ) -> tuple[torch.Tensor, torch.Tensor]:
+    ) -> GenerationOutput:
         """Generate text based on the given prompt."""
         if isinstance(self.tokenizer, type(None)):
             raise TokenizerNotSetError(self.tokenizer)
@@ -69,14 +70,12 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
             return_dict=True,
         )
 
-        generated_ids, generation_probs = self.generator(
+        return self.generator(
             input_ids=inputs["input_ids"],  # type: ignore  # noqa: PGH003
             max_length=max_length,
             pad_token_id=self.tokenizer.pad_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
         )  # type: ignore  # noqa: PGH003
-
-        return generated_ids, generation_probs
 
 
 CausalLMGenerationConfig = builds(GreedyCausalLMGenerationMethod)
