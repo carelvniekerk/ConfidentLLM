@@ -26,7 +26,10 @@
 import torch
 from hydra_zen import just, make_custom_builds_fn, store
 
-from confidentllm.decoding_strategies.greedy import greedy_decoding_strategy
+from confidentllm.decoding_strategies.greedy import (
+    greedy_decoding_strategy,
+    greedy_decoding_with_disparity,
+)
 from confidentllm.decoding_strategies.types import DecodingStrategy
 from confidentllm.generation.types import GenerateFunction, ModelNotSetError
 
@@ -336,11 +339,19 @@ greedy_generate_function = GeneratorConfig(
     decoding_strategy=just(greedy_decoding_strategy),  # type: ignore  # noqa: PGH003
 )
 
+greedy_generate_function_with_disparity = GeneratorConfig(
+    decoding_strategy=just(greedy_decoding_with_disparity),  # type: ignore  # noqa: PGH003
+)
+
 generate_function_store = [
     store(group="generation_method/generator"),
     store(group="output_processor/generator"),
 ]
+[store(greedy_generate_function, name="greedy") for store in generate_function_store]
 [
-    store(greedy_generate_function, name="greedy_generate_function")
+    store(
+        greedy_generate_function_with_disparity,
+        name="greedy_with_disparity",
+    )
     for store in generate_function_store
 ]
