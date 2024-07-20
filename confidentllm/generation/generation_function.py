@@ -271,7 +271,7 @@ class GreedyGenerateFunction(GenerateFunction):
                 model_output = self.model(**inputs)
 
             scores: torch.Tensor = postprocess_next_token_scores(
-                scores=model_output.logits[0][:, -1, :],
+                scores=model_output.logits[:, -1, :],
                 input_ids=input_ids,
                 no_repeat_ngram_size=no_repeat_ngram_size,
                 bad_words_ids=bad_words_ids,
