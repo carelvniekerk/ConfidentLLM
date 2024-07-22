@@ -23,6 +23,8 @@
 # limitations under the License."
 """Set up logging configuration for project."""
 
+__all__ = ["create_logging_config"]
+
 
 def create_logging_config(
     log_file: str = "${hydra.runtime.output_dir}/${hydra.job.name}.log",
@@ -74,7 +76,7 @@ def create_logging_config(
         "handlers": ["console", "file"],
     }
 
-    log_config: dict[str, dict] = {
+    log_config: dict[str, dict | int] = {
         "version": 1,
         "formatters": formatters,
         "handlers": handlers,

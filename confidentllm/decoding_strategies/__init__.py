@@ -24,6 +24,13 @@
 """Module to define decoding strategies for the model."""
 
 from confidentllm.decoding_strategies.greedy import (
-    greedy_decoding_strategy,  # noqa: F401
-    greedy_decoding_with_disparity,  # noqa: F401
+    greedy_decoding_strategy,
+    greedy_decoding_with_disparity,
 )
+from confidentllm.decoding_strategies.types import DecodingStrategy
+
+__all__ = [
+    "greedy_decoding_strategy",
+    "greedy_decoding_with_disparity",
+    "DecodingStrategy",
+]

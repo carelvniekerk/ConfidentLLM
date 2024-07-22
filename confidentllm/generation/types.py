@@ -33,12 +33,13 @@ from transformers.tokenization_utils import PreTrainedTokenizer
 from confidentllm.decoding_strategies.types import DecodingStrategy
 
 __all__ = [
+    "GenerationOutput",
+    "ProcessedOutput",
+    "ModelNotSetError",
+    "TokenizerNotSetError",
     "GenerateFunction",
     "CausalLMGenerationMethod",
     "OutputProcessor",
-    "ModelNotSetError",
-    "TokenizerNotSetError",
-    "GenerationOutput",
 ]
 
 
@@ -53,6 +54,28 @@ class GenerationOutput:
 @dataclass
 class ProcessedOutput:
     """Dataclass for the processed output of the generation method."""
+
+
+class ModelNotSetError(Exception):
+    """Exception raised when the model is not set."""
+
+    def __init__(self, model: Module | None) -> None:  # noqa: D107
+        self.model = model
+        self.message = (
+            "The model is not set. Please set the model before generating text."
+        )
+        super().__init__(self.message)
+
+
+class TokenizerNotSetError(Exception):
+    """Exception raised when the model is not set."""
+
+    def __init__(self, tokenizer: PreTrainedTokenizer | None) -> None:  # noqa: D107
+        self.tokenizer = tokenizer
+        self.message = (
+            "The tokenizer is not set. Please set the tokenizer before generating text."
+        )
+        super().__init__(self.message)
 
 
 class GenerateFunction(ABC):
@@ -174,25 +197,3 @@ class OutputProcessor(ABC):
     ) -> ProcessedOutput:
         """Process the generated answer."""
         ...
-
-
-class ModelNotSetError(Exception):
-    """Exception raised when the model is not set."""
-
-    def __init__(self, model: Module | None) -> None:  # noqa: D107
-        self.model = model
-        self.message = (
-            "The model is not set. Please set the model before generating text."
-        )
-        super().__init__(self.message)
-
-
-class TokenizerNotSetError(Exception):
-    """Exception raised when the model is not set."""
-
-    def __init__(self, tokenizer: PreTrainedTokenizer | None) -> None:  # noqa: D107
-        self.tokenizer = tokenizer
-        self.message = (
-            "The tokenizer is not set. Please set the tokenizer before generating text."
-        )
-        super().__init__(self.message)

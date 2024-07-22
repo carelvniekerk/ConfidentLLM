@@ -40,7 +40,7 @@ from confidentllm.generation.types import (
     TokenizerNotSetError,
 )
 
-__all__ = []
+__all__ = ["Answer"]
 
 logger = logging.getLogger("__main__")
 
@@ -71,6 +71,7 @@ class Answer(ProcessedOutput):
 
     answer: int = -1
     confidence: torch.Tensor = field(default_factory=lambda: torch.tensor(0.0))
+    reasoning: str = field(default_factory=str)
 
 
 class AnswerProcessor(OutputProcessor):

@@ -30,7 +30,7 @@ from hydra_zen import builds, store
 
 from confidentllm.evaluation.types import BaseResults, Evaluator
 
-__all__ = []
+__all__ = ["calibration_config"]
 
 
 @dataclass

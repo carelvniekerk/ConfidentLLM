@@ -24,11 +24,8 @@
 """Module containing enumerations for the datasets used in the project."""
 
 from enum import StrEnum
-from typing import Protocol
 
-from datasets import Dataset
-
-__all__ = ["DatasetSplit", "DatasetLoader"]
+__all__ = ["DatasetSplit"]
 
 
 class DatasetSplit(StrEnum):
@@ -36,11 +33,3 @@ class DatasetSplit(StrEnum):
 
     TRAIN = "train"
     TEST = "test"
-
-
-class DatasetLoader(Protocol):
-    """Protocol for dataset loaders."""
-
-    def __call__(self, split: DatasetSplit) -> Dataset:
-        """Load the dataset for the specified split."""
-        ...

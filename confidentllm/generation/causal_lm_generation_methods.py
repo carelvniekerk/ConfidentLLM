@@ -23,7 +23,6 @@
 # limitations under the License."
 """Main execution file for the project."""
 
-import torch
 from hydra_zen import make_custom_builds_fn, store
 
 from confidentllm.generation.generation_function import greedy_generate_function

@@ -27,6 +27,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
+__all__ = ["BaseResults", "Evaluator"]
+
 
 @dataclass
 class BaseResults:

@@ -49,7 +49,7 @@ from hydra_plugins.hpc_submission_launcher.launcher import (
     HPCSubmissionLauncher,  # noqa: F401
 )
 
-__all__ = ["run_question_answering"]
+__all__ = []
 logger = logging.getLogger("__main__")
 
 

@@ -23,4 +23,6 @@
 # limitations under the License."
 """Data module for ConfidentLLM."""
 
-from confidentllm.data import gsm8k  # noqa: F401
+from confidentllm.data import gsm8k
+
+__all__ = ["gsm8k"]

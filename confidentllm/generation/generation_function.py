@@ -26,18 +26,18 @@
 import torch
 from hydra_zen import just, make_custom_builds_fn, store
 
-from confidentllm.decoding_strategies.greedy import (
+from confidentllm.decoding_strategies import (
+    DecodingStrategy,
     greedy_decoding_strategy,
     greedy_decoding_with_disparity,
 )
-from confidentllm.decoding_strategies.types import DecodingStrategy
 from confidentllm.generation.types import (
     GenerateFunction,
     GenerationOutput,
     ModelNotSetError,
 )
 
-__all__ = []
+__all__ = ["greedy_generate_function"]
 
 builds = make_custom_builds_fn(populate_full_signature=True)
 
