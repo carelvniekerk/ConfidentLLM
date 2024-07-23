@@ -26,30 +26,23 @@
 import logging
 
 from datasets import Dataset
-from hydra.conf import HydraConf, JobConf
-from hydra.core.hydra_config import HydraConfig
 from hydra_zen import store, zen
 from tqdm import tqdm
 
 import wandb
-from confidentllm import data  # noqa: F401
+from confidentllm import (
+    data,  # noqa: F401 - Import data to make it available in the Zen Store
+)
 from confidentllm.evaluation.types import Evaluator
 from confidentllm.generation.answer_processor import Answer
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     OutputProcessor,
 )
-from confidentllm.logging import (
-    create_logging_config,
-    initialize_wandb,
-    setup_exception_logging,
-)
 from confidentllm.models import ModelLoader
-from hydra_plugins.hpc_submission_launcher.launcher import (
-    HPCSubmissionLauncher,  # noqa: F401
-)
+from confidentllm.scripts.setup_tools import init_wandb, setup_hydra_config_and_logging
 
-__all__ = []
+__all__ = ["main"]
 logger = logging.getLogger("__main__")
 
 
@@ -157,7 +150,7 @@ def run_question_answering(
     evaluator: Evaluator,
 ) -> None:
     """Run the question answering process."""
-    initialize_wandb(config=HydraConfig.get())  # type: ignore  # noqa: PGH003
+    init_wandb()
 
     runner = QuestionAnsweringRunner(
         model,
@@ -168,20 +161,15 @@ def run_question_answering(
     runner.run(data)
 
 
-if __name__ == "__main__":
-    setup_exception_logging(logger)
-
-    store(
-        HydraConf(
-            job=JobConf(chdir=True, name="question_answering"),
-            job_logging=create_logging_config(),
-        ),
-        name="config",
-        group="hydra",
-    )
-    store.add_to_hydra_store()
+def main() -> None:
+    """Run the question answering process."""
+    setup_hydra_config_and_logging(job_name="question_answering")
 
     # Generate the CLI for run_extraction
     zen(run_question_answering).hydra_main(
         config_name="question_answering",
     )
+
+
+if __name__ == "__main__":
+    main()
