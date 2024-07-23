@@ -25,7 +25,7 @@
 
 import logging
 
-from hydra.conf import HydraConf, JobConf
+from hydra.conf import HydraConf, JobConf, RunDir
 from hydra.core.hydra_config import HydraConfig
 from hydra_zen import store
 
@@ -54,6 +54,9 @@ def setup_hydra_config_and_logging(
         HydraConf(
             job=JobConf(name=job_name, chdir=change_to_output_dir),
             job_logging=create_logging_config(),
+            run=RunDir(
+                "outputs/${hydra:job.name}/${hydra:runtime.choices.data}/${hydra:runtime.choices.model}/${now:%Y-%m-%d_%H-%M-%S}",
+            ),
         ),
         name="config",
         group="hydra",
