@@ -21,26 +21,38 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License."
-"""Module containing functions for loading the GSM-8K dataset."""
-
-from functools import partial
+"""Module containing functions for loading the MultiArith dataset."""
 
 from datasets import Dataset, load_dataset
 from hydra_zen import store
 
-from confidentllm.data.extract_answers import extract_answers
 from confidentllm.data.types import DatasetSplit
 
 __all__ = []
 
-GSM8K_ANSWER_PATTERN = r"\n#### (.+)"
+
+def multi_arith_key_mapping(data: dict[str, list[str]]) -> dict[str, list[str]]:
+    """Map the keys in the data dictionary to the correct keys.
+
+    Args:
+    ----
+        data: The data dictionary.
+
+    Returns:
+    -------
+        The data dictionary with the correct keys.
+
+    """
+    data["answer"] = data.pop("final_ans")
+
+    return data
 
 
-def load_gsm8k_data(
+def load_multi_arith_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
 ) -> Dataset:
-    """Load the GSM-8K dataset.
+    """Load the MultiArith dataset.
 
     Args:
     ----
@@ -53,13 +65,13 @@ def load_gsm8k_data(
 
     """
     data: Dataset = load_dataset(
-        path="openai/gsm8k",
-        name="main",
+        path="ChilleD/MultiArith",
+        name="default",
         split=split,
     )  # type: ignore - Returns a Dataset Object
 
     data = data.map(
-        partial(extract_answers, pattern=GSM8K_ANSWER_PATTERN),
+        multi_arith_key_mapping,
         batched=True,
         batch_size=transformation_batch_size,
     )
@@ -68,4 +80,4 @@ def load_gsm8k_data(
 
 
 data_store = store(group="data")
-data_store(load_gsm8k_data, name="gsm8k")
+data_store(load_multi_arith_data, name="multiarith")

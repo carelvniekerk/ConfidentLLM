@@ -23,6 +23,6 @@
 # limitations under the License."
 """Data module for ConfidentLLM."""
 
-from confidentllm.data import gsm8k
+from confidentllm.data import gsm8k, multi_arith
 
-__all__ = ["gsm8k"]
+__all__ = ["gsm8k", "multi_arith"]
