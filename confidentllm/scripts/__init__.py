@@ -22,3 +22,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License."
 """Execcution scripts for different tasks."""
+
+from confidentllm.scripts.run_question_answering import main as question_answering
+
+__all__ = ["question_answering"]
