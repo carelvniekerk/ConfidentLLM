@@ -32,4 +32,4 @@ name = "hhu"
 url = "http://pypi.repo.test.hhu.de/simple/"
 
 [tool.poetry.scripts]
-question-answering = "confidentllm.scripts.question_answering"
+question-answering = "confidentllm.scripts:question_answering"
