@@ -110,7 +110,7 @@ class SamplingDecodingStrategy:
         self.filter_value = filter_value
         self.min_tokens_to_keep = min_tokens_to_keep
 
-    def sampling_decoding_strategy(
+    def __call__(
         self,
         scores: torch.Tensor,
     ) -> DecodingStrategyOutput:
