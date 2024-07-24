@@ -41,6 +41,7 @@ class ModelName(StrEnum):
     GEMMA_11_2B_IT = "google/gemma-1.1-2b-it"
     GPT2 = "gpt2"
     PHI2 = "microsoft/phi-2"
+    PHI3_MINI_INSTRUCT = "microsoft/Phi-3-mini-128k-instruct"
 
 
 class ModelLoader:
@@ -120,7 +121,13 @@ phi2 = CausalLMConfig(
     chat_template=PHI2_CHAT_TEMPLATE,
 )
 
+phi3_mini_instruct = CausalLMConfig(
+    pretrained_model_name_or_path=ModelName.PHI3_MINI_INSTRUCT,
+    device="cuda" if torch.cuda.is_available() else "cpu",
+)
+
 model_store = store(group="model")
 model_store(gemma_11_2b_it, name="gemma_11_2b_it")
 model_store(gpt2, name="gpt2")
 model_store(phi2, name="phi2")
+model_store(phi3_mini_instruct, name="phi3_mini_instruct")
