@@ -25,7 +25,7 @@
 
 from hydra_zen import make_custom_builds_fn, store
 
-from confidentllm.generation.generation_function import greedy_generate_function
+from confidentllm.generation.generation_function import dynamic_generate_function
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     GenerateFunction,
@@ -79,12 +79,12 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
 
 CausalLMGenerationConfig = builds(GreedyCausalLMGenerationMethod)
 
-greedy_causal_lm_generation_method = CausalLMGenerationConfig(
-    generator=greedy_generate_function,  # type: ignore  # noqa: PGH003
+causal_lm_generation_method = CausalLMGenerationConfig(
+    generator=dynamic_generate_function,  # type: ignore  # noqa: PGH003
 )
 
 generation_method_store = store(group="generation_method")
 generation_method_store(
-    greedy_causal_lm_generation_method,
-    name="greedy_causal_lm_generation_method",
+    causal_lm_generation_method,
+    name="causal_lm_generation_method",
 )

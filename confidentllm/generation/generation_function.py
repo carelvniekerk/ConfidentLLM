@@ -24,20 +24,16 @@
 """Generation Function."""
 
 import torch
-from hydra_zen import just, make_custom_builds_fn, store
+from hydra_zen import make_custom_builds_fn
 
-from confidentllm.decoding_strategies import (
-    DecodingStrategy,
-    greedy_decoding_strategy,
-    greedy_decoding_with_disparity,
-)
+from confidentllm.decoding_strategies import DecodingStrategy
 from confidentllm.generation.types import (
     GenerateFunction,
     GenerationOutput,
     ModelNotSetError,
 )
 
-__all__ = ["greedy_generate_function"]
+__all__ = ["dynamic_generate_function"]
 
 builds = make_custom_builds_fn(populate_full_signature=True)
 
@@ -340,24 +336,4 @@ class GreedyGenerateFunction(GenerateFunction):
 
 
 GeneratorConfig = builds(GreedyGenerateFunction)
-
-greedy_generate_function = GeneratorConfig(
-    decoding_strategy=just(greedy_decoding_strategy),  # type: ignore  # noqa: PGH003
-)
-
-greedy_generate_function_with_disparity = GeneratorConfig(
-    decoding_strategy=just(greedy_decoding_with_disparity),  # type: ignore  # noqa: PGH003
-)
-
-generate_function_store = [
-    store(group="generation_method/generator"),
-    store(group="output_processor/generator"),
-]
-[store(greedy_generate_function, name="greedy") for store in generate_function_store]
-[
-    store(
-        greedy_generate_function_with_disparity,
-        name="greedy_with_disparity",
-    )
-    for store in generate_function_store
-]
+dynamic_generate_function = GeneratorConfig(decoding_strategy=None)  # type: ignore - None used to keep the config dynamically typed

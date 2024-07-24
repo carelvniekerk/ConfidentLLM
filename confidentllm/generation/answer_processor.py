@@ -31,7 +31,7 @@ from dataclasses import dataclass, field
 import torch
 from hydra_zen import make_custom_builds_fn, store
 
-from confidentllm.generation.generation_function import greedy_generate_function
+from confidentllm.generation.generation_function import dynamic_generate_function
 from confidentllm.generation.types import (
     GenerateFunction,
     GenerationOutput,
@@ -209,7 +209,7 @@ class AnswerProcessor(OutputProcessor):
 AnswerProcessorConfig = builds(AnswerProcessor)
 
 answer_processor = AnswerProcessorConfig(
-    generator=greedy_generate_function,  # type: ignore  # noqa: PGH003
+    generator=dynamic_generate_function,  # type: ignore  # noqa: PGH003
 )
 
 output_processor_store = store(group="output_processor")

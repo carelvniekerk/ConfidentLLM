@@ -135,8 +135,10 @@ class QuestionAnsweringRunner:
     hydra_defaults=[
         "_self_",
         {"model": "gemma_11_2b_it"},
-        {"generation_method": "greedy_causal_lm_generation_method"},
+        {"generation_method": "causal_lm_generation_method"},
+        {"generation_method/generator/decoding_strategy": "greedy"},
         {"output_processor": "answer_processor"},
+        {"output_processor/generator/decoding_strategy": "greedy"},
         {"data": "gsm8k"},
         {"evaluator": "accuracy_and_calibration"},
         {"override hydra/launcher": "hpc_submission"},
