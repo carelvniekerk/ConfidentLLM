@@ -55,7 +55,7 @@ def setup_hydra_config_and_logging(
             job=JobConf(name=job_name, chdir=change_to_output_dir),
             job_logging=create_logging_config(),
             run=RunDir(
-                "outputs/${hydra:job.name}/${hydra:runtime.choices.data}/${hydra:runtime.choices.model}/${now:%Y-%m-%d_%H-%M-%S}",
+                "outputs/${hydra:job.name}/${hydra:runtime.choices.data}/${model.pretrained_model_name_or_path}/${now:%Y-%m-%d_%H-%M-%S}",
             ),
         ),
         name="config",

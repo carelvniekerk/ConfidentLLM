@@ -23,9 +23,11 @@
 # limitations under the License."
 """Module to store chat templates for different models."""
 
+from pathlib import Path
+
 from confidentllm.models.model_name import ModelName
 
-__all__ = ["get_chat_template"]
+__all__ = ["get_chat_template", "get_pretrained_model_name_or_path"]
 
 CHAT_TEMPLATES: dict[ModelName, str] = {
     ModelName.PHI2: (
@@ -44,6 +46,31 @@ CHAT_TEMPLATES: dict[ModelName, str] = {
 }
 
 
+PRETRAINED_MODEL_NAME_OR_PATH = {
+    ModelName.GPT2: "gpt2",
+    ModelName.GEMMA_2B: "google/gemma-1.1-2b",
+    ModelName.GEMMA_2B_IT: "google/gemma-1.1-2b-it",
+    ModelName.GEMMA2_9B_IT: "google/gemma-2-9b-it",
+    ModelName.GEMMA2_9B: "google/gemma-2-9b",
+    ModelName.PHI2: "microsoft/phi-2",
+    ModelName.PHI3_MINI_INSTRUCT: "microsoft/Phi-3-mini-128k-instruct",
+    ModelName.LLAMA2_7B: "meta-llama/Llama-2-7b-hf",
+    ModelName.LLAMA2_7B_CHAT: "meta-llama/Llama-2-7b-chat-hf",
+    ModelName.LLAMA3_8B_INSTRUCT: "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    ModelName.LLAMA3_8B: "meta-llama/Meta-Llama-3.1-8B",
+    ModelName.MISTRAL_7B: "mistralai/Mistral-7B-v0.3",
+    ModelName.MISTRAL_7B_INSTRUCT: "mistralai/Mistral-7B-Instruct-v0.3",
+    ModelName.MISTRAL_NEMO_12B: "mistralai/Mistral-Nemo-Base-2407",
+    ModelName.MISTRAL_NEMO_12B_INSTRUCT: "mistralai/Mistral-Nemo-Instruct-2407",
+}
+
+
 def get_chat_template(name: ModelName) -> str | None:
     """Get the chat template for the given model name."""
     return CHAT_TEMPLATES.get(name)
+
+
+def get_pretrained_model_name_or_path(name: ModelName | Path | str) -> str:
+    """Get the pretrained model name or path for the given model name."""
+    name = ModelName[name] if name in ModelName.__members__ else name  # type: ignore  # noqa: PGH003
+    return PRETRAINED_MODEL_NAME_OR_PATH.get(name, str(name))  # type: ignore - name is not a ModelName instance

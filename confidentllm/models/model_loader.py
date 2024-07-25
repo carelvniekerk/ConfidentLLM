@@ -23,13 +23,18 @@
 # limitations under the License."
 """Module to load pretrained models and tokenizers from Hugging Face's model hub."""
 
+from pathlib import Path
+
 import torch
 from hydra_zen import store
 from torch.nn import Module
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
 
 from confidentllm.hydra_tools import builds
-from confidentllm.models.chat_templates import get_chat_template
+from confidentllm.models.configuration import (
+    get_chat_template,
+    get_pretrained_model_name_or_path,
+)
 from confidentllm.models.model_name import ModelName
 
 __all__ = ["ModelLoader"]
@@ -37,7 +42,7 @@ __all__ = ["ModelLoader"]
 
 # Default device to load the model on (Always use MPS or CUDA if available)
 DEFAULT_DEVICE: str = "mps" if torch.backends.mps.is_available() else "cpu"
-DEFAULT_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEFAULT_DEVICE = "cuda" if torch.cuda.is_available() else DEFAULT_DEVICE
 
 
 class ModelLoader:
@@ -45,15 +50,20 @@ class ModelLoader:
 
     def __init__(
         self,
-        pretrained_model_name_or_path: ModelName,
+        pretrained_model_name_or_path: ModelName | Path,
         device: str = DEFAULT_DEVICE,
     ) -> None:
         """Initialize the model loader."""
-        self.pretrained_model_name_or_path: str = pretrained_model_name_or_path.value
-        self.device: torch.device = torch.device(device)
-        self.chat_template: str | None = get_chat_template(
+        self.pretrained_model_name_or_path: str = get_pretrained_model_name_or_path(
             pretrained_model_name_or_path,
         )
+        self.device: torch.device = torch.device(device)
+        if isinstance(pretrained_model_name_or_path, ModelName):
+            self.chat_template: str | None = get_chat_template(
+                pretrained_model_name_or_path,
+            )
+        else:
+            self.chat_template: str | None = None
 
     def load(self) -> tuple[Module, PreTrainedTokenizer]:
         """Load a pretrained model from Hugging Face's model hub.
