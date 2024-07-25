@@ -39,7 +39,7 @@ from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     OutputProcessor,
 )
-from confidentllm.models import ModelLoader, ModelName
+from confidentllm.models import ModelLoader
 from confidentllm.scripts.setup_tools import init_wandb, setup_hydra_config_and_logging
 
 __all__ = ["main"]

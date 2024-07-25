@@ -24,14 +24,13 @@
 """Sampling decoding strategy."""
 
 import torch
-from hydra_zen import make_custom_builds_fn, store
 
 from confidentllm.decoding_strategies.types import (
     DecodingStrategyOutput,
 )
+from confidentllm.hydra_tools import builds
 
-__all__ = ["SamplingDecodingStrategy"]
-builds = make_custom_builds_fn(populate_full_signature=True)
+__all__ = ["sampling_decoding_strategy"]
 
 
 def top_k_top_p_filtering(
@@ -143,12 +142,3 @@ sampling_decoding_strategy = SamplingDecodingStrategyConfig(
     filter_value=-float("Inf"),
     min_tokens_to_keep=1,
 )
-
-decoding_strategy_store = [
-    store(group="generation_method/generator/decoding_strategy"),
-    store(group="output_processor/generator/decoding_strategy"),
-]
-[
-    store_fn(sampling_decoding_strategy, name="sampling")
-    for store_fn in decoding_strategy_store
-]

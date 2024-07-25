@@ -23,6 +23,13 @@
 # limitations under the License."
 """Data module for ConfidentLLM."""
 
-from confidentllm.data import gsm8k, multi_arith
+from hydra_zen import store
 
-__all__ = ["gsm8k", "multi_arith"]
+from confidentllm.data.gsm8k import load_gsm8k_data
+from confidentllm.data.multi_arith import load_multi_arith_data
+
+__all__ = []
+
+data_store = store(group="data")
+data_store(load_multi_arith_data, name="multiarith")
+data_store(load_gsm8k_data, name="gsm8k")

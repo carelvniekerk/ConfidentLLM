@@ -24,11 +24,10 @@
 """Module containing functions for loading the MultiArith dataset."""
 
 from datasets import Dataset, load_dataset
-from hydra_zen import store
 
 from confidentllm.data.types import DatasetSplit
 
-__all__ = []
+__all__ = ["load_multi_arith_data"]
 
 
 def multi_arith_key_mapping(data: dict[str, list[str]]) -> dict[str, list[str]]:
@@ -77,7 +76,3 @@ def load_multi_arith_data(
     )
 
     return data
-
-
-data_store = store(group="data")
-data_store(load_multi_arith_data, name="multiarith")

@@ -26,14 +26,12 @@
 from dataclasses import dataclass, field
 from typing import Any
 
-from hydra_zen import make_custom_builds_fn, store
-
 from confidentllm.evaluation.accuracy import accuracy_config
 from confidentllm.evaluation.calibration import calibration_config
 from confidentllm.evaluation.types import BaseResults, Evaluator
+from confidentllm.hydra_tools import builds
 
-__all__ = []
-builds = make_custom_builds_fn(populate_full_signature=True)
+__all__ = ["CombinedEvaluatorConfig"]
 
 
 @dataclass
@@ -88,13 +86,4 @@ class CombinedEvaluator(Evaluator):
         return CombinedResults(evaluator_name="combined", combined_results=results)
 
 
-CombinedEvaluatorConfig = builds(CombinedEvaluator)
-
-accuracy_and_calibration_config = CombinedEvaluatorConfig(
-    evaluators=[accuracy_config, calibration_config],  # type: ignore  # noqa: PGH003 - Configs return Evaluator objects during execution.
-    padding_value=-1,
-)
-
-
-evaluator_store = store(group="evaluator")
-evaluator_store(accuracy_and_calibration_config, name="accuracy_and_calibration")
+CombinedEvaluatorConfig = builds(CombinedEvaluator, padding_value=-1)

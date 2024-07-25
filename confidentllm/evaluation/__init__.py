@@ -23,6 +23,19 @@
 # limitations under the License."
 """Evaluation module for ConfidentLLM."""
 
-from confidentllm.evaluation import accuracy, calibration, combined  # noqa: F401
+from hydra_zen import store
+
+from confidentllm.evaluation.accuracy import accuracy_config
+from confidentllm.evaluation.calibration import calibration_config
+from confidentllm.evaluation.combined import CombinedEvaluatorConfig
 
 __all__ = []
+
+accuracy_and_calibration_config = CombinedEvaluatorConfig(
+    evaluators=[accuracy_config, calibration_config],  # type: ignore  # noqa: PGH003 - Configs return Evaluator objects during execution.
+)
+
+evaluator_store = store(group="evaluator")
+evaluator_store(accuracy_config, name="accuracy")
+evaluator_store(calibration_config, name="calibration")
+evaluator_store(accuracy_and_calibration_config, name="accuracy_and_calibration")

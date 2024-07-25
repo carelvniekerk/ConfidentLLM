@@ -29,6 +29,8 @@ import sys
 
 logger = logging.getLogger(__name__)
 
+__all__ = ["setup_exception_logging"]
+
 
 def setup_exception_logging(
     logger: logging.Logger = logger,

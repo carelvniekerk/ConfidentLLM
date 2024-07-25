@@ -24,18 +24,18 @@
 """Module to load pretrained models and tokenizers from Hugging Face's model hub."""
 
 import torch
-from hydra_zen import make_custom_builds_fn, store
+from hydra_zen import store
 from torch.nn import Module
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
 
+from confidentllm.hydra_tools import builds
 from confidentllm.models.chat_templates import get_chat_template
 from confidentllm.models.model_name import ModelName
-
-builds = make_custom_builds_fn(populate_full_signature=True)
 
 __all__ = ["ModelLoader"]
 
 
+# Default device to load the model on (Always use MPS or CUDA if available)
 DEFAULT_DEVICE: str = "mps" if torch.backends.mps.is_available() else "cpu"
 DEFAULT_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 

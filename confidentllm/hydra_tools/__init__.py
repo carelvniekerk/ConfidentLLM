@@ -21,46 +21,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License."
-"""Module containing functions for loading the GSM-8K dataset."""
+"""Set up logging configuration for project."""
 
-from functools import partial
+from typing import Any
 
-from datasets import Dataset, load_dataset
+from hydra_zen import ZenStore, make_custom_builds_fn, store
 
-from confidentllm.data.extract_answers import extract_answers
-from confidentllm.data.types import DatasetSplit
+__all__ = ["builds", "MultiGroupZenStore"]
 
-__all__ = ["load_gsm8k_data"]
-
-GSM8K_ANSWER_PATTERN = r"\n#### (.+)"
+builds = make_custom_builds_fn(populate_full_signature=True)
 
 
-def load_gsm8k_data(
-    split: DatasetSplit = DatasetSplit.TEST,
-    transformation_batch_size: int = 512,
-) -> Dataset:
-    """Load the GSM-8K dataset.
+class MultiGroupZenStore:
+    """A ZenStore that applies the same function to multiple groups."""
 
-    Args:
-    ----
-        split: The split of the dataset to load.
-        transformation_batch_size: The batch size to use for the transformation.
+    def __init__(self, groups: list[str]) -> None:
+        """Initialize a MultiGroupZenStore."""
+        self.stores: list[ZenStore] = [store(group=group) for group in groups]
 
-    Returns:
-    -------
-        The dataset.
-
-    """
-    data: Dataset = load_dataset(
-        path="openai/gsm8k",
-        name="main",
-        split=split,
-    )  # type: ignore - Returns a Dataset Object
-
-    data = data.map(
-        partial(extract_answers, pattern=GSM8K_ANSWER_PATTERN),
-        batched=True,
-        batch_size=transformation_batch_size,
-    )
-
-    return data
+    def __call__(self, target: Any, name: str) -> None:  # noqa: ANN401 - Any accepted by the zen store
+        """Store the target in all stores."""
+        for store_fn in self.stores:
+            store_fn(target, name=name)  # type: ignore - Name is a string

@@ -26,9 +26,9 @@
 from dataclasses import dataclass, field
 
 import torch
-from hydra_zen import builds, store
 
 from confidentllm.evaluation.types import BaseResults, Evaluator
+from confidentllm.hydra_tools import builds
 
 __all__ = ["calibration_config"]
 
@@ -192,8 +192,4 @@ class CalibrationEvaluator(Evaluator):
         )
 
 
-CalibrationEvaluatorConfig = builds(CalibrationEvaluator, populate_full_signature=True)
-calibration_config = CalibrationEvaluatorConfig(padding_value=-1, number_of_bins=10)
-
-evaluator_store = store(group="evaluator")
-evaluator_store(calibration_config, name="calibration")
+calibration_config = builds(CalibrationEvaluator, padding_value=-1, number_of_bins=10)

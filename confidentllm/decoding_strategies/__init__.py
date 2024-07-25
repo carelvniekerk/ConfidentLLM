@@ -23,9 +23,35 @@
 # limitations under the License."
 """Module to define decoding strategies for the model."""
 
-from confidentllm.decoding_strategies import greedy, sampling  # noqa: F401
+from hydra_zen import just
+
+from confidentllm.decoding_strategies.greedy import (
+    greedy_decoding_strategy,
+    greedy_decoding_with_disparity,
+)
+from confidentllm.decoding_strategies.sampling import sampling_decoding_strategy
 from confidentllm.decoding_strategies.types import DecodingStrategy
+from confidentllm.hydra_tools import MultiGroupZenStore
 
 __all__ = [
     "DecodingStrategy",
 ]
+
+decoding_strategy_store = MultiGroupZenStore(
+    groups=[
+        "generation_method/generator/decoding_strategy",
+        "output_processor/generator/decoding_strategy",
+    ],
+)
+decoding_strategy_store(
+    just(greedy_decoding_strategy),
+    name="greedy",
+)
+decoding_strategy_store(
+    just(greedy_decoding_with_disparity),
+    name="greedy_with_disparity",
+)
+decoding_strategy_store(
+    sampling_decoding_strategy,
+    name="sampling",
+)

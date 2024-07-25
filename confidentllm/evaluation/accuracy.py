@@ -26,9 +26,9 @@
 from dataclasses import dataclass
 
 import numpy as np
-from hydra_zen import builds, store
 
 from confidentllm.evaluation.types import BaseResults, Evaluator
+from confidentllm.hydra_tools import builds
 
 __all__ = ["accuracy_config"]
 
@@ -70,8 +70,4 @@ class AccuracyEvaluator(Evaluator):
         return AccuracyResults(evaluator_name="accuracy", accuracy=acc * 100.0)
 
 
-AccuracyEvaluatorConfig = builds(AccuracyEvaluator, populate_full_signature=True)
-accuracy_config = AccuracyEvaluatorConfig(padding_value=-1)
-
-evaluator_store = store(group="evaluator")
-evaluator_store(accuracy_config, name="accuracy")
+accuracy_config = builds(AccuracyEvaluator, padding_value=-1)

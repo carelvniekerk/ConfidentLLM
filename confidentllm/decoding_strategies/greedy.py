@@ -23,7 +23,6 @@
 # limitations under the License."
 """Greedy decoding strategy."""
 
-from hydra_zen import just, store
 from torch import Tensor, argmax, softmax, topk
 
 from confidentllm.decoding_strategies.types import DecodingStrategyOutput
@@ -57,17 +56,3 @@ def greedy_decoding_with_disparity(scores: Tensor) -> DecodingStrategyOutput:
         next_token=next_token,
         next_token_score=disparity,
     )
-
-
-decoding_strategy_store = [
-    store(group="generation_method/generator/decoding_strategy"),
-    store(group="output_processor/generator/decoding_strategy"),
-]
-[
-    store_fn(just(greedy_decoding_strategy), name="greedy")
-    for store_fn in decoding_strategy_store
-]
-[
-    store_fn(just(greedy_decoding_with_disparity), name="greedy_with_disparity")
-    for store_fn in decoding_strategy_store
-]
