@@ -23,7 +23,7 @@
 # limitations under the License."
 """Main execution file for the project."""
 
-from hydra_zen import make_custom_builds_fn, store
+from hydra_zen import store
 
 from confidentllm.generation.generation_function import dynamic_generate_function
 from confidentllm.generation.types import (
@@ -32,10 +32,9 @@ from confidentllm.generation.types import (
     GenerationOutput,
     TokenizerNotSetError,
 )
+from confidentllm.hydra_tools import builds
 
 __all__ = []
-
-builds = make_custom_builds_fn(populate_full_signature=True)
 
 
 class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):

@@ -34,12 +34,10 @@ from confidentllm.decoding_strategies.types import DecodingStrategy
 
 __all__ = [
     "GenerationOutput",
-    "ProcessedOutput",
     "ModelNotSetError",
     "TokenizerNotSetError",
     "GenerateFunction",
     "CausalLMGenerationMethod",
-    "OutputProcessor",
 ]
 
 
@@ -49,11 +47,6 @@ class GenerationOutput:
 
     generated_ids: Tensor
     generation_scores: Tensor
-
-
-@dataclass
-class ProcessedOutput:
-    """Dataclass for the processed output of the generation method."""
 
 
 class ModelNotSetError(Exception):
@@ -166,34 +159,4 @@ class CausalLMGenerationMethod(ABC):
             generation_probs (torch.Tensor): The generation probabilities.
 
         """
-        ...
-
-
-class OutputProcessor(ABC):
-    """Class for processing the generated answers."""
-
-    def __init__(self) -> None:
-        """Initialize the processor."""
-        self.model: Module | None = None
-        self.tokenizer: PreTrainedTokenizer | None = None
-        self.generator: GenerateFunction | None = None
-
-    def set_model(self, model: Module) -> None:
-        """Set the model for the generation method."""
-        if isinstance(self.generator, type(None)):
-            msg = "The generator is not set."
-            raise TypeError(msg)
-        self.generator.set_model(model)
-
-    def set_tokenizer(self, tokenizer: PreTrainedTokenizer) -> None:
-        """Set the tokenizer for the generation method."""
-        self.tokenizer = tokenizer
-
-    @abstractmethod
-    def __call__(
-        self,
-        generation_output: GenerationOutput,
-        **kwargs: dict | None,
-    ) -> ProcessedOutput:
-        """Process the generated answer."""
         ...

@@ -25,26 +25,20 @@
 
 import difflib
 import logging
-import re
 from dataclasses import dataclass, field
 
 import torch
-from hydra_zen import make_custom_builds_fn, store
 
-from confidentllm.generation.generation_function import dynamic_generate_function
 from confidentllm.generation.types import (
     GenerateFunction,
     GenerationOutput,
-    OutputProcessor,
-    ProcessedOutput,
     TokenizerNotSetError,
 )
+from confidentllm.output_processing.types import OutputProcessor, ProcessedOutput
 
-__all__ = ["Answer"]
+__all__ = ["Answer", "AnswerProcessor"]
 
 logger = logging.getLogger("__main__")
-
-builds = make_custom_builds_fn(populate_full_signature=True)
 
 
 class NoOverlappingSpanFoundError(Exception):
@@ -69,7 +63,7 @@ class NoOverlappingSpanFoundError(Exception):
 class Answer(ProcessedOutput):
     """Dataclass for the processed output of the generation method."""
 
-    answer: int = -1
+    answer: str = "-1"
     confidence: torch.Tensor = field(default_factory=lambda: torch.tensor(0.0))
     reasoning: str = field(default_factory=str)
 
@@ -81,11 +75,13 @@ class AnswerProcessor(OutputProcessor):
         self,
         generator: GenerateFunction,
         prompt: str = "So the answer is:",
+        max_answer_generation_length: int = 20,
     ) -> None:
         """Initialize the processor."""
         super().__init__()
         self.generator = generator
         self.prompt = prompt
+        self.max_answer_generation_length = max_answer_generation_length
 
     def __call__(
         self,
@@ -120,7 +116,7 @@ class AnswerProcessor(OutputProcessor):
 
         answer_output = self.generator(
             input_ids=inputs["input_ids"],  # type: ignore  # noqa: PGH003
-            max_length=20,
+            max_length=self.max_answer_generation_length,
             pad_token_id=self.tokenizer.pad_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
         )  # type: ignore  # noqa: PGH003
@@ -146,8 +142,6 @@ class AnswerProcessor(OutputProcessor):
 
         answer = self.tokenizer.decode(search_term, skip_special_tokens=True)
         answer = answer.replace("\n", "").strip()
-        answer = self.extract_numbers(answer)
-        answer = answer[0] if answer else -1
 
         return Answer(answer=answer, confidence=conf)
 
@@ -192,25 +186,3 @@ class AnswerProcessor(OutputProcessor):
                 ),
             )
         return best_span
-
-    @staticmethod
-    def extract_numbers(text: str) -> list:
-        """Extract numbers from the text."""
-        # Use a regex pattern that matches numbers with optional commas
-        number_pattern = r"\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\b"
-        numbers = re.findall(number_pattern, text)
-        # Remove commas from the numbers and convert to integers or floats
-        return [
-            float(num.replace(",", "")) if "." in num else int(num.replace(",", ""))
-            for num in numbers
-        ]
-
-
-AnswerProcessorConfig = builds(AnswerProcessor)
-
-answer_processor = AnswerProcessorConfig(
-    generator=dynamic_generate_function,  # type: ignore  # noqa: PGH003
-)
-
-output_processor_store = store(group="output_processor")
-output_processor_store(answer_processor, name="answer_processor")

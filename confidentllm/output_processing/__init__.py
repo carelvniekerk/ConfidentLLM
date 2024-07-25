@@ -21,8 +21,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License."
-"""Set up generation configuration for project."""
+"""Set up output processing configuration for project."""
 
-from confidentllm.generation import causal_lm_generation_methods  # noqa: F401
+from hydra_zen import store
+
+from confidentllm.generation.generation_function import dynamic_generate_function
+from confidentllm.hydra_tools import builds
+from confidentllm.output_processing.answer_processor import AnswerProcessor
+from confidentllm.output_processing.numeric_answer_processor import (
+    NumericAnswerProcessor,
+)
 
 __all__ = []
+
+base_answer_processor = builds(
+    AnswerProcessor,
+    generator=dynamic_generate_function,  # type: ignore  # noqa: PGH003
+)
+
+nemeric_answer_processor = builds(
+    NumericAnswerProcessor,
+    generator=dynamic_generate_function,  # type: ignore  # noqa: PGH003
+)
+
+output_processor_store = store(group="output_processor")
+output_processor_store(base_answer_processor, name="answer_processor")
+output_processor_store(nemeric_answer_processor, name="numeric_answer_processor")
