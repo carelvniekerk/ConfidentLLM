@@ -40,4 +40,5 @@ url = "http://pypi.repo.test.hhu.de/simple/"
 
 # Script entry points for various tasks (e.g. question answering)
 [tool.poetry.scripts]
+download-and-sync = "confidentllm.scripts:download_and_sync"
 question-answering = "confidentllm.scripts:question_answering"

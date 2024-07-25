@@ -23,6 +23,7 @@
 # limitations under the License."
 """Execcution scripts for different tasks."""
 
+from confidentllm.scripts.run_download_and_sync import main as download_and_sync
 from confidentllm.scripts.run_question_answering import main as question_answering
 
-__all__ = ["question_answering"]
+__all__ = ["download_and_sync", "question_answering"]
