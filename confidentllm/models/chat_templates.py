@@ -21,9 +21,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License."
-"""Module to load pretrained models and tokenizers from Hugging Face's model hub."""
+"""Module to store chat templates for different models."""
 
-from confidentllm.models.model_loader import ModelLoader
 from confidentllm.models.model_name import ModelName
 
-__all__ = ["ModelLoader", "ModelName"]
+__all__ = ["get_chat_template"]
+
+CHAT_TEMPLATES: dict[ModelName, str] = {
+    ModelName.PHI2: (
+        "{{ bos_token }}"
+        "{% if messages[0]['role'] == 'system' %}"
+        "{{ raise_exception('System role not supported') }}{% endif %}"
+        "{% for message in messages %}"
+        "{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}"
+        "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"  # noqa: E501
+        "{% endif %}{% if (message['role'] == 'assistant') %}"
+        "{{ '\nOutput: ' + message['content'] | trim }}{% else %}"
+        "{{ 'Instruct: ' + message['content'] | trim + '\n' }}"
+        "{% set role = message['role'] %}{% endif %}{% endfor %}"
+        "{% if add_generation_prompt %}{{ '\nOutput: ' }}{% endif %}"
+    ),
+}
+
+
+def get_chat_template(name: ModelName) -> str | None:
+    """Get the chat template for the given model name."""
+    return CHAT_TEMPLATES.get(name)

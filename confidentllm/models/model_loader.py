@@ -1,0 +1,91 @@
+# coding=utf-8
+# --------------------------------------------------------------------------------
+# Project: ConfidentLLM
+# Author: Carel van Niekerk
+# Year: 2024
+# Group: Dialogue Systems and Machine Learning Group
+# Institution: Heinrich Heine University Düsseldorf
+# --------------------------------------------------------------------------------
+#
+# This code was generated with the help of AI writing assistants
+# including GitHub Copilot, ChatGPT, Bing Chat.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License."
+"""Module to load pretrained models and tokenizers from Hugging Face's model hub."""
+
+import torch
+from hydra_zen import make_custom_builds_fn, store
+from torch.nn import Module
+from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
+
+from confidentllm.models.chat_templates import get_chat_template
+from confidentllm.models.model_name import ModelName
+
+builds = make_custom_builds_fn(populate_full_signature=True)
+
+__all__ = ["ModelLoader"]
+
+
+DEFAULT_DEVICE: str = "mps" if torch.backends.mps.is_available() else "cpu"
+DEFAULT_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+
+class ModelLoader:
+    """Abstract class to load a pretrained model and tokenizer."""
+
+    def __init__(
+        self,
+        pretrained_model_name_or_path: ModelName,
+        device: str = DEFAULT_DEVICE,
+    ) -> None:
+        """Initialize the model loader."""
+        self.pretrained_model_name_or_path: str = pretrained_model_name_or_path.value
+        self.device: torch.device = torch.device(device)
+        self.chat_template: str | None = get_chat_template(
+            pretrained_model_name_or_path,
+        )
+
+    def load(self) -> tuple[Module, PreTrainedTokenizer]:
+        """Load a pretrained model from Hugging Face's model hub.
+
+        Args:
+        ----
+            pretrained_model_name_or_path (str): The name of or the path to the model.
+            device (str): The device to load the model on.
+
+        Returns:
+        -------
+            Module: The model loaded on the specified device.
+
+        """
+        model: Module = AutoModelForCausalLM.from_pretrained(
+            self.pretrained_model_name_or_path,
+        )
+
+        tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(
+            self.pretrained_model_name_or_path,  # type: ignore - Tokenizer is a PreTrainedTokenizer
+        )
+
+        if self.chat_template:
+            tokenizer.chat_template = self.chat_template
+
+        if tokenizer.pad_token_id is None:
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+            tokenizer.pad_token = tokenizer.eos_token
+
+        return model.to(self.device), tokenizer
+
+
+# Add default model loader to the store
+default_config = builds(ModelLoader, pretrained_model_name_or_path=ModelName.GPT2)
+store(default_config, name="default", group="model")

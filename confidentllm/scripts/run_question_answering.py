@@ -39,7 +39,7 @@ from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     OutputProcessor,
 )
-from confidentllm.models import ModelLoader
+from confidentllm.models import ModelLoader, ModelName
 from confidentllm.scripts.setup_tools import init_wandb, setup_hydra_config_and_logging
 
 __all__ = ["main"]
@@ -134,7 +134,7 @@ class QuestionAnsweringRunner:
     name="question_answering",
     hydra_defaults=[
         "_self_",
-        {"model": "gemma_11_2b_it"},
+        {"model": "default"},
         {"generation_method": "causal_lm_generation_method"},
         {"generation_method/generator/decoding_strategy": "greedy"},
         {"output_processor": "answer_processor"},
