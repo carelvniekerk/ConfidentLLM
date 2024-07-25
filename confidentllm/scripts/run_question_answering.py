@@ -34,12 +34,10 @@ from confidentllm import (
     data,  # noqa: F401 - Import data to make it available in the Zen Store
 )
 from confidentllm.evaluation.types import Evaluator
-from confidentllm.generation.answer_processor import Answer
-from confidentllm.generation.types import (
-    CausalLMGenerationMethod,
-    OutputProcessor,
-)
+from confidentllm.generation.types import CausalLMGenerationMethod
 from confidentllm.models import ModelLoader
+from confidentllm.output_processing.answer_processor import Answer
+from confidentllm.output_processing.types import OutputProcessor
 from confidentllm.scripts.setup_tools import init_wandb, setup_hydra_config_and_logging
 
 __all__ = ["main"]
@@ -168,8 +166,11 @@ def main() -> None:
     setup_hydra_config_and_logging(job_name="question_answering")
 
     # Generate the CLI for run_extraction
-    zen(run_question_answering).hydra_main(
+    zen(
+        run_question_answering,
+    ).hydra_main(
         config_name="question_answering",
+        version_base="1.3",
     )
 
 

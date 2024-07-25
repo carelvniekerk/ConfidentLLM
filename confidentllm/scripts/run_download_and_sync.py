@@ -95,8 +95,11 @@ def main() -> None:
     setup_hydra_config_and_logging(job_name="download_and_sync")
 
     # Generate the CLI for run_extraction
-    zen(run_downloader).hydra_main(
+    zen(
+        run_downloader,
+    ).hydra_main(
         config_name="download_and_sync",
+        version_base="1.3",
     )
 
 
