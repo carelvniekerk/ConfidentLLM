@@ -54,10 +54,9 @@ def create_run_dir(
     is_sweep: bool = False,
 ) -> RunDir | SweepDir:
     """Create a run directory."""
+    run_dir: Path = root_dir / "${hydra.job.name}"
 
     if is_sweep:
-        run_dir = root_dir
-
         sub_dir = Path("${now:%Y-%m-%d_%H-%M-%S}")
         for key in config_keys:
             _key = "${" + key + "}"
@@ -67,8 +66,6 @@ def create_run_dir(
             dir=str(run_dir),
             subdir=str(sub_dir),
         )
-
-    run_dir: Path = root_dir / "${hydra:job.name}"
 
     for key in config_keys:
         _key = "${" + key + "}"
