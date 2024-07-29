@@ -30,6 +30,19 @@ from confidentllm.models.model_name import ModelName
 __all__ = ["get_chat_template", "get_pretrained_model_name_or_path"]
 
 CHAT_TEMPLATES: dict[ModelName, str] = {
+    ModelName.GPT2: (
+        "{{ bos_token }}"
+        "{% if messages[0]['role'] == 'system' %}"
+        "{{ raise_exception('System role not supported') }}{% endif %}"
+        "{% for message in messages %}"
+        "{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}"
+        "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"  # noqa: E501
+        "{% endif %}{% if (message['role'] == 'assistant') %}"
+        "{{ '\nOutput: ' + message['content'] | trim }}{% else %}"
+        "{{ 'Instruct: ' + message['content'] | trim + '\n' }}"
+        "{% set role = message['role'] %}{% endif %}{% endfor %}"
+        "{% if add_generation_prompt %}{{ '\nOutput: ' }}{% endif %}"
+    ),
     ModelName.PHI2: (
         "{{ bos_token }}"
         "{% if messages[0]['role'] == 'system' %}"
