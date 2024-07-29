@@ -38,6 +38,7 @@ GSM8K_ANSWER_PATTERN = r"\n#### (.+)"
 def load_gsm8k_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
+    name: str = "GSM8K",
 ) -> Dataset:
     """Load the GSM-8K dataset.
 

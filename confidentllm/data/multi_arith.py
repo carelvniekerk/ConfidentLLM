@@ -50,6 +50,7 @@ def multi_arith_key_mapping(data: dict[str, list[str]]) -> dict[str, list[str]]:
 def load_multi_arith_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
+    name: str = "MultiArith",
 ) -> Dataset:
     """Load the MultiArith dataset.
 
