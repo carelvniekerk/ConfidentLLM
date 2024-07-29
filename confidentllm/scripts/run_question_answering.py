@@ -25,11 +25,11 @@
 
 import logging
 
-import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
+import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.evaluation import Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
@@ -105,8 +105,6 @@ class QuestionAnsweringRunner:
         for example in tqdm(data, desc="Answering questions"):
             question: str = example.get("question", "")  # type: ignore  # noqa: PGH003
             answer, reasoning = self._answer_question(question)
-
-            print(answer)
 
             # Add the batch to the evaluator
             self.evaluator.add_batch(
