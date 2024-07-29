@@ -36,5 +36,5 @@ GSM8KConfig = builds(load_gsm8k_data)
 MultiArithConfig = builds(load_multi_arith_data)
 
 data_store = store(group="data")
-data_store(GSM8KConfig, name="multiarith")
-data_store(MultiArithConfig, name="gsm8k")
+data_store(GSM8KConfig, name="gsm8k")
+data_store(MultiArithConfig, name="multiarith")
