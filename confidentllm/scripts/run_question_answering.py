@@ -25,11 +25,11 @@
 
 import logging
 
+import wandb
 from datasets import Dataset
 from hydra_zen import just, make_config, store, zen
 from tqdm import tqdm
 
-import wandb
 from confidentllm.data import DatasetSplit, MultiArithConfig
 from confidentllm.decoding_strategies import greedy_decoding_strategy
 from confidentllm.evaluation import Evaluator, accuracy_and_calibration_config
@@ -187,7 +187,6 @@ def main() -> None:
     run_function.hydra_main(
         config_name="question_answering",
         version_base="1.3",
-        config_path=".",
     )
 
 
