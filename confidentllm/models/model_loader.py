@@ -27,6 +27,7 @@ from pathlib import Path
 
 import torch
 from hydra_zen import store
+from hydra_zen.third_party.pydantic import pydantic_parser
 from torch.nn import Module
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
 
@@ -54,16 +55,29 @@ class ModelLoader:
         device: str = DEFAULT_DEVICE,
     ) -> None:
         """Initialize the model loader."""
-        self.pretrained_model_name_or_path: str = get_pretrained_model_name_or_path(
-            pretrained_model_name_or_path,
-        )
-        self.device: torch.device = torch.device(device)
-        if isinstance(pretrained_model_name_or_path, ModelName):
-            self.chat_template: str | None = get_chat_template(
+        if (
+            isinstance(pretrained_model_name_or_path, Path)
+            and not pretrained_model_name_or_path.exists()
+        ):
+            if pretrained_model_name_or_path.name not in ModelName.__members__:
+                msg = (
+                    f"The specified path {pretrained_model_name_or_path} does not "
+                    "exist and is not a valid model name."
+                )
+                raise FileNotFoundError(msg)
+            pretrained_model_name_or_path = ModelName[
+                pretrained_model_name_or_path.name
+            ]
+
+        self.pretrained_model_name_or_path: str | Path = (
+            get_pretrained_model_name_or_path(
                 pretrained_model_name_or_path,
             )
-        else:
-            self.chat_template: str | None = None
+        )
+        self.device: torch.device = torch.device(device)
+        self.chat_template: str | None = get_chat_template(
+            pretrained_model_name_or_path,  # type: ignore - Path will return None as expected
+        )
 
     def load(self) -> tuple[Module, PreTrainedTokenizer]:
         """Load a pretrained model from Hugging Face's model hub.
@@ -97,5 +111,9 @@ class ModelLoader:
 
 
 # Add default model loader to the store
-ModelConfig = builds(ModelLoader, pretrained_model_name_or_path=ModelName.GPT2)
+ModelConfig = builds(
+    ModelLoader,
+    pretrained_model_name_or_path=ModelName.GPT2,
+    zen_wrappers=[pydantic_parser],
+)
 store(ModelConfig, name="default", group="model")

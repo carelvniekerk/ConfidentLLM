@@ -70,7 +70,6 @@ def get_chat_template(name: ModelName) -> str | None:
     return CHAT_TEMPLATES.get(name)
 
 
-def get_pretrained_model_name_or_path(name: ModelName | Path | str) -> str:
+def get_pretrained_model_name_or_path(name: ModelName | Path) -> str | Path:
     """Get the pretrained model name or path for the given model name."""
-    name = ModelName[name] if name in ModelName.__members__ else name  # type: ignore  # noqa: PGH003
-    return PRETRAINED_MODEL_NAME_OR_PATH.get(name, str(name))  # type: ignore - name is not a ModelName instance
+    return PRETRAINED_MODEL_NAME_OR_PATH.get(name, name)  # type: ignore - Paths will be returned as is
