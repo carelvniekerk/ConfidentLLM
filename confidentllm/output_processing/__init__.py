@@ -32,6 +32,9 @@ from confidentllm.output_processing.numeric_answer_processor import (
     NumericAnswerProcessor,
 )
 from confidentllm.output_processing.types import OutputProcessor
+from confidentllm.output_processing.verbalised_confidence import (
+    VerbalisedConfidenceProcessor,
+)
 
 __all__ = [
     "AnswerProcessorConfig",
@@ -50,6 +53,15 @@ NumericAnswerProcessorConfig = builds(
     generator=dynamic_generate_function,  # type: ignore  # noqa: PGH003
 )
 
+VerbalisedConfidenceProcessorConfig = builds(
+    VerbalisedConfidenceProcessor,
+    generator=dynamic_generate_function,  # type: ignore  # noqa: PGH003
+)
+
 output_processor_store = store(group="output_processor")
 output_processor_store(AnswerProcessorConfig, name="answer_processor")
 output_processor_store(NumericAnswerProcessorConfig, name="numeric_answer_processor")
+output_processor_store(
+    VerbalisedConfidenceProcessorConfig,
+    name="verbalised_confidence_processor",
+)
