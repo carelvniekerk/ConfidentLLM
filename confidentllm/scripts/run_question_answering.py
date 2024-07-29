@@ -146,7 +146,7 @@ def run_question_answering(
     evaluator: Evaluator,
 ) -> None:
     """Run the question answering process."""
-    init_wandb()
+    init_wandb("question_answering")
 
     runner = QuestionAnsweringRunner(
         model,

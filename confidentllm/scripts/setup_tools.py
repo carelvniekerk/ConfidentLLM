@@ -28,9 +28,10 @@ import random
 
 import numpy as np
 import torch
+from hydra import compose
 from hydra.conf import HydraConf, JobConf, RunDir
-from hydra.core.hydra_config import HydraConfig
 from hydra_zen import store
+from omegaconf import DictConfig
 
 from confidentllm.logging import (
     create_logging_config,
@@ -94,9 +95,9 @@ def setup_hydra_config_and_logging(
     store.add_to_hydra_store()
 
 
-def init_wandb() -> None:
+def init_wandb(config_name: str) -> None:
     """Initialize Weights and Biases."""
-    initialize_wandb(config=HydraConfig.get())  # type: ignore - HydraConfig.get() is not in the HydraConf schema
+    initialize_wandb(config=DictConfig(compose(config_name=config_name)))
 
 
 def set_seed(seed: int) -> None:

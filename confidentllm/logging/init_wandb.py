@@ -25,8 +25,7 @@
 
 from pathlib import Path
 
-from hydra.core.hydra_config import HydraConfig
-from omegaconf import OmegaConf
+from omegaconf import DictConfig, OmegaConf
 
 import wandb
 
@@ -68,7 +67,7 @@ def find_project_root(current_path: Path, marker: str = "pyproject.toml") -> Pat
 
 
 def initialize_wandb(
-    config: HydraConfig,
+    config: DictConfig,
     project_name: str = "ConfidentLLM",
 ) -> None:
     """Initialize wandb."""
@@ -85,10 +84,10 @@ def initialize_wandb(
     )
 
     cfg_dict = OmegaConf.to_container(
-        config.runtime.choices,  # type: ignore  # noqa: PGH003
+        config,
         resolve=True,
     )
 
-    # Add the hydra config to the wandb config
+    # Add the run config to the wandb config
     # (so that they are tracked in the wandb run)
-    wandb.config.hydra = cfg_dict
+    wandb.config.run = cfg_dict
