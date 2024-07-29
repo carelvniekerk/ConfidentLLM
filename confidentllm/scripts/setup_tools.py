@@ -57,19 +57,17 @@ def setup_hydra_config_and_logging(
     job_config: JobConf = JobConf(name=job_name, chdir=change_to_output_dir)
     logging_config: dict = create_logging_config()
     run_dir: RunDir = RunDir(
-        "outputs/${hydra:job.name}/${hydra:runtime.choices.data}/${model.pretrained_model_name_or_path}/${now:%Y-%m-%d_%H-%M-%S}",
+        "outputs/${hydra:job.name}/${data.name}/${model.pretrained_model_name_or_path}/${now:%Y-%m-%d_%H-%M-%S}",
     )
 
     if add_hpc_launcher:
         hydra_defaults: list[str | dict[str, str | None]] = [
             # Standard defaults
             "_self_",
-            {"output": "default"},
             {"sweeper": "basic"},
             {"help": "default"},
             {"hydra_help": "default"},
             {"hydra_logging": "default"},
-            {"job_logging": "default"},
             {"callbacks": None},
             # Set launcher
             {"launcher": "hpc_submission"},

@@ -176,7 +176,10 @@ def main() -> None:
     store(RunConfig, name="question_answering")
 
     pre_seed = zen(set_seed)
-    run_function = zen(run_question_answering, pre_call=pre_seed)
+    run_function = zen(
+        run_question_answering,
+        pre_call=pre_seed,
+    )
 
     setup_hydra_config_and_logging(job_name="question_answering", add_hpc_launcher=True)
 
