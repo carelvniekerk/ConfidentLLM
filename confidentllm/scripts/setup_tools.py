@@ -46,18 +46,47 @@ def setup_hydra_config_and_logging(
     job_name: str,
     *,
     change_to_output_dir: bool = True,
+    add_hpc_launcher: bool = False,
 ) -> None:
     """Set up Hydra configuration and logging."""
     setup_exception_logging(logger)
 
+    job_config: JobConf = JobConf(name=job_name, chdir=change_to_output_dir)
+    logging_config: dict = create_logging_config()
+    run_dir: RunDir = RunDir(
+        "outputs/${hydra:job.name}/${hydra:runtime.choices.data}/${model.pretrained_model_name_or_path}/${now:%Y-%m-%d_%H-%M-%S}",
+    )
+
+    if add_hpc_launcher:
+        hydra_defaults: list[str | dict[str, str | None]] = [
+            # Standard defaults
+            "_self_",
+            {"output": "default"},
+            {"sweeper": "basic"},
+            {"help": "default"},
+            {"hydra_help": "default"},
+            {"hydra_logging": "default"},
+            {"job_logging": "default"},
+            {"callbacks": None},
+            # Set launcher
+            {"launcher": "hpc_submission"},
+        ]
+
+        hydra_config: HydraConf = HydraConf(
+            defaults=hydra_defaults,
+            job=job_config,
+            job_logging=logging_config,
+            run=run_dir,
+        )
+    else:
+        hydra_config: HydraConf = HydraConf(
+            job=job_config,
+            job_logging=logging_config,
+            run=run_dir,
+        )
+
     store(
-        HydraConf(
-            job=JobConf(name=job_name, chdir=change_to_output_dir),
-            job_logging=create_logging_config(),
-            run=RunDir(
-                "outputs/${hydra:job.name}/${hydra:runtime.choices.data}/${model.pretrained_model_name_or_path}/${now:%Y-%m-%d_%H-%M-%S}",
-            ),
-        ),
+        hydra_config,
         name="config",
         group="hydra",
     )

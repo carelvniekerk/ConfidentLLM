@@ -139,7 +139,6 @@ class QuestionAnsweringRunner:
         {"output_processor/generator/decoding_strategy": "greedy"},
         {"data": "gsm8k"},
         {"evaluator": "accuracy_and_calibration"},
-        {"override hydra/launcher": "hpc_submission"},
     ],
 )
 def run_question_answering(
@@ -163,7 +162,7 @@ def run_question_answering(
 
 def main() -> None:
     """Run the question answering process."""
-    setup_hydra_config_and_logging(job_name="question_answering")
+    setup_hydra_config_and_logging(job_name="question_answering", add_hpc_launcher=True)
 
     # Generate the CLI for run_extraction
     zen(
