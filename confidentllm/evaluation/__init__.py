@@ -28,8 +28,14 @@ from hydra_zen import store
 from confidentllm.evaluation.accuracy import accuracy_config
 from confidentllm.evaluation.calibration import calibration_config
 from confidentllm.evaluation.combined import CombinedEvaluatorConfig
+from confidentllm.evaluation.types import Evaluator
 
-__all__ = []
+__all__ = [
+    "accuracy_and_calibration_config",
+    "accuracy_config",
+    "calibration_config",
+    "Evaluator",
+]
 
 accuracy_and_calibration_config = CombinedEvaluatorConfig(
     evaluators=[accuracy_config, calibration_config],  # type: ignore  # noqa: PGH003 - Configs return Evaluator objects during execution.

@@ -23,7 +23,7 @@
 # limitations under the License."
 """Module to load pretrained models and tokenizers from Hugging Face's model hub."""
 
-from confidentllm.models.model_loader import ModelLoader
+from confidentllm.models.model_loader import ModelConfig, ModelLoader
 from confidentllm.models.model_name import ModelName
 
-__all__ = ["ModelLoader", "ModelName"]
+__all__ = ["ModelLoader", "ModelName", "ModelConfig"]

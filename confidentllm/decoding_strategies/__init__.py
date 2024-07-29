@@ -29,12 +29,17 @@ from confidentllm.decoding_strategies.greedy import (
     greedy_decoding_strategy,
     greedy_decoding_with_disparity,
 )
-from confidentllm.decoding_strategies.sampling import sampling_decoding_strategy
+from confidentllm.decoding_strategies.sampling import (
+    sampling_decoding_strategy as SamplingDecodingStrategyConfig,  # noqa: N812
+)
 from confidentllm.decoding_strategies.types import DecodingStrategy
 from confidentllm.hydra_tools import MultiGroupZenStore
 
 __all__ = [
     "DecodingStrategy",
+    "greedy_decoding_strategy",
+    "greedy_decoding_with_disparity",
+    "SamplingDecodingStrategyConfig",
 ]
 
 decoding_strategy_store = MultiGroupZenStore(
@@ -52,6 +57,6 @@ decoding_strategy_store(
     name="greedy_with_disparity",
 )
 decoding_strategy_store(
-    sampling_decoding_strategy,
+    SamplingDecodingStrategyConfig,
     name="sampling",
 )

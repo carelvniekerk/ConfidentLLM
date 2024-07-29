@@ -33,7 +33,7 @@ from confidentllm.generation.types import (
     ModelNotSetError,
 )
 
-__all__ = ["dynamic_generate_function"]
+__all__ = ["dynamic_generate_function", "GeneratorConfig"]
 
 builds = make_custom_builds_fn(populate_full_signature=True)
 

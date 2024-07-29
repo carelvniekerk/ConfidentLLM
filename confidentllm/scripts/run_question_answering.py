@@ -26,19 +26,29 @@
 import logging
 
 from datasets import Dataset
-from hydra_zen import store, zen
+from hydra_zen import just, make_config, store, zen
 from tqdm import tqdm
 
 import wandb
-from confidentllm import (
-    data,  # noqa: F401 - Import data to make it available in the Zen Store
+from confidentllm.data import DatasetSplit, MultiArithConfig
+from confidentllm.decoding_strategies import greedy_decoding_strategy
+from confidentllm.evaluation import Evaluator, accuracy_and_calibration_config
+from confidentllm.generation import (
+    CausalLMGenerationConfig,
+    CausalLMGenerationMethod,
+    GeneratorConfig,
 )
-from confidentllm.evaluation.types import Evaluator
-from confidentllm.generation.types import CausalLMGenerationMethod
-from confidentllm.models import ModelLoader
-from confidentllm.output_processing.answer_processor import Answer
-from confidentllm.output_processing.types import OutputProcessor
-from confidentllm.scripts.setup_tools import init_wandb, setup_hydra_config_and_logging
+from confidentllm.models import ModelConfig, ModelLoader, ModelName
+from confidentllm.output_processing import (
+    Answer,
+    AnswerProcessorConfig,
+    OutputProcessor,
+)
+from confidentllm.scripts.setup_tools import (
+    init_wandb,
+    set_seed,
+    setup_hydra_config_and_logging,
+)
 
 __all__ = ["main"]
 logger = logging.getLogger("__main__")
@@ -128,21 +138,8 @@ class QuestionAnsweringRunner:
         wandb.log(wandb_log)
 
 
-@store(
-    name="question_answering",
-    hydra_defaults=[
-        "_self_",
-        {"model": "default"},
-        {"generation_method": "causal_lm_generation_method"},
-        {"generation_method/generator/decoding_strategy": "greedy"},
-        {"output_processor": "answer_processor"},
-        {"output_processor/generator/decoding_strategy": "greedy"},
-        {"data": "gsm8k"},
-        {"evaluator": "accuracy_and_calibration"},
-    ],
-)
 def run_question_answering(
-    data: Dataset,  # noqa: F811
+    data: Dataset,
     model: ModelLoader,
     generation_method: CausalLMGenerationMethod,
     output_processor: OutputProcessor,
@@ -160,16 +157,34 @@ def run_question_answering(
     runner.run(data)
 
 
+RunConfig = make_config(
+    seed=20244202,
+    data=MultiArithConfig(split=DatasetSplit.TEST),
+    model=ModelConfig(pretrained_model_name_or_path=ModelName.GPT2),
+    generation_method=CausalLMGenerationConfig(
+        generator=GeneratorConfig(decoding_strategy=just(greedy_decoding_strategy)),  # type: ignore - just wrapper returns the function during hydra run
+    ),
+    output_processor=AnswerProcessorConfig(
+        generator=GeneratorConfig(decoding_strategy=just(greedy_decoding_strategy)),  # type: ignore  # noqa: PGH003
+    ),
+    evaluator=accuracy_and_calibration_config,
+)
+
+
 def main() -> None:
     """Run the question answering process."""
+    store(RunConfig, name="question_answering")
+
+    pre_seed = zen(set_seed)
+    run_function = zen(run_question_answering, pre_call=pre_seed)
+
     setup_hydra_config_and_logging(job_name="question_answering", add_hpc_launcher=True)
 
     # Generate the CLI for run_extraction
-    zen(
-        run_question_answering,
-    ).hydra_main(
+    run_function.hydra_main(
         config_name="question_answering",
         version_base="1.3",
+        config_path=".",
     )
 
 

@@ -24,7 +24,10 @@
 """Runner for question answering using the ConfidentLLM package."""
 
 import logging
+import random
 
+import numpy as np
+import torch
 from hydra.conf import HydraConf, JobConf, RunDir
 from hydra.core.hydra_config import HydraConfig
 from hydra_zen import store
@@ -96,3 +99,11 @@ def setup_hydra_config_and_logging(
 def init_wandb() -> None:
     """Initialize Weights and Biases."""
     initialize_wandb(config=HydraConfig.get())  # type: ignore - HydraConfig.get() is not in the HydraConf schema
+
+
+def set_seed(seed: int) -> None:
+    """Set the seed for reproducibility."""
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    random.seed(seed)
+    np.random.default_rng(seed)

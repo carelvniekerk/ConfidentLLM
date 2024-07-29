@@ -97,5 +97,5 @@ class ModelLoader:
 
 
 # Add default model loader to the store
-default_config = builds(ModelLoader, pretrained_model_name_or_path=ModelName.GPT2)
-store(default_config, name="default", group="model")
+ModelConfig = builds(ModelLoader, pretrained_model_name_or_path=ModelName.GPT2)
+store(ModelConfig, name="default", group="model")

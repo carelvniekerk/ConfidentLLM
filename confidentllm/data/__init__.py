@@ -27,9 +27,14 @@ from hydra_zen import store
 
 from confidentllm.data.gsm8k import load_gsm8k_data
 from confidentllm.data.multi_arith import load_multi_arith_data
+from confidentllm.data.types import DatasetSplit
+from confidentllm.hydra_tools import builds
 
-__all__ = []
+__all__ = ["GSM8KConfig", "MultiArithConfig", "DatasetSplit"]
+
+GSM8KConfig = builds(load_gsm8k_data)
+MultiArithConfig = builds(load_multi_arith_data)
 
 data_store = store(group="data")
-data_store(load_multi_arith_data, name="multiarith")
-data_store(load_gsm8k_data, name="gsm8k")
+data_store(GSM8KConfig, name="multiarith")
+data_store(MultiArithConfig, name="gsm8k")
