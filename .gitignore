@@ -8,6 +8,7 @@ poetry.lock
 # Hydra generated dirs
 multirun
 outputs
+hpc_jobs
 
 # Python cache
 *__pycache__*

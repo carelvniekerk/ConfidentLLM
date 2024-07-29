@@ -25,11 +25,12 @@
 
 import logging
 import random
+from pathlib import Path
 
 import numpy as np
 import torch
 from hydra import compose
-from hydra.conf import HydraConf, JobConf, RunDir
+from hydra.conf import HydraConf, JobConf, RunDir, SweepDir
 from hydra_zen import store
 from omegaconf import DictConfig
 
@@ -46,6 +47,38 @@ __all__ = ["setup_hydra_config_and_logging", "init_wandb"]
 logger = logging.getLogger("__main__")
 
 
+def create_run_dir(
+    root_dir: Path,
+    config_keys: list[str],
+    *,
+    is_sweep: bool = False,
+) -> RunDir | SweepDir:
+    """Create a run directory."""
+
+    if is_sweep:
+        run_dir = root_dir
+
+        sub_dir = Path("${now:%Y-%m-%d_%H-%M-%S}")
+        for key in config_keys:
+            _key = "${" + key + "}"
+            sub_dir = sub_dir / _key
+
+        return SweepDir(
+            dir=str(run_dir),
+            subdir=str(sub_dir),
+        )
+
+    run_dir: Path = root_dir / "${hydra:job.name}"
+
+    for key in config_keys:
+        _key = "${" + key + "}"
+        run_dir = run_dir / _key
+
+    run_dir = run_dir / "${now:%Y-%m-%d_%H-%M-%S}"
+
+    return RunDir(str(run_dir))
+
+
 def setup_hydra_config_and_logging(
     job_name: str,
     *,
@@ -57,9 +90,23 @@ def setup_hydra_config_and_logging(
 
     job_config: JobConf = JobConf(name=job_name, chdir=change_to_output_dir)
     logging_config: dict = create_logging_config()
-    run_dir: RunDir = RunDir(
-        "outputs/${hydra:job.name}/${data.name}/${model.pretrained_model_name_or_path}/${now:%Y-%m-%d_%H-%M-%S}",
-    )
+
+    config_keys: list[str] = [
+        "data.name",
+        "data.split",
+        "model.pretrained_model_name_or_path",
+        "seed",
+    ]
+
+    run_dir: RunDir = create_run_dir(
+        root_dir=Path("outputs"),
+        config_keys=config_keys,
+    )  # type: ignore  # noqa: PGH003
+    sweep_dir: SweepDir = create_run_dir(
+        root_dir=Path("multirun") if not add_hpc_launcher else Path("hpc_jobs"),
+        config_keys=config_keys,
+        is_sweep=True,
+    )  # type: ignore  # noqa: PGH003
 
     if add_hpc_launcher:
         hydra_defaults: list[str | dict[str, str | None]] = [
@@ -79,12 +126,14 @@ def setup_hydra_config_and_logging(
             job=job_config,
             job_logging=logging_config,
             run=run_dir,
+            sweep=sweep_dir,
         )
     else:
         hydra_config: HydraConf = HydraConf(
             job=job_config,
             job_logging=logging_config,
             run=run_dir,
+            sweep=sweep_dir,
         )
 
     store(

@@ -1,6 +1,7 @@
 # Hydra generated dirs
 multirun
 outputs
+hpc_jobs
 
 # VS Code settings
 .vscode
