@@ -23,11 +23,17 @@
 # limitations under the License."
 """Set up logging configuration for project."""
 
+from pathlib import Path
 from typing import Any
 
 from hydra_zen import ZenStore, make_custom_builds_fn, store
 
-__all__ = ["builds", "MultiGroupZenStore"]
+__all__ = [
+    "builds",
+    "MultiGroupZenStore",
+    "resolve_decoding_strategy",
+    "resolve_output_processor",
+]
 
 builds = make_custom_builds_fn(populate_full_signature=True)
 
@@ -43,3 +49,43 @@ class MultiGroupZenStore:
         """Store the target in all stores."""
         for store_fn in self.stores:
             store_fn(target, name=name)  # type: ignore - Name is a string
+
+
+def function_path_to_name(function_path: str) -> str:
+    """Convert a function path to a name."""
+    return function_path.split(".")[-1]
+
+
+def resolve_decoding_strategy(decoding_strategy: dict[str, str | int | float]) -> str:
+    """Resolve the decoding strategy."""
+    name: str = decoding_strategy.get("_target_", "")  # type: ignore - Always a string
+    if "path" in decoding_strategy:
+        name = decoding_strategy.get("path")  # type: ignore - Always a string
+
+    other_params: list[str] = [
+        key for key in decoding_strategy if key not in ["_target_", "path"]
+    ]
+
+    dec_str: Path = Path(function_path_to_name(name))
+    for param in other_params:
+        dec_str = dec_str / f"{param}_{decoding_strategy[param]}"
+
+    return str(dec_str)
+
+
+def resolve_output_processor(output_processor: dict[str, str | int | float]) -> str:
+    """Resolve the output processor."""
+    name: str = output_processor.get("_target_", "")  # type: ignore - Always a string
+
+    other_params: list[str] = [
+        key for key in output_processor if key not in ["_target_", "generator"]
+    ]
+
+    op_str: Path = Path(function_path_to_name(name))
+    for param in other_params:
+        val: str | int | float = output_processor[param]
+        if isinstance(val, str):
+            val = val.replace(" ", "_")
+        op_str = op_str / f"{param}_{val}"
+
+    return str(op_str)

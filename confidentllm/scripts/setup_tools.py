@@ -32,8 +32,9 @@ import torch
 from hydra import compose
 from hydra.conf import HydraConf, JobConf, RunDir, SweepDir
 from hydra_zen import store
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
+from confidentllm.hydra_tools import resolve_decoding_strategy, resolve_output_processor
 from confidentllm.logging import (
     create_logging_config,
     initialize_wandb,
@@ -45,6 +46,9 @@ from hydra_plugins.hpc_submission_launcher.launcher import (
 
 __all__ = ["setup_hydra_config_and_logging", "init_wandb"]
 logger = logging.getLogger("__main__")
+
+OmegaConf.register_new_resolver("resolve_decoding_strategy", resolve_decoding_strategy)
+OmegaConf.register_new_resolver("resolve_output_processor", resolve_output_processor)
 
 
 def create_run_dir(
@@ -92,6 +96,8 @@ def setup_hydra_config_and_logging(
         "data.name",
         "data.split",
         "model.pretrained_model_name_or_path",
+        "resolve_decoding_strategy:${generation_method.generator.decoding_strategy}",
+        "resolve_output_processor:${output_processor}",
         "seed",
     ]
 
