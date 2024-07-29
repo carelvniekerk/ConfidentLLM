@@ -17,6 +17,7 @@ accelerate = "^0.33"
 colorlog = "^6.8"
 datasets = "^2.20"
 hydra-zen = "^0.13"
+pydantic = "^2.8"
 transformers = "^4.43"
 # Torch versioning:
 # Specific version for macOS with x86_64 architecture and latest version for other platforms
