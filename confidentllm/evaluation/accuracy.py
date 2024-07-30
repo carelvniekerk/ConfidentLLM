@@ -70,4 +70,4 @@ class AccuracyEvaluator(Evaluator):
         return AccuracyResults(evaluator_name="accuracy", accuracy=acc * 100.0)
 
 
-accuracy_config = builds(AccuracyEvaluator, padding_value=-1)
+accuracy_config = builds(AccuracyEvaluator)

@@ -26,8 +26,6 @@
 from dataclasses import dataclass, field
 from typing import Any
 
-from confidentllm.evaluation.accuracy import accuracy_config
-from confidentllm.evaluation.calibration import calibration_config
 from confidentllm.evaluation.types import BaseResults, Evaluator
 from confidentllm.hydra_tools import builds
 
@@ -86,4 +84,4 @@ class CombinedEvaluator(Evaluator):
         return CombinedResults(evaluator_name="combined", combined_results=results)
 
 
-CombinedEvaluatorConfig = builds(CombinedEvaluator, padding_value=-1)
+CombinedEvaluatorConfig = builds(CombinedEvaluator)
