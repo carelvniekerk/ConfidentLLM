@@ -37,6 +37,7 @@ from confidentllm.output_processing.answer_processor import Answer, AnswerProces
 __all__ = []
 
 
+# TODO: Make verbalised confidence processor inherit the answer extractor
 class VerbalisedConfidenceProcessor(AnswerProcessor):
     """Class for processing the generated answers, providing verbalised confidence."""
 

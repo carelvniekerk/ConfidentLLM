@@ -158,6 +158,7 @@ class CalibrationEvaluator(Evaluator):
         ece /= total_samples
         return ece
 
+    # TODO: Accept answers in string format for non mathematical problems
     def evaluate(self) -> CalibrationResults:
         """Evaluate the model."""
         if (

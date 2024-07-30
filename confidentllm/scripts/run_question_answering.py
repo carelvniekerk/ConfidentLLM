@@ -124,7 +124,6 @@ class QuestionAnsweringRunner:
                 int(example.get("answer", "-1").replace(",", "")),  # type: ignore  # noqa: PGH003
                 answer.confidence.mean().item(),
             )
-            break
 
         results = self.evaluator.evaluate()
         logging_message: str = str(results)
