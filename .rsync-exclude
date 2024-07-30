@@ -1,3 +1,6 @@
+# Pyenv environment
+.python-version
+
 # Hydra generated dirs
 multirun
 outputs
