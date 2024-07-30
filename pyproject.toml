@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "confidentllm"
-version = "1.0.0"
+version = "0.1.0"
 description = "Evaluate the confidence of various LLM models using different confidence methods and generation techniques."
 authors = ["Carel van Niekerk <cvanniekerk@hhu.de>"]
 license = "Apache2.0"
@@ -12,8 +12,10 @@ accelerate = "^0.33"
 colorlog = "^6.8"
 datasets = "^2.20"
 hydra-zen = "^0.13"
-pydantic = "^2.8"
+pydantic = "^2.8.2"
 transformers = "^4.43"
+# Torch versioning:
+# Specific version for macOS with x86_64 architecture and latest version for other platforms
 torch = [
     { version = "==2.2.2", markers = "platform_machine == 'x86_64' and platform_system == 'Darwin'" },
     { version = "^2.3", markers = "platform_machine != 'x86_64' or platform_system != 'Darwin'" },
@@ -22,10 +24,6 @@ wandb = "^0.17"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
 
 # Use HHU PyPI repository (Needed for HPC)
 # [[tool.poetry.source]]
