@@ -25,11 +25,11 @@
 
 import logging
 
+import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
-import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.evaluation import Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
@@ -138,7 +138,7 @@ class QuestionAnsweringRunner:
         "_self_",
         {"model": "default"},
         {"generation_method": "causal_lm_generation_method"},
-        {"generation_method/generator/decoding_strategy": "greedy"},
+        {"generation_method/generator/decoding_strategy": "sampling"},
         {"output_processor": "answer_processor"},
         {"output_processor/generator/decoding_strategy": "greedy"},
         {"data": "multiarith"},

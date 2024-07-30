@@ -95,6 +95,8 @@ class VerbalisedConfidenceProcessor(AnswerProcessor):
 
         answer = self.tokenizer.decode(answer_term, skip_special_tokens=True)
         answer = answer.replace("\n", "").strip()
+        answer = self._extract_numeric_answer(answer)
+        answer = answer[0] if answer else -1
 
         output_text = self.tokenizer.decode(
             generation_output.generated_ids[0],
@@ -126,7 +128,7 @@ class VerbalisedConfidenceProcessor(AnswerProcessor):
         confidence = self._extract_confidence(confidence_term)
         confidence = torch.Tensor([confidence])
 
-        return Answer(answer=answer, confidence=confidence)
+        return Answer(answer=str(answer), confidence=confidence)
 
     @staticmethod
     def _extract_confidence(generated_text: str) -> float:
@@ -145,3 +147,15 @@ class VerbalisedConfidenceProcessor(AnswerProcessor):
 
         # Return a default value if no valid confidence value is found
         return 1.0  # Default confidence value (strict 100%)
+
+    @staticmethod
+    def _extract_numeric_answer(text: str) -> list:
+        """Extract numbers from the text."""
+        # Use a regex pattern that matches numbers with optional commas
+        number_pattern = r"\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\b"
+        numbers = re.findall(number_pattern, text)
+        # Remove commas from the numbers and convert to integers or floats
+        return [
+            float(num.replace(",", "")) if "." in num else int(num.replace(",", ""))
+            for num in numbers
+        ]

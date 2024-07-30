@@ -96,7 +96,7 @@ class SamplingDecodingStrategy:
 
     def __init__(
         self,
-        temperature: float = 1.0,
+        temperature: float = 1.2,
         top_k: int = 0,
         top_p: float = 1.0,
         filter_value: float = -float("Inf"),
@@ -135,10 +135,4 @@ class SamplingDecodingStrategy:
 
 SamplingDecodingStrategyConfig = builds(SamplingDecodingStrategy)
 
-sampling_decoding_strategy = SamplingDecodingStrategyConfig(
-    temperature=1.0,
-    top_k=0,
-    top_p=1.0,
-    filter_value=-float("Inf"),
-    min_tokens_to_keep=1,
-)
+sampling_decoding_strategy = SamplingDecodingStrategyConfig()
