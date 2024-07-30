@@ -25,11 +25,11 @@
 
 import logging
 
-import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
+import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.evaluation import Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
@@ -97,6 +97,7 @@ class QuestionAnsweringRunner:
         answer: Answer = self.answer_processor(generation_output)  # type: ignore  # noqa: PGH003 - Answer processor here will always return answer.
         return answer, reasoning
 
+    # TODO: Split QA script for mathematics and non numerical questions
     def run(self, data: Dataset) -> None:  # noqa: F811
         """Run the question answering process."""
         results_table = wandb.Table(
@@ -110,7 +111,7 @@ class QuestionAnsweringRunner:
             self.evaluator.add_batch(
                 {
                     "labels": [int(example.get("answer", "-1").replace(",", ""))],  # type: ignore  # noqa: PGH003
-                    "predictions": [answer.answer],
+                    "predictions": [int(answer.answer)],
                     "confidences": [answer.confidence.mean().item()],
                 },
             )
@@ -119,10 +120,11 @@ class QuestionAnsweringRunner:
             results_table.add_data(
                 question,
                 reasoning,
-                answer.answer,
+                int(answer.answer),
                 int(example.get("answer", "-1").replace(",", "")),  # type: ignore  # noqa: PGH003
                 answer.confidence.mean().item(),
             )
+            break
 
         results = self.evaluator.evaluate()
         logging_message: str = str(results)
@@ -139,7 +141,7 @@ class QuestionAnsweringRunner:
         {"model": "default"},
         {"generation_method": "causal_lm_generation_method"},
         {"generation_method/generator/decoding_strategy": "sampling"},
-        {"output_processor": "answer_processor"},
+        {"output_processor": "verbalised_confidence_processor"},
         {"output_processor/generator/decoding_strategy": "greedy"},
         {"data": "multiarith"},
         {"evaluator": "accuracy_and_calibration"},
