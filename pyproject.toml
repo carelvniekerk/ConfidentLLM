@@ -21,6 +21,7 @@ torch = [
     { version = "^2.3", markers = "platform_machine != 'x86_64' or platform_system != 'Darwin'" },
 ]
 wandb = "^0.17"
+sentencepiece = "^0.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"

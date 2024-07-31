@@ -79,11 +79,17 @@ class ModelAndDataDownloader:
         "_self_",
         {"model": "default"},
         {"data": "gsm8k"},
+        {"generation_method": "causal_lm_generation_method"},
+        {"generation_method/generator/decoding_strategy": "sampling"},
+        {"output_processor": "numeric_answer_processor"},
     ],
 )
 def run_downloader(
     data: Dataset | None,  # noqa: F811
     model: ModelLoader | None,
+    generation_method: None,  # noqa: ARG001 - Unused argument for path building TODO: Fis this
+    output_processor: None,  # noqa: ARG001
+    seed: int = -1,  # noqa: ARG001
 ) -> None:
     """Run the model and data downloader."""
     downloader = ModelAndDataDownloader(model, data)

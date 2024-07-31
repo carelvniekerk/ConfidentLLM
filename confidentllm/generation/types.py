@@ -30,7 +30,7 @@ from torch import Tensor
 from torch.nn import Module
 from transformers.tokenization_utils import PreTrainedTokenizer
 
-from confidentllm.decoding_strategies.types import DecodingStrategy
+from confidentllm.decoding_strategies import DecodingStrategy
 
 __all__ = [
     "GenerationOutput",
@@ -123,7 +123,7 @@ class GenerateFunction(ABC):
 
         Returns:
         -------
-            tuple[torch.Tensor, torch.Tensor]: The generated sequences and their scores.
+            GenerationOutput: The generated sequences and their scores.
 
         """
         ...
@@ -155,8 +155,7 @@ class CausalLMGenerationMethod(ABC):
 
         Returns:
         -------
-            generated_ids (torch.Tensor): The generated token IDs.
-            generation_probs (torch.Tensor): The generation probabilities.
+            GenerationOutput: The generated text and their scores.
 
         """
         ...

@@ -34,7 +34,7 @@ from confidentllm.generation.types import (
 )
 from confidentllm.hydra_tools import builds
 
-__all__ = ["CausalLMGenerationConfig"]
+__all__ = []
 
 
 class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):

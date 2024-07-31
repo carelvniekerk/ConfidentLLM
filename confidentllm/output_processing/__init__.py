@@ -38,8 +38,6 @@ from confidentllm.output_processing.verbalised_confidence import (
 )
 
 __all__ = [
-    "AnswerProcessorConfig",
-    "NumericAnswerProcessorConfig",
     "OutputProcessor",
     "Answer",
 ]

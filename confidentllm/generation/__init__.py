@@ -23,10 +23,10 @@
 # limitations under the License."
 """Set up generation configuration for project."""
 
-from confidentllm.generation.causal_lm_generation_methods import (
-    CausalLMGenerationConfig,
+from confidentllm.generation import (  # noqa: F401
+    causal_lm_generation_methods,
+    generation_function,
 )
-from confidentllm.generation.generation_function import GeneratorConfig
 from confidentllm.generation.types import CausalLMGenerationMethod
 
-__all__ = ["CausalLMGenerationConfig", "GeneratorConfig", "CausalLMGenerationMethod"]
+__all__ = ["CausalLMGenerationMethod"]

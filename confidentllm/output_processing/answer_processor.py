@@ -97,8 +97,7 @@ class AnswerProcessor(OutputProcessor):
 
         Returns:
         -------
-            str: The answer.
-            torch.Tensor: The confidence of the answer.
+            Answer: The answer and confidence.
 
         """
         if isinstance(self.tokenizer, type(None)):

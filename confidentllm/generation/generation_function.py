@@ -24,7 +24,6 @@
 """Generation Function."""
 
 import torch
-from hydra_zen import make_custom_builds_fn
 
 from confidentllm.decoding_strategies import DecodingStrategy
 from confidentllm.generation.types import (
@@ -32,10 +31,9 @@ from confidentllm.generation.types import (
     GenerationOutput,
     ModelNotSetError,
 )
+from confidentllm.hydra_tools import builds
 
-__all__ = ["dynamic_generate_function", "GeneratorConfig"]
-
-builds = make_custom_builds_fn(populate_full_signature=True)
+__all__ = ["dynamic_generate_function"]
 
 
 def calc_banned_ngram_tokens(

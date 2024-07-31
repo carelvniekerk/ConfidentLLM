@@ -134,5 +134,3 @@ class SamplingDecodingStrategy:
 
 
 SamplingDecodingStrategyConfig = builds(SamplingDecodingStrategy)
-
-sampling_decoding_strategy = SamplingDecodingStrategyConfig()

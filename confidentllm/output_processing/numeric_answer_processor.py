@@ -64,8 +64,7 @@ class NumericAnswerProcessor(AnswerProcessor):
 
         Returns:
         -------
-            str: The answer.
-            torch.Tensor: The confidence of the answer.
+            Answer: The processed answer and confidence.
 
         """
         answer_object = super().__call__(generation_output, **kwargs)
