@@ -48,8 +48,8 @@ __all__ = ["main"]
 logger = logging.getLogger("__main__")
 
 
-class QuestionAnsweringRunner:
-    """Class to run the question answering process."""
+class MathematicalReasoningRunner:
+    """Class to run the mathematical reasoning process."""
 
     def __init__(
         self,
@@ -73,7 +73,7 @@ class QuestionAnsweringRunner:
         self,
         question: str,
         max_length: int = 256,
-    ) -> tuple[Answer, str]:
+    ) -> Answer:
         """Answer the given question.
 
         Args:
@@ -95,23 +95,24 @@ class QuestionAnsweringRunner:
             skip_special_tokens=True,
         )
         answer: Answer = self.answer_processor(generation_output)  # type: ignore  # noqa: PGH003 - Answer processor here will always return answer.
-        return answer, reasoning
+        answer.reasoning = reasoning
 
-    # TODO: Split QA script for mathematics and non numerical questions
+        return answer
+
     def run(self, data: Dataset) -> None:  # noqa: F811
-        """Run the question answering process."""
+        """Run the mathematical reasoning process."""
         results_table = wandb.Table(
             columns=["Question", "Reasoning", "Answer", "True Answer", "Confidence"],
         )
         for example in tqdm(data, desc="Answering questions"):
             question: str = example.get("question", "")  # type: ignore  # noqa: PGH003
-            answer, reasoning = self._answer_question(question)
+            answer = self._answer_question(question)
 
             # Add the batch to the evaluator
             self.evaluator.add_batch(
                 {
-                    "labels": [int(example.get("answer", "-1").replace(",", ""))],  # type: ignore  # noqa: PGH003
-                    "predictions": [int(answer.answer)],
+                    "labels": [float(example.get("answer", "-1").replace(",", ""))],  # type: ignore  # noqa: PGH003
+                    "predictions": [float(answer.answer)],
                     "confidences": [answer.confidence.mean().item()],
                 },
             )
@@ -119,9 +120,9 @@ class QuestionAnsweringRunner:
             # Log the answers and predictions
             results_table.add_data(
                 question,
-                reasoning,
-                int(answer.answer),
-                int(example.get("answer", "-1").replace(",", "")),  # type: ignore  # noqa: PGH003
+                answer.reasoning,
+                float(answer.answer),
+                float(example.get("answer", "-1").replace(",", "")),  # type: ignore  # noqa: PGH003
                 answer.confidence.mean().item(),
             )
 
@@ -134,19 +135,19 @@ class QuestionAnsweringRunner:
 
 
 @store(
-    name="question_answering",
+    name="mathematical_reasoning",
     hydra_defaults=[
         "_self_",
         {"model": "default"},
         {"generation_method": "causal_lm_generation_method"},
         {"generation_method/generator/decoding_strategy": "sampling"},
-        {"output_processor": "verbalised_confidence_processor"},
+        {"output_processor": "numeric_answer_processor"},
         {"output_processor/generator/decoding_strategy": "greedy"},
         {"data": "multiarith"},
         {"evaluator": "accuracy_and_calibration"},
     ],
 )
-def run_question_answering(  # noqa: PLR0913
+def run_mathematical_reasoning(  # noqa: PLR0913
     data: Dataset,  # noqa: F811
     model: ModelLoader,
     generation_method: CausalLMGenerationMethod,
@@ -156,9 +157,9 @@ def run_question_answering(  # noqa: PLR0913
 ) -> None:
     """Run the question answering process."""
     set_seed(seed)
-    init_wandb("question_answering")
+    init_wandb("mathematical_reasoning")
 
-    runner = QuestionAnsweringRunner(
+    runner = MathematicalReasoningRunner(
         model,
         generation_method,
         output_processor,
@@ -169,13 +170,16 @@ def run_question_answering(  # noqa: PLR0913
 
 def main() -> None:
     """Run the question answering process."""
-    run_function = zen(run_question_answering)
+    run_function = zen(run_mathematical_reasoning)
 
-    setup_hydra_config_and_logging(job_name="question_answering", add_hpc_launcher=True)
+    setup_hydra_config_and_logging(
+        job_name="mathematical_reasoning",
+        add_hpc_launcher=True,
+    )
 
     # Generate the CLI for run_extraction
     run_function.hydra_main(
-        config_name="question_answering",
+        config_name="mathematical_reasoning",
         version_base="1.3",
     )
 

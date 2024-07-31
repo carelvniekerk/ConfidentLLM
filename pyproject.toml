@@ -26,14 +26,14 @@ wandb = "^0.17"
 pytest = "^8"
 
 # Use HHU PyPI repository (Needed for HPC)
-# [[tool.poetry.source]]
-# name = "hhu"
-# url = "http://pypi.repo.test.hhu.de/simple/"
+[[tool.poetry.source]]
+name = "hhu"
+url = "http://pypi.repo.test.hhu.de/simple/"
 
 # Script entry points for various tasks (e.g. question answering)
 [tool.poetry.scripts]
 download-and-sync = "confidentllm.scripts:download_and_sync"
-question-answering = "confidentllm.scripts:question_answering"
+mathematical-reasoning = "confidentllm.scripts:mathematical_reasoning"
 
 # Configuration for Ruff (Python linter and formatter)
 [tool.ruff]
