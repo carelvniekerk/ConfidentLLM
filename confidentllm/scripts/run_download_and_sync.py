@@ -79,17 +79,11 @@ class ModelAndDataDownloader:
         "_self_",
         {"model": "default"},
         {"data": "gsm8k"},
-        {"generation_method": "causal_lm_generation_method"},
-        {"generation_method/generator/decoding_strategy": "sampling"},
-        {"output_processor": "numeric_answer_processor"},
     ],
 )
 def run_downloader(
     data: Dataset | None,  # noqa: F811
     model: ModelLoader | None,
-    generation_method: None,  # noqa: ARG001 - Unused argument for path building TODO: Fis this
-    output_processor: None,  # noqa: ARG001
-    seed: int = -1,  # noqa: ARG001
 ) -> None:
     """Run the model and data downloader."""
     downloader = ModelAndDataDownloader(model, data)
@@ -98,7 +92,13 @@ def run_downloader(
 
 def main() -> None:
     """Run the download and sync script."""
-    setup_hydra_config_and_logging(job_name="download_and_sync")
+    setup_hydra_config_and_logging(
+        job_name="download_and_sync",
+        config_keys=[
+            "data.name",
+            "model.pretrained_model_name_or_path",
+        ],
+    )
 
     # Generate the CLI for run_extraction
     zen(

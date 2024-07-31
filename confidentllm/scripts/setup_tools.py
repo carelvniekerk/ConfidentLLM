@@ -61,10 +61,12 @@ def create_run_dir(
     run_dir: Path = root_dir / "${hydra.job.name}"
 
     if is_sweep:
-        sub_dir = Path("${now:%Y-%m-%d_%H-%M-%S}")
-        for key in config_keys:
+        sub_dir = Path("${" + config_keys[0] + "}")
+        for key in config_keys[1:]:
             _key = "${" + key + "}"
             sub_dir = sub_dir / _key
+
+        sub_dir = sub_dir / "${now:%Y-%m-%d_%H-%M-%S}"
 
         return SweepDir(
             dir=str(run_dir),
@@ -83,6 +85,7 @@ def create_run_dir(
 def setup_hydra_config_and_logging(
     job_name: str,
     *,
+    config_keys: list[str] | None = None,  # type: ignore - None value is overwritten by the defaults
     change_to_output_dir: bool = True,
     add_hpc_launcher: bool = False,
 ) -> None:
@@ -92,14 +95,15 @@ def setup_hydra_config_and_logging(
     job_config: JobConf = JobConf(name=job_name, chdir=change_to_output_dir)
     logging_config: dict = create_logging_config()
 
-    config_keys: list[str] = [
-        "data.name",
-        "data.split",
-        "model.pretrained_model_name_or_path",
-        "resolve_decoding_strategy:${generation_method.generator.decoding_strategy}",
-        "resolve_output_processor:${output_processor}",
-        "seed",
-    ]
+    if config_keys is None:
+        config_keys: list[str] = [
+            "data.name",
+            "data.split",
+            "model.pretrained_model_name_or_path",
+            "resolve_decoding_strategy:${generation_method.generator.decoding_strategy}",
+            "resolve_output_processor:${output_processor}",
+            "seed",
+        ]
 
     run_dir: RunDir = create_run_dir(
         root_dir=Path("outputs"),
