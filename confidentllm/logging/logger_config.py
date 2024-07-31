@@ -81,6 +81,7 @@ def create_logging_config(
         "formatters": formatters,
         "handlers": handlers,
         "root": root,
+        "disable_existing_loggers": False,
     }
 
     return log_config
