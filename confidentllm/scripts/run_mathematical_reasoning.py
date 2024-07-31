@@ -25,11 +25,11 @@
 
 import logging
 
-import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
+import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.evaluation import Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
@@ -157,7 +157,7 @@ def run_mathematical_reasoning(  # noqa: PLR0913
 ) -> None:
     """Run the question answering process."""
     set_seed(seed)
-    init_wandb("mathematical_reasoning")
+    init_wandb()
 
     runner = MathematicalReasoningRunner(
         model,

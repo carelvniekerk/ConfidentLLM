@@ -151,9 +151,11 @@ def setup_hydra_config_and_logging(
     store.add_to_hydra_store()
 
 
-def init_wandb(config_name: str) -> None:
+def init_wandb() -> None:
     """Initialize Weights and Biases."""
-    initialize_wandb(config=DictConfig(compose(config_name=config_name)))
+    config_path: Path = Path(".hydra") / "config.yaml"
+    config: DictConfig = OmegaConf.load(config_path)  # type: ignore  # noqa: PGH003
+    initialize_wandb(config=config)
 
 
 def set_seed(seed: int) -> None:
