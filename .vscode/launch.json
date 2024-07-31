@@ -5,13 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Question Answering",
+            "name": "Mathematical Reasoning",
             "type": "debugpy",
             "request": "launch",
             "console": "integratedTerminal",
             "python": "${command:python.interpreterPath}",
             "cwd": "${workspaceFolder}",
-            "program": ".venv/bin/question-answering",
+            "program": ".venv/bin/mathematical-reasoning",
             "args": [],
         }
     ]
