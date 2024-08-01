@@ -21,12 +21,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License."
-"""Execcution scripts for different tasks."""
+"""Reporting tools for ConfidentLLM."""
 
-from confidentllm.scripts.run_download_and_sync import main as download_and_sync
-from confidentllm.scripts.run_mathematical_reasoning import (
-    main as mathematical_reasoning,
-)
-from confidentllm.scripts.run_reporting import main as reporting
+from confidentllm.reporting.load_wandb_data import load_wandb_data
 
-__all__ = ["download_and_sync", "mathematical_reasoning", "reporting"]
+__all__ = ["load_wandb_data"]

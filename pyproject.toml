@@ -12,7 +12,9 @@ accelerate = "^0.33"
 colorlog = "^6.8"
 datasets = "^2.20"
 hydra-zen = "^0.13"
+pandas = "^2.2.2"
 pydantic = "^2.8.2"
+sentencepiece = "^0.2.0"
 transformers = "^4.43"
 # Torch versioning:
 # Specific version for macOS with x86_64 architecture and latest version for other platforms
@@ -21,7 +23,6 @@ torch = [
     { version = "^2.3", markers = "platform_machine != 'x86_64' or platform_system != 'Darwin'" },
 ]
 wandb = "^0.17"
-sentencepiece = "^0.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
@@ -35,6 +36,7 @@ url = "http://pypi.repo.test.hhu.de/simple/"
 [tool.poetry.scripts]
 download-and-sync = "confidentllm.scripts:download_and_sync"
 mathematical-reasoning = "confidentllm.scripts:mathematical_reasoning"
+reporting = "confidentllm.scripts:reporting"
 
 # Configuration for Ruff (Python linter and formatter)
 [tool.ruff]

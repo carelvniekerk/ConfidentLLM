@@ -16,6 +16,16 @@
                 "data=gsm8k",
                 "model.pretrained_model_name_or_path=PHI2"
             ],
-        }
+        },
+        {
+            "name": "Reporting",
+            "type": "debugpy",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "python": "${command:python.interpreterPath}",
+            "cwd": "${workspaceFolder}",
+            "program": ".venv/bin/reporting",
+            "args": [],
+        },
     ]
 }
