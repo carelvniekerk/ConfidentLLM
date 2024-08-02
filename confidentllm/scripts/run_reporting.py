@@ -31,6 +31,8 @@ from hydra_zen import store, zen
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
+import wandb
+from confidentllm.logging.init_wandb import initialize_wandb
 from confidentllm.reporting import load_wandb_data
 from confidentllm.scripts.setup_tools import setup_hydra_config_and_logging
 
@@ -122,7 +124,7 @@ def create_calibration_plot(data_df: pd.DataFrame) -> dict[str, Figure]:
     # Filter the data frame
     calibration_df: pd.DataFrame = data_df[columns]
 
-    # Create the calibration plot
+    # Set up the plotting environment
     plt.style.use("dracula")
     plt.rcParams["font.family"] = "Inconsolata Nerd Font"
 
@@ -132,6 +134,7 @@ def create_calibration_plot(data_df: pd.DataFrame) -> dict[str, Figure]:
     figs: dict[str, Figure] = {}
     dataset_names: np.ndarray = calibration_df[dataset_column].unique()
     for dataset_name in dataset_names:
+        # Create a new figure for each dataset
         fig, ax = plt.subplots(figsize=(16, 8))
         ax.grid(linestyle="solid", color="gray", alpha=0.2)
 
@@ -145,7 +148,7 @@ def create_calibration_plot(data_df: pd.DataFrame) -> dict[str, Figure]:
             for confidence_method, confidence_line_style in zip(
                 confidence_methods,
                 plot_line_styles,
-                strict=False,
+                strict=False,  # Use strict=False to allow for different lengths
             ):
                 confidence_df: pd.DataFrame = model_df[
                     model_df[confidence_column] == confidence_method
@@ -157,6 +160,7 @@ def create_calibration_plot(data_df: pd.DataFrame) -> dict[str, Figure]:
                     confidence_df[confidence_columns].to_numpy().flatten()
                 )
 
+                # Remove empty bins
                 mask: np.ndarray = accuracy != -1
                 accuracy: np.ndarray = accuracy[mask]
                 confidence: np.ndarray = confidence[mask]
@@ -169,6 +173,7 @@ def create_calibration_plot(data_df: pd.DataFrame) -> dict[str, Figure]:
                     linestyle=confidence_line_style,
                 )
 
+        # Add the perfect calibration line
         ax.plot(
             [0.0, 1.0],
             [0.0, 1.0],
@@ -195,11 +200,17 @@ def run_reporting() -> None:
     """Run the reporting process."""
     data_df: pd.DataFrame = load_wandb_data("dialgroup-hhu/ConfidentLLM")
 
+    initialize_wandb(project_name="ConfidentLLM_Reporting")
+    wandb_log: dict = {}
+
     # Tabulate the results
     results_df: pd.DataFrame = tabulate_results(data_df)
     table_dir = Path("tables")
     table_dir.mkdir(exist_ok=True)
     results_df.to_csv(table_dir / "results.csv")
+
+    wandb_results_df: pd.DataFrame = pd.read_csv(table_dir / "results.csv")
+    wandb_log["results"] = wandb.Table(dataframe=wandb_results_df)
 
     # Create the calibration plots
     figures = create_calibration_plot(data_df)
@@ -214,6 +225,10 @@ def run_reporting() -> None:
             bbox_inches="tight",
             pad_inches=0,
         )
+        wandb_log[f"calibration_curve_{dataset_name}"] = wandb.Image(fig)
+
+    wandb.log(wandb_log)
+    wandb.finish()
 
 
 def main() -> None:

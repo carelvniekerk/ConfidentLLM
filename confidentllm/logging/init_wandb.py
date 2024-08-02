@@ -25,8 +25,9 @@
 
 from pathlib import Path
 
-import wandb
 from omegaconf import DictConfig, OmegaConf
+
+import wandb
 
 __all__ = ["initialize_wandb"]
 
@@ -66,7 +67,7 @@ def find_project_root(current_path: Path, marker: str = "pyproject.toml") -> Pat
 
 
 def initialize_wandb(
-    config: DictConfig,
+    config: DictConfig | None = None,
     project_name: str = "ConfidentLLM",
 ) -> None:
     """Initialize wandb."""
@@ -82,6 +83,8 @@ def initialize_wandb(
         ),
     )
 
+    if config is None:
+        return
     cfg_dict = OmegaConf.to_container(
         config,
         resolve=True,
