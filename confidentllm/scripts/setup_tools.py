@@ -61,12 +61,18 @@ def create_run_dir(
     run_dir: Path = root_dir / "${hydra.job.name}"
 
     if is_sweep:
-        sub_dir = Path("${" + config_keys[0] + "}")
+        sub_dir: Path | None = (
+            Path("${" + config_keys[0] + "}") if config_keys else None
+        )
         for key in config_keys[1:]:
             _key = "${" + key + "}"
-            sub_dir = sub_dir / _key
+            sub_dir = sub_dir / _key  # type: ignore - This loop will not be entered if config_keys is empty
 
-        sub_dir = sub_dir / "${now:%Y-%m-%d_%H-%M-%S}"
+        sub_dir = (
+            sub_dir / "${now:%Y-%m-%d_%H-%M-%S}"
+            if sub_dir
+            else Path("${now:%Y-%m-%d_%H-%M-%S}")
+        )
 
         return SweepDir(
             dir=str(run_dir),
