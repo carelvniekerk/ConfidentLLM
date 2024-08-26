@@ -114,7 +114,7 @@ class CalibrationEvaluator(Evaluator):
             accuracy = -1
             avg_confidence = -1
         else:
-            accuracy: float = (bin_data["predictions"] == bin_data["labels"]).mean()  # type: ignore - predictions and labels are numpy arrays.
+            accuracy: float = (bin_data["predictions"] == bin_data["labels"]).mean()  # type: ignore[reportAssignmentType]
             avg_confidence = bin_data["confidences"].mean().item()
 
         return {

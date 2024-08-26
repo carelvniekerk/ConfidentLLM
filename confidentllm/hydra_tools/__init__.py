@@ -48,7 +48,7 @@ class MultiGroupZenStore:
     def __call__(self, target: Any, name: str) -> None:  # noqa: ANN401 - Any accepted by the zen store
         """Store the target in all stores."""
         for store_fn in self.stores:
-            store_fn(target, name=name)  # type: ignore - Name is a string
+            store_fn(target, name=name)
 
 
 def function_path_to_name(function_path: str) -> str:
@@ -58,9 +58,9 @@ def function_path_to_name(function_path: str) -> str:
 
 def resolve_decoding_strategy(decoding_strategy: dict[str, str | int | float]) -> str:
     """Resolve the decoding strategy."""
-    name: str = decoding_strategy.get("_target_", "")  # type: ignore - Always a string
+    name: str = decoding_strategy.get("_target_", "")  # type:ignore[reportAssignmentType]
     if "path" in decoding_strategy:
-        name = decoding_strategy.get("path")  # type: ignore - Always a string
+        name = decoding_strategy.get("path")  # type:ignore[reportAssignmentType]
 
     other_params: list[str] = [
         key for key in decoding_strategy if key not in ["_target_", "path"]
@@ -75,7 +75,7 @@ def resolve_decoding_strategy(decoding_strategy: dict[str, str | int | float]) -
 
 def resolve_output_processor(output_processor: dict[str, str | int | float]) -> str:
     """Resolve the output processor."""
-    name: str = output_processor.get("_target_", "")  # type: ignore - Always a string
+    name: str = output_processor.get("_target_", "")  # type:ignore[reportAssignmentType]
 
     other_params: list[str] = [
         key for key in output_processor if key not in ["_target_", "generator"]

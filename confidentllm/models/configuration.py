@@ -50,7 +50,7 @@ PRETRAINED_MODEL_NAME_OR_PATH = {
 
 def get_pretrained_model_name_or_path(name: ModelName | Path) -> str | Path:
     """Get the pretrained model name or path for the given model name."""
-    return PRETRAINED_MODEL_NAME_OR_PATH.get(name, name)  # type: ignore - Paths will be returned as is
+    return PRETRAINED_MODEL_NAME_OR_PATH.get(name, name)  # type: ignore[reportAssignmentType]
 
 
 CHAT_TEMPLATES: dict[ModelName, str] = {
@@ -76,7 +76,7 @@ CHAT_TEMPLATES: dict[ModelName, str] = {
         "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"  # noqa: E501
         "{% endif %}{% if (message['role'] == 'assistant') %}"
         "{{ '\nOutput: ' + message['content'] | trim }}{% else %}"
-        "{{ 'Instruct: ' + message['content'] | trim + '\n' }}"
+        "{{ 'Instruct: ' + message['content'] | trim }}"
         "{% set role = message['role'] %}{% endif %}{% endfor %}"
         "{% if add_generation_prompt %}{{ '\nOutput: ' }}{% endif %}"
     ),

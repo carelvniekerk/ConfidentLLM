@@ -120,6 +120,12 @@ class AnswerProcessor(OutputProcessor):
             eos_token_id=self.tokenizer.eos_token_id,
         )  # type: ignore  # noqa: PGH003
 
+        to_be_printed: str = self.tokenizer.decode(
+            answer_output.generated_ids[0],
+            skip_special_tokens=False,
+        )
+        print(f'Answer: "{to_be_printed}"')
+
         search_term = answer_output.generated_ids[0][
             answer_output.generation_scores[0] >= 0.0
         ]

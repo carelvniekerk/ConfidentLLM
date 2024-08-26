@@ -38,7 +38,7 @@ GSM8K_ANSWER_PATTERN = r"\n#### (.+)"
 def load_gsm8k_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
-    name: str = "GSM8K",
+    name: str = "GSM8K",  # noqa: ARG001
 ) -> Dataset:
     """Load the GSM-8K dataset.
 
@@ -46,6 +46,7 @@ def load_gsm8k_data(
     ----
         split: The split of the dataset to load.
         transformation_batch_size: The batch size to use for the transformation.
+        name: The name of the dataset.
 
     Returns:
     -------
@@ -56,7 +57,7 @@ def load_gsm8k_data(
         path="openai/gsm8k",
         name="main",
         split=split,
-    )  # type: ignore - Returns a Dataset Object
+    )  # type: ignore[reportAssignmentType]
 
     data = data.map(
         partial(extract_answers, pattern=GSM8K_ANSWER_PATTERN),

@@ -334,4 +334,4 @@ class GreedyGenerateFunction(GenerateFunction):
 
 
 GeneratorConfig = builds(GreedyGenerateFunction)
-dynamic_generate_function = GeneratorConfig(decoding_strategy=None)  # type: ignore - None used to keep the config dynamically typed
+dynamic_generate_function = GeneratorConfig(decoding_strategy=None)  # type: ignore[assignment]

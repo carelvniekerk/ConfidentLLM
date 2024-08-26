@@ -29,7 +29,6 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from hydra import compose
 from hydra.conf import HydraConf, JobConf, RunDir, SweepDir
 from hydra_zen import store
 from omegaconf import DictConfig, OmegaConf
@@ -66,7 +65,7 @@ def create_run_dir(
         )
         for key in config_keys[1:]:
             _key = "${" + key + "}"
-            sub_dir = sub_dir / _key  # type: ignore - This loop will not be entered if config_keys is empty
+            sub_dir = sub_dir / _key  # type: ignore[reportOptionalOperand]
 
         sub_dir = (
             sub_dir / "${now:%Y-%m-%d_%H-%M-%S}"
@@ -91,7 +90,7 @@ def create_run_dir(
 def setup_hydra_config_and_logging(
     job_name: str,
     *,
-    config_keys: list[str] | None = None,  # type: ignore - None value is overwritten by the defaults
+    config_keys: list[str] | None = None,
     change_to_output_dir: bool = True,
     add_hpc_launcher: bool = False,
 ) -> None:
@@ -102,7 +101,7 @@ def setup_hydra_config_and_logging(
     logging_config: dict = create_logging_config()
 
     if config_keys is None:
-        config_keys: list[str] = [
+        config_keys = [
             "data.name",
             "data.split",
             "model.pretrained_model_name_or_path",

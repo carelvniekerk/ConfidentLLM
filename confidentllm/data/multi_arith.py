@@ -50,7 +50,7 @@ def multi_arith_key_mapping(data: dict[str, list[str]]) -> dict[str, list[str]]:
 def load_multi_arith_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
-    name: str = "MultiArith",
+    name: str = "MultiArith",  # noqa: ARG001 - Used for creating the experiments path
 ) -> Dataset:
     """Load the MultiArith dataset.
 
@@ -58,6 +58,7 @@ def load_multi_arith_data(
     ----
         split: The split of the dataset to load.
         transformation_batch_size: The batch size to use for the transformation.
+        name: The name of the dataset.
 
     Returns:
     -------
@@ -68,7 +69,7 @@ def load_multi_arith_data(
         path="ChilleD/MultiArith",
         name="default",
         split=split,
-    )  # type: ignore - Returns a Dataset Object
+    )  # type: ignore[reportAssignmentType]
 
     data = data.map(
         multi_arith_key_mapping,

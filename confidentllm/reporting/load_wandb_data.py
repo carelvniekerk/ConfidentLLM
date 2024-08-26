@@ -53,11 +53,17 @@ def _flatten_config(
         flat_config[key] = value
 
     if not [key for key in config if "name" in key] and "path" in config:
-        flat_config["name"] = config["path"].split(".")[-1]  # type: ignore - path is always a string
+        if not isinstance(config["path"], str):
+            msg = f"Expected path to be a string, got {type(config['path'])}"
+            raise TypeError(msg)
+        flat_config["name"] = config["path"].split(".")[-1]
         return flat_config
 
     if not [key for key in config if "name" in key] and "_target_" in config:
-        flat_config["name"] = config["_target_"].split(".")[-1]  # type: ignore - _target_ is always a string
+        if not isinstance(config["_target_"], str):
+            msg = f"Expected path to be a string, got {type(config['_target_'])}"
+            raise TypeError(msg)
+        flat_config["name"] = config["_target_"].split(".")[-1]
     return flat_config
 
 
