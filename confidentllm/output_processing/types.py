@@ -30,10 +30,7 @@ from typing import TYPE_CHECKING
 from torch.nn import Module
 from transformers.tokenization_utils import PreTrainedTokenizer
 
-from confidentllm.generation.types import GenerationOutput
-
-if TYPE_CHECKING:
-    from confidentllm.generation.types import GenerateFunction
+from confidentllm.generation.types import GenerateFunction, GenerationOutput
 
 __all__ = [
     "ProcessedOutput",
@@ -49,11 +46,9 @@ class ProcessedOutput:
 class OutputProcessor(ABC):
     """Class for processing the generated answers."""
 
-    def __init__(self) -> None:
-        """Initialize the processor."""
-        self.model: Module | None = None
-        self.tokenizer: PreTrainedTokenizer | None = None
-        self.generator: GenerateFunction | None = None
+    model: Module | None = None
+    tokenizer: PreTrainedTokenizer | None = None
+    generator: GenerateFunction
 
     def set_model(self, model: Module) -> None:
         """Set the model for the generation method."""

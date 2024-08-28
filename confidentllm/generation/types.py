@@ -94,15 +94,15 @@ class GenerateFunction(ABC):
         self,
         input_ids: Tensor,
         max_length: int,
-        min_length: int,
-        repetition_penalty: float,
-        no_repeat_ngram_size: int,
-        bad_words_ids: list[list[int]] | None,
         pad_token_id: int,
-        eos_token_id: int | None,
-        batch_size: int,
-        attention_mask: Tensor | None,
-        model_specific_kwargs: dict | None,
+        min_length: int = 1,
+        repetition_penalty: float = 1.0,
+        no_repeat_ngram_size: int = 0,
+        bad_words_ids: list[list[int]] | None = None,
+        eos_token_id: int | None = None,
+        batch_size: int = 1,
+        attention_mask: Tensor | None = None,
+        model_specific_kwargs: dict | None = None,
     ) -> GenerationOutput:
         """Generate sequences based on the given input.
 

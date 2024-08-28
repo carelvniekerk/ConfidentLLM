@@ -76,11 +76,11 @@ class VerbalisedConfidenceGenerator:
         )
 
         confidence_output = self.generator(
-            input_ids=inputs["input_ids"],
+            input_ids=inputs["input_ids"],  # type: ignore[reportArgumentType]
             max_length=self.max_answer_generation_length,
-            pad_token_id=self.tokenizer.pad_token_id,
+            pad_token_id=self.tokenizer.pad_token_id,  # type: ignore[reportArgumentType]
             eos_token_id=self.tokenizer.eos_token_id,
-        )  # type: ignore[reportCallIssue]
+        )
 
         confidence_term = confidence_output.generated_ids[0][
             confidence_output.generation_scores[0] >= 0.0

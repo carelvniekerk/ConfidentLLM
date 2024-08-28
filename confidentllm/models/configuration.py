@@ -98,10 +98,10 @@ CHAT_TEMPLATES: dict[ModelName, str] = {
         "{%- if not tools_in_user_message is defined %}\n"
         "    {%- set tools_in_user_message = true %}\n{%- endif %}\n"
         "{%- if not date_string is defined %}\n"
-        '    {%- set date_string = "26 Jul 2024" %}'  # noqa: E501
+        '    {%- set date_string = "26 Jul 2024" %}'
         "\n{%- endif %}\n{%- if not tools is defined %}\n"
         "    {%- set tools = none %}\n{%- endif %}\n\n"
-        "{#- This block extracts the system message, so we can slot it into the right place. #}\n"
+        "{#- This block extracts the system message, so we can slot it into the right place. #}\n"  # noqa: E501
         "{%- if messages[0]['role'] == 'system' %}\n"
         "    {%- set system_message = messages[0]['content']|trim %}\n"
         "    {%- set messages = messages[1:] %}\n{%- else %}\n"
@@ -137,7 +137,7 @@ CHAT_TEMPLATES: dict[ModelName, str] = {
         "{%- endif %}\n    {{- 'user\\n\\n' -}}\n"
         '    {{- "Given the following functions, please respond with a JSON for '
         'a function call " }}\n'
-        '    {{- "with its proper arguments that best answers the given prompt.\\n\\n" }}\n'
+        '    {{- "with its proper arguments that best answers the given prompt.\\n\\n" }}\n'  # noqa: E501
         '    {{- \'Respond in the format {"name": function name, "parameters": '
         "dictionary of argument name and its value}.' }}\n"
         '    {{- "Do not use variables.\\n\\n" }}\n'
@@ -147,15 +147,15 @@ CHAT_TEMPLATES: dict[ModelName, str] = {
         "    {%- endfor %}\n"
         "    {{- first_user_message + ''}}\n{%- endif %}\n\n"
         "{%- for message in messages %}\n"
-        "{%- if not (message.role == 'ipython' or message.role == 'tool' or 'tool_calls' in message) %}\n"
-        "        {{- '' + message['role'] + '\\n\\n'+ message['content'] | trim + '' }}\n"
+        "{%- if not (message.role == 'ipython' or message.role == 'tool' or 'tool_calls' in message) %}\n"  # noqa: E501
+        "        {{- '' + message['role'] + '\\n\\n'+ message['content'] | trim + '' }}\n"  # noqa: E501
         "{%- elif 'tool_calls' in message %}\n"
         "        {%- if not message.tool_calls|length == 1 %}\n"
         '            {{- raise_exception("This model only supports single tool-calls '
         'at once!") }}\n'
         "        {%- endif %}\n"
         "        {%- set tool_call = message.tool_calls[0].function %}\n"
-        "        {%- if builtin_tools is defined and tool_call.name in builtin_tools %}\n"
+        "        {%- if builtin_tools is defined and tool_call.name in builtin_tools %}\n"  # noqa: E501
         "            {{- 'assistant\\n\\n' -}}\n"
         "            {{- '' + tool_call.name + '.call(' }}\n"
         "            {%- for arg_name, arg_val in tool_call.arguments | items %}\n"
