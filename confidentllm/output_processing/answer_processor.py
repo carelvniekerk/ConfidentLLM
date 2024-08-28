@@ -28,6 +28,7 @@ import logging
 from dataclasses import dataclass, field
 
 import torch
+from transformers.tokenization_utils import BatchEncoding
 
 from confidentllm.generation.types import (
     GenerateFunction,
@@ -111,12 +112,12 @@ class AnswerProcessor(OutputProcessor):
         # Add the answer extraction prompt
         output_text = f"{output_text} {self.prompt} "
 
-        inputs = self.tokenizer(
+        inputs: BatchEncoding = self.tokenizer(
             output_text,
             return_tensors="pt",
         )
 
-        answer_output = self.generator(
+        answer_output: GenerationOutput = self.generator(
             input_ids=inputs["input_ids"],  # type: ignore[reportArgumentType] # Tokenizer will return input_ids of type tensor
             max_length=self.max_answer_generation_length,
             pad_token_id=self.tokenizer.pad_token_id,  # type: ignore[reportArgumentType]
@@ -158,7 +159,7 @@ class AnswerProcessor(OutputProcessor):
         ]
 
         try:
-            best_span = self._find_largest_overlap_span(
+            best_span: tuple[int, int] = self._find_largest_overlap_span(
                 clean_search_space,
                 search_term,
             )
@@ -170,7 +171,7 @@ class AnswerProcessor(OutputProcessor):
             clean_search_probs[best_span[0] : best_span[1] + 1],
         ).mean()
 
-        answer = self.tokenizer.decode(search_term, skip_special_tokens=True)
+        answer: str = self.tokenizer.decode(search_term, skip_special_tokens=True)
         answer = answer.replace("\n", "").strip()
 
         return Answer(answer=answer, confidence=conf)
@@ -200,8 +201,8 @@ class AnswerProcessor(OutputProcessor):
         search_span: list[int],
     ) -> tuple[int, int]:
         """Find the largest overlapping span in the search space."""
-        search_space_size = len(search_space)
-        search_span_size = len(search_span)
+        search_space_size: int = len(search_space)
+        search_span_size: int = len(search_span)
 
         seq_matcher = difflib.SequenceMatcher(
             isjunk=None,
