@@ -102,10 +102,13 @@ class AnswerProcessor(OutputProcessor):
         """
         if isinstance(self.tokenizer, type(None)):
             raise TokenizerNotSetError(self.tokenizer)
-        output_text = self.tokenizer.decode(
+        output_text: str = self.tokenizer.decode(
             generation_output.generated_ids[0],
             skip_special_tokens=True,
         )
+        # Remove new lines and trailing spaces
+        output_text = output_text.replace("\n", "").strip()
+        # Add the answer extraction prompt
         output_text = f"{output_text} {self.prompt} "
 
         inputs = self.tokenizer(
@@ -114,54 +117,96 @@ class AnswerProcessor(OutputProcessor):
         )
 
         answer_output = self.generator(
-            input_ids=inputs["input_ids"],  # type: ignore  # noqa: PGH003
+            input_ids=inputs["input_ids"],  # type: ignore[reportArgumentType] # Tokenizer will return input_ids of type tensor
             max_length=self.max_answer_generation_length,
-            pad_token_id=self.tokenizer.pad_token_id,
+            pad_token_id=self.tokenizer.pad_token_id,  # type: ignore[reportArgumentType]
             eos_token_id=self.tokenizer.eos_token_id,
-        )  # type: ignore  # noqa: PGH003
-
-        to_be_printed: str = self.tokenizer.decode(
-            answer_output.generated_ids[0],
-            skip_special_tokens=False,
         )
-        print(f'Answer: "{to_be_printed}"')
 
-        search_term = answer_output.generated_ids[0][
-            answer_output.generation_scores[0] >= 0.0
+        search_term: list[int] = (
+            answer_output.generated_ids[0][answer_output.generation_scores[0] >= 0.0]
+            .detach()
+            .cpu()
+            .tolist()
+        )
+
+        search_space: list[int] = (
+            generation_output.generated_ids[0][
+                generation_output.generation_scores[0] >= 0.0
+            ]
+            .detach()
+            .cpu()
+            .tolist()
+        )
+        search_probs: list[float] = (
+            generation_output.generation_scores[0][
+                generation_output.generation_scores[0] >= 0.0
+            ]
+            .detach()
+            .cpu()
+            .tolist()
+        )
+
+        clean_search_space: list[int] = []
+        clean_search_probs: list[float] = []
+        for token, prob in zip(search_space, search_probs, strict=True):
+            if token not in self._ignore_tokens:
+                clean_search_space.append(token)
+                clean_search_probs.append(prob)
+        search_term = [
+            token for token in search_term if token not in self._ignore_tokens
         ]
 
         try:
             best_span = self._find_largest_overlap_span(
-                generation_output.generated_ids[0][
-                    generation_output.generation_scores[0] >= 0.0
-                ],
+                clean_search_space,
                 search_term,
             )
         except NoOverlappingSpanFoundError as err:
             logger.warning(err.message)
             return Answer()
 
-        conf = generation_output.generation_scores[0][
-            generation_output.generation_scores[0] >= 0.0
-        ][best_span[0] : best_span[1] + 1]
+        conf: torch.Tensor = torch.tensor(
+            clean_search_probs[best_span[0] : best_span[1] + 1],
+        ).mean()
 
         answer = self.tokenizer.decode(search_term, skip_special_tokens=True)
         answer = answer.replace("\n", "").strip()
 
         return Answer(answer=answer, confidence=conf)
 
+    @property
+    def _ignore_tokens(self) -> list[int]:
+        """Get the tokens to ignore during answer extraction and mathing."""
+        if isinstance(self.tokenizer, type(None)):
+            raise TokenizerNotSetError(self.tokenizer)
+
+        ignore_tokens: list[int] = []
+        if self.tokenizer.pad_token_id is not None:
+            ignore_tokens.append(self.tokenizer.pad_token_id)
+        if self.tokenizer.eos_token_id is not None:
+            ignore_tokens.append(self.tokenizer.eos_token_id)
+        if self.tokenizer.bos_token_id is not None:
+            ignore_tokens.append(self.tokenizer.bos_token_id)
+
+        new_line_token_id: int = self.tokenizer.convert_tokens_to_ids("\n")  # type: ignore[reportAssignmentType]
+        ignore_tokens.append(new_line_token_id)
+
+        return ignore_tokens
+
     def _find_largest_overlap_span(
         self,
-        search_space: torch.Tensor,
-        search_span: torch.Tensor,
+        search_space: list[int],
+        search_span: list[int],
     ) -> tuple[int, int]:
         """Find the largest overlapping span in the search space."""
-        search_space_size = search_space.size(0)
-        search_span_size = search_span.size(0)
+        search_space_size = len(search_space)
+        search_span_size = len(search_span)
+
         seq_matcher = difflib.SequenceMatcher(
             isjunk=None,
-            a=search_space.detach().cpu().numpy()[::-1],
-            b=search_span.detach().cpu().numpy()[::-1],
+            a=search_space,
+            b=search_span,
         )  # type: ignore  # noqa: PGH003 - numpy arrays can be dealt with as sequences in this method.
         match = seq_matcher.find_longest_match(
             alo=0,
@@ -190,4 +235,5 @@ class AnswerProcessor(OutputProcessor):
                     skip_special_tokens=True,
                 ),
             )
+
         return best_span
