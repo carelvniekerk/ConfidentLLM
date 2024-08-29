@@ -28,8 +28,12 @@ from pathlib import Path
 import torch
 from hydra_zen import store
 from hydra_zen.third_party.pydantic import pydantic_parser
-from torch.nn import Module
-from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    PreTrainedModel,
+    PreTrainedTokenizer,
+)
 
 from confidentllm.hydra_tools import builds
 from confidentllm.models.configuration import (
@@ -79,7 +83,7 @@ class ModelLoader:
             pretrained_model_name_or_path,  # type: ignore[reportArgumentType]
         )
 
-    def load(self) -> tuple[Module, PreTrainedTokenizer]:
+    def load(self) -> tuple[PreTrainedModel, PreTrainedTokenizer]:
         """Load a pretrained model from Hugging Face's model hub.
 
         Args:
@@ -92,7 +96,7 @@ class ModelLoader:
             Module: The model loaded on the specified device.
 
         """
-        model: Module = AutoModelForCausalLM.from_pretrained(
+        model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(
             self.pretrained_model_name_or_path,
         )
 
@@ -107,7 +111,7 @@ class ModelLoader:
             tokenizer.pad_token_id = tokenizer.eos_token_id
             tokenizer.pad_token = tokenizer.eos_token
 
-        return model.to(self.device), tokenizer
+        return model.to(self.device), tokenizer  # type: ignore[reportArgumentType]
 
 
 # Add default model loader to the store

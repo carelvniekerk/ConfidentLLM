@@ -25,10 +25,7 @@
 
 import re
 
-from confidentllm.generation.types import (
-    GenerateFunction,
-    GenerationOutput,
-)
+from confidentllm.generation.types import GenerationOutput
 from confidentllm.output_processing.answer_processor import Answer, AnswerProcessor
 
 __all__ = ["NumericAnswerProcessor"]
@@ -39,13 +36,11 @@ class NumericAnswerProcessor(AnswerProcessor):
 
     def __init__(
         self,
-        generator: GenerateFunction,
         prompt: str = "So the answer (in numbers) is:",
         max_answer_generation_length: int = 20,
     ) -> None:
         """Initialize the processor."""
         super().__init__(
-            generator=generator,
             prompt=prompt,
             max_answer_generation_length=max_answer_generation_length,
         )

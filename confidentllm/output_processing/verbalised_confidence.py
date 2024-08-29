@@ -27,12 +27,10 @@ import re
 from typing import Callable, Protocol
 
 import torch
-from transformers.tokenization_utils import PreTrainedTokenizer
+from transformers import BatchEncoding, PreTrainedModel, PreTrainedTokenizer
+from transformers.generation import GenerateDecoderOnlyOutput
 
-from confidentllm.generation.types import (
-    GenerateFunction,
-    GenerationOutput,
-)
+from confidentllm.generation.types import GenerationOutput
 from confidentllm.output_processing.answer_processor import Answer, AnswerProcessor
 from confidentllm.output_processing.numeric_answer_processor import (
     NumericAnswerProcessor,
@@ -48,7 +46,7 @@ class VerbalisedConfidenceAnswerProcessorProtocol(Protocol):
     """Protocol for verbalised confidence answer processor."""
 
     tokenizer: PreTrainedTokenizer
-    generator: GenerateFunction
+    model: PreTrainedModel
 
     confidence_prompt: str
     max_answer_generation_length: int
@@ -70,29 +68,30 @@ class VerbalisedConfidenceGenerator:
         )
         output_text = f"{output_text} {self.confidence_prompt} "
 
-        inputs = self.tokenizer(
+        inputs: BatchEncoding = self.tokenizer(
             output_text,
             return_tensors="pt",
         )
 
-        confidence_output = self.generator(
-            input_ids=inputs["input_ids"],  # type: ignore[reportArgumentType]
-            max_length=self.max_answer_generation_length,
-            pad_token_id=self.tokenizer.pad_token_id,  # type: ignore[reportArgumentType]
-            eos_token_id=self.tokenizer.eos_token_id,
-        )
+        confidence_output: GenerateDecoderOnlyOutput = self.model.generate(
+            input_ids=inputs.input_ids,
+            attention_mask=inputs.attention_mask,
+            max_length=self.max_answer_generation_length + inputs.input_ids.shape[-1],
+            return_dict_in_generate=True,
+        )  # type: ignore[reportAssignmentType]
 
-        confidence_term = confidence_output.generated_ids[0][
-            confidence_output.generation_scores[0] >= 0.0
+        confidence_term_ids: torch.Tensor = confidence_output.sequences[0][
+            inputs.input_ids[0].shape[1] :
         ]
 
-        confidence_term = self.tokenizer.decode(  # type: ignore  # noqa: PGH003
-            confidence_term,
+        confidence_term: str = self.tokenizer.decode(  # type: ignore  # noqa: PGH003
+            confidence_term_ids,
             skip_special_tokens=True,
         )
         confidence_term = confidence_term.replace("\n", "").strip()
-        confidence = self._extract_confidence(confidence_term)
-        confidence = torch.Tensor([confidence])
+        confidence: torch.Tensor = torch.Tensor(
+            [self._extract_confidence(confidence_term)],
+        )
 
         return confidence
 
@@ -123,7 +122,6 @@ class VerbalisedConfidenceAnswerProcessor(
 
     def __init__(
         self,
-        generator: GenerateFunction,
         prompt: str = (
             "So the answer is: My confidence that this answer is correct (0-100):"
         ),
@@ -134,7 +132,6 @@ class VerbalisedConfidenceAnswerProcessor(
         answer_prompt += ":"
 
         super().__init__(
-            generator=generator,
             prompt=answer_prompt,
             max_answer_generation_length=max_answer_generation_length,
         )
@@ -177,7 +174,6 @@ class VerbalisedConfidenceNumericAnswerProcessor(
 
     def __init__(
         self,
-        generator: GenerateFunction,
         prompt: str = (
             "So the answer (in numbers) is: "
             "My confidence that this answer is correct (0-100):"
@@ -189,7 +185,6 @@ class VerbalisedConfidenceNumericAnswerProcessor(
         answer_prompt += ":"
 
         super().__init__(
-            generator=generator,
             prompt=answer_prompt,
             max_answer_generation_length=max_answer_generation_length,
         )

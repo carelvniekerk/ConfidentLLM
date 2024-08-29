@@ -139,10 +139,8 @@ class MathematicalReasoningRunner:
     hydra_defaults=[
         "_self_",
         {"model": "default"},
-        {"generation_method": "causal_lm_generation_method"},
-        {"generation_method/generator/decoding_strategy": "sampling"},
+        {"generation_method": "greedy_causal_lm_generation_method"},
         {"output_processor": "numeric_answer_processor"},
-        {"output_processor/generator/decoding_strategy": "greedy"},
         {"data": "multiarith"},
         {"evaluator": "accuracy_and_calibration"},
     ],

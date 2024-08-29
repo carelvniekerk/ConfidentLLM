@@ -23,13 +23,17 @@
 # limitations under the License.
 """Main execution file for the project."""
 
+import torch
 from hydra_zen import store
+from transformers import BatchEncoding
+from transformers.generation import GenerateDecoderOnlyOutput
 
-from confidentllm.generation.generation_function import dynamic_generate_function
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
-    GenerateFunction,
+    ChatConversation,
+    ChatUserMessage,
     GenerationOutput,
+    ModelNotSetError,
     TokenizerNotSetError,
 )
 from confidentllm.hydra_tools import builds
@@ -40,9 +44,6 @@ __all__ = []
 class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
     """Greedy generation method for causal language models."""
 
-    def __init__(self, generator: GenerateFunction) -> None:
-        super().__init__(generator)
-
     def __call__(
         self,
         prompt: str,
@@ -51,39 +52,47 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
         """Generate text based on the given prompt."""
         if isinstance(self.tokenizer, type(None)):
             raise TokenizerNotSetError(self.tokenizer)
+        if isinstance(self.model, type(None)):
+            raise ModelNotSetError(self.model)
 
-        conversation: list[list[dict[str, str]]] = [
-            [
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-            ],
-        ]
+        conversation: ChatConversation = ChatConversation(
+            messages=[[ChatUserMessage(content=prompt)]],
+        )
 
-        inputs = self.tokenizer.apply_chat_template(
-            conversation,
+        inputs: BatchEncoding = self.tokenizer.apply_chat_template(
+            list(conversation),
             add_generation_prompt=True,
             return_tensors="pt",
             return_dict=True,
+        )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
+
+        generation_output: GenerateDecoderOnlyOutput = self.model.generate(
+            input_ids=inputs.input_ids,
+            attention_mask=inputs.attention_mask,
+            max_length=max_length + inputs.input_ids.shape[-1],
+            output_logits=True,
+            return_dict_in_generate=True,
+        )  # type: ignore[reportAssignmentType] # When using return dict a type GenerateDecoderOnlyOutput is returned
+
+        if generation_output.logits is None:
+            msg = "The logits are not set."
+            raise ValueError(msg)
+
+        generation_scores: torch.Tensor = torch.cat(
+            generation_output.logits,
+            dim=0,
+        ).unsqueeze(0)
+
+        return GenerationOutput(
+            generated_ids=generation_output.sequences,
+            generation_scores=generation_scores,
         )
 
-        return self.generator(
-            input_ids=inputs["input_ids"],  # type: ignore  # noqa: PGH003
-            max_length=max_length,
-            pad_token_id=self.tokenizer.pad_token_id,
-            eos_token_id=self.tokenizer.eos_token_id,
-        )  # type: ignore  # noqa: PGH003
 
-
-CausalLMGenerationConfig = builds(GreedyCausalLMGenerationMethod)
-
-causal_lm_generation_method = CausalLMGenerationConfig(
-    generator=dynamic_generate_function,  # type: ignore  # noqa: PGH003
-)
+GreedyCausalLMGenerationConfig = builds(GreedyCausalLMGenerationMethod)
 
 generation_method_store = store(group="generation_method")
 generation_method_store(
-    causal_lm_generation_method,
-    name="causal_lm_generation_method",
+    GreedyCausalLMGenerationConfig,
+    name="greedy_causal_lm_generation_method",
 )

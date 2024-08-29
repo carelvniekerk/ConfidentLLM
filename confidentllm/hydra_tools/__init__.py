@@ -24,53 +24,21 @@
 """Set up logging configuration for project."""
 
 from pathlib import Path
-from typing import Any
 
-from hydra_zen import ZenStore, make_custom_builds_fn, store
+from hydra_zen import make_custom_builds_fn
 
 __all__ = [
     "builds",
-    "MultiGroupZenStore",
-    "resolve_decoding_strategy",
     "resolve_output_processor",
+    "resolve_generation_method",
 ]
 
 builds = make_custom_builds_fn(populate_full_signature=True)
 
 
-class MultiGroupZenStore:
-    """A ZenStore that applies the same function to multiple groups."""
-
-    def __init__(self, groups: list[str]) -> None:
-        """Initialize a MultiGroupZenStore."""
-        self.stores: list[ZenStore] = [store(group=group) for group in groups]
-
-    def __call__(self, target: Any, name: str) -> None:  # noqa: ANN401 - Any accepted by the zen store
-        """Store the target in all stores."""
-        for store_fn in self.stores:
-            store_fn(target, name=name)
-
-
 def function_path_to_name(function_path: str) -> str:
     """Convert a function path to a name."""
     return function_path.split(".")[-1]
-
-
-def resolve_decoding_strategy(decoding_strategy: dict[str, str | int | float]) -> str:
-    """Resolve the decoding strategy."""
-    name: str = decoding_strategy.get("_target_", "")  # type:ignore[reportAssignmentType]
-    if "path" in decoding_strategy:
-        name = decoding_strategy.get("path")  # type:ignore[reportAssignmentType]
-
-    other_params: list[str] = [
-        key for key in decoding_strategy if key not in ["_target_", "path"]
-    ]
-
-    dec_str: Path = Path(function_path_to_name(name))
-    for param in other_params:
-        dec_str = dec_str / f"{param}_{decoding_strategy[param]}"
-
-    return str(dec_str)
 
 
 def resolve_output_processor(output_processor: dict[str, str | int | float]) -> str:
@@ -89,3 +57,21 @@ def resolve_output_processor(output_processor: dict[str, str | int | float]) -> 
         op_str = op_str / f"{param}_{val}"
 
     return str(op_str)
+
+
+def resolve_generation_method(generation_method: dict[str, str | int | float]) -> str:
+    """Resolve the generation method."""
+    name: str = generation_method.get("_target_", "")  # type:ignore[reportAssignmentType]
+
+    other_params: list[str] = [
+        key for key in generation_method if key not in ["_target_", "generator"]
+    ]
+
+    gm_str: Path = Path(function_path_to_name(name))
+    for param in other_params:
+        val: str | int | float = generation_method[param]
+        if isinstance(val, str):
+            val = val.replace(" ", "_")
+        gm_str = gm_str / f"{param}_{val}"
+
+    return str(gm_str)

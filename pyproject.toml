@@ -52,5 +52,5 @@ target-version = "py312"
 python_version = "3.12"
 
 [[tool.mypy.overrides]]
-module = ["transformers", "transformers.tokenization_utils", "datasets"]
+module = ["transformers", "transformers.generation", "datasets"]
 ignore_missing_imports = true

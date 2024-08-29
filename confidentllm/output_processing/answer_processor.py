@@ -28,10 +28,10 @@ import logging
 from dataclasses import dataclass, field
 
 import torch
-from transformers.tokenization_utils import BatchEncoding
+from transformers import BatchEncoding
+from transformers.generation import GenerateDecoderOnlyOutput
 
 from confidentllm.generation.types import (
-    GenerateFunction,
     GenerationOutput,
     TokenizerNotSetError,
 )
@@ -74,13 +74,11 @@ class AnswerProcessor(OutputProcessor):
 
     def __init__(
         self,
-        generator: GenerateFunction,
         prompt: str = "So the answer is:",
         max_answer_generation_length: int = 20,
     ) -> None:
         """Initialize the processor."""
         super().__init__()
-        self.generator = generator
         self.prompt = prompt
         self.max_answer_generation_length = max_answer_generation_length
 
@@ -103,6 +101,7 @@ class AnswerProcessor(OutputProcessor):
         """
         if isinstance(self.tokenizer, type(None)):
             raise TokenizerNotSetError(self.tokenizer)
+
         output_text: str = self.tokenizer.decode(
             generation_output.generated_ids[0],
             skip_special_tokens=True,
@@ -117,15 +116,15 @@ class AnswerProcessor(OutputProcessor):
             return_tensors="pt",
         )
 
-        answer_output: GenerationOutput = self.generator(
-            input_ids=inputs["input_ids"],  # type: ignore[reportArgumentType] # Tokenizer will return input_ids of type tensor
-            max_length=self.max_answer_generation_length,
-            pad_token_id=self.tokenizer.pad_token_id,  # type: ignore[reportArgumentType]
-            eos_token_id=self.tokenizer.eos_token_id,
-        )
+        answer_output: GenerateDecoderOnlyOutput = self.model.generate(
+            input_ids=inputs.input_ids,
+            attention_mask=inputs.attention_mask,
+            max_length=self.max_answer_generation_length + inputs.input_ids.shape[-1],
+            return_dict_in_generate=True,
+        )  # type: ignore[reportAssignmentType]
 
         search_term: list[int] = (
-            answer_output.generated_ids[0][answer_output.generation_scores[0] >= 0.0]
+            answer_output.sequences[0][inputs.input_ids[0].size(-1) :]
             .detach()
             .cpu()
             .tolist()
@@ -133,19 +132,14 @@ class AnswerProcessor(OutputProcessor):
 
         search_space: list[int] = (
             generation_output.generated_ids[0][
-                generation_output.generation_scores[0] >= 0.0
+                -generation_output.generation_scores.size(-2) :
             ]
             .detach()
             .cpu()
             .tolist()
         )
         search_probs: list[float] = (
-            generation_output.generation_scores[0][
-                generation_output.generation_scores[0] >= 0.0
-            ]
-            .detach()
-            .cpu()
-            .tolist()
+            generation_output.generation_scores[0].detach().cpu().tolist()
         )
 
         clean_search_space: list[int] = []

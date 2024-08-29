@@ -25,18 +25,18 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Iterator
 
 from torch import Tensor
-from torch.nn import Module
-from transformers.tokenization_utils import PreTrainedTokenizer
-
-from confidentllm.decoding_strategies import DecodingStrategy
+from transformers import PreTrainedModel, PreTrainedTokenizer
 
 __all__ = [
     "GenerationOutput",
+    "ChatUserMessage",
+    "ChatAssistantMessage",
+    "ChatConversation",
     "ModelNotSetError",
     "TokenizerNotSetError",
-    "GenerateFunction",
     "CausalLMGenerationMethod",
 ]
 
@@ -49,10 +49,38 @@ class GenerationOutput:
     generation_scores: Tensor
 
 
+@dataclass
+class ChatUserMessage:
+    """Dataclass for the chat user message."""
+
+    content: str
+    role: str = "user"
+
+
+@dataclass
+class ChatAssistantMessage:
+    """Dataclass for the chat user message."""
+
+    content: str
+    role: str = "assistant"
+
+
+@dataclass
+class ChatConversation:
+    """Dataclass for the chat conversation."""
+
+    messages: list[list[ChatUserMessage | ChatAssistantMessage]]
+
+    def __iter__(self) -> Iterator[list[dict[str, str]]]:
+        """Convert the chat conversation to a iterator."""
+        for chat in self.messages:
+            yield [message.__dict__ for message in chat]
+
+
 class ModelNotSetError(Exception):
     """Exception raised when the model is not set."""
 
-    def __init__(self, model: Module | None) -> None:  # noqa: D107
+    def __init__(self, model: PreTrainedModel | None) -> None:  # noqa: D107
         self.model = model
         self.message = (
             "The model is not set. Please set the model before generating text."
@@ -71,78 +99,19 @@ class TokenizerNotSetError(Exception):
         super().__init__(self.message)
 
 
-class GenerateFunction(ABC):
-    """Interface for the generator used in the uncertainllm package."""
-
-    def __init__(self, decoding_strategy: DecodingStrategy) -> None:
-        """Initialize the generate function.
-
-        Args:
-        ----
-            decoding_strategy (DecodingStrategy): The decoding strategy to use.
-
-        """
-        self.decoding_strategy = decoding_strategy
-        self.model: Module | None = None
-
-    def set_model(self, model: Module) -> None:
-        """Set the model for the generation method."""
-        self.model = model
-
-    @abstractmethod
-    def __call__(  # noqa: PLR0913
-        self,
-        input_ids: Tensor,
-        max_length: int,
-        pad_token_id: int,
-        min_length: int = 1,
-        repetition_penalty: float = 1.0,
-        no_repeat_ngram_size: int = 0,
-        bad_words_ids: list[list[int]] | None = None,
-        eos_token_id: int | None = None,
-        batch_size: int = 1,
-        attention_mask: Tensor | None = None,
-        model_specific_kwargs: dict | None = None,
-    ) -> GenerationOutput:
-        """Generate sequences based on the given input.
-
-        Args:
-        ----
-            input_ids (torch.Tensor): The input tensor.
-            attention_mask (torch.Tensor | None): The attention mask tensor.
-            max_length (int): The maximum length of the generated sequences.
-            min_length (int): The minimum length of the generated sequences.
-            repetition_penalty (float): The repetition penalty.
-            no_repeat_ngram_size (int): The size of the n-grams to avoid repetition.
-            bad_words_ids (list[list[int]] | None): The list of bad word IDs to avoid.
-            pad_token_id (int): The ID of the padding token.
-            eos_token_id (int | None): The ID of the end-of-sequence token.
-            batch_size (int): The batch size.
-            decoding_kwargs (dict | None): Additional decoding arguments.
-            model_specific_kwargs (dict | None): Additional model-specific arguments.
-
-        Returns:
-        -------
-            GenerationOutput: The generated sequences and their scores.
-
-        """
-        ...
-
-
 class CausalLMGenerationMethod(ABC):
     """Protocol for the generation method."""
 
-    def __init__(self, generator: GenerateFunction) -> None:  # noqa: D107
-        self.tokenizer: PreTrainedTokenizer | None = None
-        self.generator = generator
+    tokenizer: PreTrainedTokenizer
+    model: PreTrainedModel
 
     def set_tokenizer(self, tokenizer: PreTrainedTokenizer) -> None:
         """Set the tokenizer for the generation method."""
         self.tokenizer = tokenizer
 
-    def set_model(self, model: Module) -> None:
+    def set_model(self, model: PreTrainedModel) -> None:
         """Set the model for the generation method."""
-        self.generator.set_model(model)
+        self.model = model
 
     @abstractmethod
     def __call__(self, prompt: str, max_length: int = 256) -> GenerationOutput:

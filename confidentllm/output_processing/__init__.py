@@ -25,7 +25,6 @@
 
 from hydra_zen import store
 
-from confidentllm.generation.generation_function import dynamic_generate_function
 from confidentllm.hydra_tools import builds
 from confidentllm.output_processing.answer_processor import Answer, AnswerProcessor
 from confidentllm.output_processing.numeric_answer_processor import (
@@ -42,24 +41,14 @@ __all__ = [
     "Answer",
 ]
 
-AnswerProcessorConfig = builds(
-    AnswerProcessor,
-    generator=dynamic_generate_function,  # type: ignore  # noqa: PGH003
-)
+AnswerProcessorConfig = builds(AnswerProcessor)
 
-NumericAnswerProcessorConfig = builds(
-    NumericAnswerProcessor,
-    generator=dynamic_generate_function,  # type: ignore  # noqa: PGH003
-)
+NumericAnswerProcessorConfig = builds(NumericAnswerProcessor)
 
-VerbalisedConfidenceProcessorConfig = builds(
-    VerbalisedConfidenceAnswerProcessor,
-    generator=dynamic_generate_function,  # type: ignore  # noqa: PGH003
-)
+VerbalisedConfidenceProcessorConfig = builds(VerbalisedConfidenceAnswerProcessor)
 
 NumericVerbalisedConfidenceProcessorConfig = builds(
     VerbalisedConfidenceNumericAnswerProcessor,
-    generator=dynamic_generate_function,  # type: ignore  # noqa: PGH003
 )
 
 output_processor_store = store(group="output_processor")

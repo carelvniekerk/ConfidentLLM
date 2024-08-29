@@ -25,7 +25,6 @@
 
 from confidentllm.generation import (  # noqa: F401
     causal_lm_generation_methods,
-    generation_function,
 )
 from confidentllm.generation.types import CausalLMGenerationMethod
 

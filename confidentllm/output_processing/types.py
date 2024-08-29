@@ -25,12 +25,10 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
-from torch.nn import Module
-from transformers.tokenization_utils import PreTrainedTokenizer
+from transformers import PreTrainedModel, PreTrainedTokenizer
 
-from confidentllm.generation.types import GenerateFunction, GenerationOutput
+from confidentllm.generation.types import GenerationOutput
 
 __all__ = [
     "ProcessedOutput",
@@ -46,16 +44,12 @@ class ProcessedOutput:
 class OutputProcessor(ABC):
     """Class for processing the generated answers."""
 
-    model: Module | None = None
-    tokenizer: PreTrainedTokenizer | None = None
-    generator: GenerateFunction
+    model: PreTrainedModel
+    tokenizer: PreTrainedTokenizer
 
-    def set_model(self, model: Module) -> None:
+    def set_model(self, model: PreTrainedModel) -> None:
         """Set the model for the generation method."""
-        if isinstance(self.generator, type(None)):
-            msg = "The generator is not set."
-            raise TypeError(msg)
-        self.generator.set_model(model)
+        self.model = model
 
     def set_tokenizer(self, tokenizer: PreTrainedTokenizer) -> None:
         """Set the tokenizer for the generation method."""
