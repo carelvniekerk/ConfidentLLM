@@ -67,9 +67,9 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
         )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
 
         generation_output: GenerateDecoderOnlyOutput = self.model.generate(
-            input_ids=inputs.input_ids,
-            attention_mask=inputs.attention_mask,
-            max_length=max_length + inputs.input_ids.shape[-1],
+            input_ids=inputs.input_ids.to(self.model.device),
+            attention_mask=inputs.attention_mask.to(self.model.device),
+            max_length=max_length + inputs.input_ids.size(-1),
             output_logits=True,
             return_dict_in_generate=True,
             pad_token_id=self.tokenizer.pad_token_id,
@@ -83,6 +83,7 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
             generation_output.logits,
             dim=0,
         ).unsqueeze(0)
+        generation_scores = torch.softmax(generation_scores, dim=-1)
 
         return GenerationOutput(
             generated_ids=generation_output.sequences,
