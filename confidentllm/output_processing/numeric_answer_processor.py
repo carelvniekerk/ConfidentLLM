@@ -69,6 +69,7 @@ class NumericAnswerProcessor(AnswerProcessor):
         return Answer(
             answer=str(answer),
             confidence=answer_object.confidence,
+            reasoning=answer_object.reasoning,
         )
 
     @staticmethod

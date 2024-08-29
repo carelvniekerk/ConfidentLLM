@@ -90,12 +90,7 @@ class MathematicalReasoningRunner:
             question,
             max_length,
         )
-        reasoning: str = self.tokenizer.decode(
-            generation_output.generated_ids[0],
-            skip_special_tokens=True,
-        )
-        answer: Answer = self.answer_processor(generation_output)  # type: ignore  # noqa: PGH003 - Answer processor here will always return answer.
-        answer.reasoning = reasoning
+        answer: Answer = self.answer_processor(generation_output)  # type: ignore[reportAssignmentType]
 
         return answer
 

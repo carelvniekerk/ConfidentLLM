@@ -109,7 +109,7 @@ class AnswerProcessor(OutputProcessor):
         # Remove new lines and trailing spaces
         output_text = output_text.replace("\n", "").strip()
         # Add the answer extraction prompt
-        output_text = f"{output_text} {self.prompt} "
+        output_text = f"{output_text} {self.prompt}"
 
         inputs: BatchEncoding = self.tokenizer(
             output_text,
@@ -117,8 +117,8 @@ class AnswerProcessor(OutputProcessor):
         )
 
         answer_output: GenerateDecoderOnlyOutput = self.model.generate(
-            input_ids=inputs.input_ids,
-            attention_mask=inputs.attention_mask,
+            input_ids=inputs.input_ids.to(self.model.device),
+            attention_mask=inputs.attention_mask.to(self.model.device),
             max_length=self.max_answer_generation_length + inputs.input_ids.shape[-1],
             return_dict_in_generate=True,
             pad_token_id=self.tokenizer.pad_token_id,
@@ -169,7 +169,10 @@ class AnswerProcessor(OutputProcessor):
         answer: str = self.tokenizer.decode(search_term, skip_special_tokens=True)
         answer = answer.replace("\n", "").strip()
 
-        return Answer(answer=answer, confidence=conf)
+        reasoning: str = self.tokenizer.decode(search_space, skip_special_tokens=True)
+        reasoning = reasoning.replace("\n", "").strip()
+
+        return Answer(answer=answer, confidence=conf, reasoning=reasoning)
 
     @property
     def _ignore_tokens(self) -> list[int]:
