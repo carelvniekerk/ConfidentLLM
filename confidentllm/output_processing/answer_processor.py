@@ -121,6 +121,7 @@ class AnswerProcessor(OutputProcessor):
             attention_mask=inputs.attention_mask,
             max_length=self.max_answer_generation_length + inputs.input_ids.shape[-1],
             return_dict_in_generate=True,
+            pad_token_id=self.tokenizer.pad_token_id,
         )  # type: ignore[reportAssignmentType]
 
         search_term: list[int] = (
