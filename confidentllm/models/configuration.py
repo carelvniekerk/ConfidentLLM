@@ -65,7 +65,7 @@ CHAT_TEMPLATES: dict[ModelName, str] = {
         "{{ '\nOutput: ' + message['content'] | trim }}{% else %}"
         "{{ 'Instruct: ' + message['content'] | trim + '\n' }}"
         "{% set role = message['role'] %}{% endif %}{% endfor %}"
-        "{% if add_generation_prompt %}{{ '\nOutput: ' }}{% endif %}"
+        "{% if add_generation_prompt %}{{ '\nOutput:' }}{% endif %}"
     ),
     ModelName.PHI2: (
         "{{ bos_token }}"
@@ -78,7 +78,7 @@ CHAT_TEMPLATES: dict[ModelName, str] = {
         "{{ '\nOutput: ' + message['content'] | trim }}{% else %}"
         "{{ 'Instruct: ' + message['content'] | trim }}"
         "{% set role = message['role'] %}{% endif %}{% endfor %}"
-        "{% if add_generation_prompt %}{{ '\nOutput: ' }}{% endif %}"
+        "{% if add_generation_prompt %}{{ '\nOutput:' }}{% endif %}"
     ),
     ModelName.GEMMA2_9B: (
         "{{ bos_token }}{% if messages[0]['role'] == 'system' %}"

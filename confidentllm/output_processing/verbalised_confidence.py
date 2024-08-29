@@ -66,7 +66,7 @@ class VerbalisedConfidenceGenerator:
             generation_output.generated_ids[0],
             skip_special_tokens=True,
         )
-        output_text = f"{output_text} {self.confidence_prompt} "
+        output_text = f"{output_text} {self.confidence_prompt}"
 
         inputs: BatchEncoding = self.tokenizer(
             output_text,
@@ -74,8 +74,8 @@ class VerbalisedConfidenceGenerator:
         )
 
         confidence_output: GenerateDecoderOnlyOutput = self.model.generate(
-            input_ids=inputs.input_ids,
-            attention_mask=inputs.attention_mask,
+            input_ids=inputs.input_ids.to(self.model.device),
+            attention_mask=inputs.attention_mask.to(self.model.device),
             max_length=self.max_answer_generation_length + inputs.input_ids.shape[-1],
             return_dict_in_generate=True,
             pad_token_id=self.tokenizer.pad_token_id,
@@ -164,6 +164,7 @@ class VerbalisedConfidenceAnswerProcessor(
         return Answer(
             answer=answer_object.answer,
             confidence=confidence,
+            reasoning=answer_object.reasoning,
         )
 
 
@@ -217,4 +218,5 @@ class VerbalisedConfidenceNumericAnswerProcessor(
         return Answer(
             answer=answer_object.answer,
             confidence=confidence,
+            reasoning=answer_object.reasoning,
         )
