@@ -64,7 +64,7 @@ class NumericAnswerProcessor(AnswerProcessor):
         """
         answer_object = super().__call__(generation_output, **kwargs)
         answer = self._extract_numbers(answer_object.answer)
-        answer = answer[0] if answer else -1
+        answer = answer[-1] if answer else -1
 
         return Answer(
             answer=str(answer),

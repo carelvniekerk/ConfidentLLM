@@ -60,7 +60,7 @@ class VerbalisedConfidenceGenerator:
     def _generate_verbalised_confidence(
         self: VerbalisedConfidenceAnswerProcessorProtocol,
         generation_output: GenerationOutput,
-    ) -> torch.Tensor:
+    ) -> tuple[str, torch.Tensor]:
         """Generate the verbalised confidence."""
         output_text = self.tokenizer.decode(
             generation_output.generated_ids[0],
@@ -76,13 +76,13 @@ class VerbalisedConfidenceGenerator:
         confidence_output: GenerateDecoderOnlyOutput = self.model.generate(
             input_ids=inputs.input_ids.to(self.model.device),
             attention_mask=inputs.attention_mask.to(self.model.device),
-            max_length=self.max_answer_generation_length + inputs.input_ids.shape[-1],
+            max_length=self.max_answer_generation_length + inputs.input_ids.size(-1),
             return_dict_in_generate=True,
             pad_token_id=self.tokenizer.pad_token_id,
         )  # type: ignore[reportAssignmentType]
 
         confidence_term_ids: torch.Tensor = confidence_output.sequences[0][
-            inputs.input_ids[0].shape[1] :
+            inputs.input_ids[0].size(-1) :
         ]
 
         confidence_term: str = self.tokenizer.decode(  # type: ignore  # noqa: PGH003
@@ -94,7 +94,7 @@ class VerbalisedConfidenceGenerator:
             [self._extract_confidence(confidence_term)],
         )
 
-        return confidence
+        return confidence_term, confidence
 
     @staticmethod
     def _extract_confidence(generated_text: str) -> float:
@@ -213,10 +213,16 @@ class VerbalisedConfidenceNumericAnswerProcessor(
         """
         answer_object = super().__call__(generation_output, **kwargs)
 
-        confidence = self._generate_verbalised_confidence(generation_output)  # type: ignore[reportAttributeAccessIssue]
+        confidence_term, confidence = self._generate_verbalised_confidence(  # type: ignore[reportAttributeAccessIssue]
+            generation_output,
+        )
+
+        reasoning: str = (
+            f"{answer_object.reasoning} {self.confidence_prompt} {confidence_term}"
+        )
 
         return Answer(
             answer=answer_object.answer,
             confidence=confidence,
-            reasoning=answer_object.reasoning,
+            reasoning=reasoning,
         )

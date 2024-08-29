@@ -119,7 +119,7 @@ class AnswerProcessor(OutputProcessor):
         answer_output: GenerateDecoderOnlyOutput = self.model.generate(
             input_ids=inputs.input_ids.to(self.model.device),
             attention_mask=inputs.attention_mask.to(self.model.device),
-            max_length=self.max_answer_generation_length + inputs.input_ids.shape[-1],
+            max_length=self.max_answer_generation_length + inputs.input_ids.size(-1),
             return_dict_in_generate=True,
             pad_token_id=self.tokenizer.pad_token_id,
         )  # type: ignore[reportAssignmentType]
@@ -133,7 +133,7 @@ class AnswerProcessor(OutputProcessor):
 
         search_space: list[int] = (
             generation_output.generated_ids[0][
-                -generation_output.generation_scores.size(-2) :
+                -generation_output.generation_scores.size(-1) :
             ]
             .detach()
             .cpu()
@@ -171,6 +171,7 @@ class AnswerProcessor(OutputProcessor):
 
         reasoning: str = self.tokenizer.decode(search_space, skip_special_tokens=True)
         reasoning = reasoning.replace("\n", "").strip()
+        reasoning = f"{reasoning} {self.prompt} {answer}"
 
         return Answer(answer=answer, confidence=conf, reasoning=reasoning)
 
