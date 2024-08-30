@@ -72,7 +72,6 @@ class MathematicalReasoningRunner:
     def _answer_question(
         self,
         question: str,
-        max_length: int = 256,
     ) -> Answer:
         """Answer the given question.
 
@@ -86,10 +85,7 @@ class MathematicalReasoningRunner:
             tuple[str, torch.Tensor]: The generated answer and its confidence.
 
         """
-        generation_output = self.generation_method(
-            question,
-            max_length,
-        )
+        generation_output = self.generation_method(question)
         answer: Answer = self.answer_processor(generation_output)  # type: ignore[reportAssignmentType]
 
         return answer
@@ -135,6 +131,7 @@ class MathematicalReasoningRunner:
         "_self_",
         {"model": "default"},
         {"generation_method": "greedy_causal_lm_generation_method"},
+        {"generation_method/confidence_extraction_method": "probability_disparity"},
         {"output_processor": "numeric_answer_processor"},
         {"data": "multiarith"},
         {"evaluator": "accuracy_and_calibration"},

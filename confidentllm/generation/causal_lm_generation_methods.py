@@ -28,6 +28,9 @@ from hydra_zen import store
 from transformers import BatchEncoding
 from transformers.generation import GenerateDecoderOnlyOutput
 
+from confidentllm.generation.confidence_extraction_methods import (
+    ProbabilityDisparityConfig,
+)
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     ChatConversation,
@@ -47,13 +50,18 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
     def __call__(
         self,
         prompt: str,
-        max_length: int = 256,
     ) -> GenerationOutput:
         """Generate text based on the given prompt."""
         if isinstance(self.tokenizer, type(None)):
             raise TokenizerNotSetError(self.tokenizer)
         if isinstance(self.model, type(None)):
             raise ModelNotSetError(self.model)
+        if self.temperature != 1.0:
+            msg = "Greedy generation does not use temperature."
+            raise RuntimeWarning(msg)
+        if self.num_beams != 1:
+            msg = "Greedy generation only generates one sequence."
+            raise RuntimeWarning(msg)
 
         conversation: ChatConversation = ChatConversation(
             messages=[[ChatUserMessage(content=prompt)]],
@@ -69,7 +77,7 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
         generation_output: GenerateDecoderOnlyOutput = self.model.generate(
             input_ids=inputs.input_ids.to(self.model.device),
             attention_mask=inputs.attention_mask.to(self.model.device),
-            max_length=max_length + inputs.input_ids.size(-1),
+            max_length=self.max_length + inputs.input_ids.size(-1),
             output_logits=True,
             return_dict_in_generate=True,
             pad_token_id=self.tokenizer.pad_token_id,
@@ -85,28 +93,21 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
         ).unsqueeze(0)
         generation_scores = torch.softmax(generation_scores, dim=-1)
 
-        # TODO: Modularise this confidence extration function
-        # ------------------------------------------------------------------------------
-        next_tokens = generation_output.sequences[:, -generation_scores.size(-2) :]
-        next_token_prob: torch.Tensor = generation_scores[0][
-            range(next_tokens.size(1)),
-            next_tokens[0],
-        ].unsqueeze(0)
-        second_highest_prob: torch.Tensor = torch.topk(
-            input=generation_scores[0],
-            k=2,
-            dim=-1,
-        )[0][:, 1].unsqueeze(0)
-        disparity: torch.Tensor = next_token_prob - second_highest_prob
+        generation_scores = self.confidence_extraction_method(
+            next_token_ids=generation_output.sequences,
+            scores=generation_scores,
+        )
 
         return GenerationOutput(
             generated_ids=generation_output.sequences,
-            generation_scores=disparity,
+            generation_scores=generation_scores,
         )
-        # ------------------------------------------------------------------------------
 
 
-GreedyCausalLMGenerationConfig = builds(GreedyCausalLMGenerationMethod)
+GreedyCausalLMGenerationConfig = builds(
+    GreedyCausalLMGenerationMethod,
+    confidence_extraction_method=ProbabilityDisparityConfig,
+)
 
 generation_method_store = store(group="generation_method")
 generation_method_store(

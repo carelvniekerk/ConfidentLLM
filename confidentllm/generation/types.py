@@ -99,11 +99,38 @@ class TokenizerNotSetError(Exception):
         super().__init__(self.message)
 
 
+class ConfidenceExtractionMethod(ABC):
+    """Method for extracting confidence scores from the logits."""
+
+    @abstractmethod
+    def __call__(
+        self,
+        next_token_ids: Tensor,
+        scores: Tensor,
+    ) -> Tensor:
+        """Extract the confidence scores from the logits."""
+        ...
+
+
 class CausalLMGenerationMethod(ABC):
     """Protocol for the generation method."""
 
-    tokenizer: PreTrainedTokenizer
-    model: PreTrainedModel
+    def __init__(  # noqa: PLR0913
+        self,
+        confidence_extraction_method: ConfidenceExtractionMethod,
+        tokenizer: PreTrainedTokenizer | None = None,
+        model: PreTrainedModel | None = None,
+        max_length: int = 256,
+        temperature: float = 1.0,
+        num_beams: int = 1,
+    ) -> None:
+        """Initialize the generation method."""
+        self.tokenizer = tokenizer
+        self.model = model
+        self.confidence_extraction_method = confidence_extraction_method
+        self.max_length = max_length
+        self.temperature = temperature
+        self.num_beams = num_beams
 
     def set_tokenizer(self, tokenizer: PreTrainedTokenizer) -> None:
         """Set the tokenizer for the generation method."""
@@ -114,13 +141,18 @@ class CausalLMGenerationMethod(ABC):
         self.model = model
 
     @abstractmethod
-    def __call__(self, prompt: str, max_length: int = 256) -> GenerationOutput:
+    def __call__(
+        self,
+        prompt: str,
+    ) -> GenerationOutput:
         """Generate text based on the given prompt.
 
         Args:
         ----
             prompt (str): The prompt for text generation.
             max_length (int, optional): The maximum length of the generated text.
+            temperature (float, optional): The temperature for sampling. Default is 1.0.
+            num_beams (int, optional): The number of beams for beam search.
 
         Returns:
         -------
