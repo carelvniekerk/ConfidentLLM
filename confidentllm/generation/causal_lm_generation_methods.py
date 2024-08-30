@@ -86,16 +86,14 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
         generation_scores = torch.softmax(generation_scores, dim=-1)
 
         # TODO: Modularise this confidence extration function
-        next_tokens: torch.Tensor = generation_output.sequences[
-            :,
-            -generation_scores.size(-2) :,
-        ]
+        # ------------------------------------------------------------------------------
+        next_tokens = generation_output.sequences[:, -generation_scores.size(-2) :]
         next_token_prob: torch.Tensor = generation_scores[0][
             range(next_tokens.size(1)),
             next_tokens[0],
         ].unsqueeze(0)
         second_highest_prob: torch.Tensor = torch.topk(
-            generation_scores[0],
+            input=generation_scores[0],
             k=2,
             dim=-1,
         )[0][:, 1].unsqueeze(0)
@@ -105,6 +103,7 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
             generated_ids=generation_output.sequences,
             generation_scores=disparity,
         )
+        # ------------------------------------------------------------------------------
 
 
 GreedyCausalLMGenerationConfig = builds(GreedyCausalLMGenerationMethod)
