@@ -76,7 +76,7 @@ class VerbalisedConfidenceGenerator:
         confidence_output: GenerateDecoderOnlyOutput = self.model.generate(
             input_ids=inputs.input_ids.to(self.model.device),
             attention_mask=inputs.attention_mask.to(self.model.device),
-            max_length=self.max_answer_generation_length + inputs.input_ids.size(-1),
+            max_new_tokens=self.max_answer_generation_length,
             return_dict_in_generate=True,
             pad_token_id=self.tokenizer.pad_token_id,
         )  # type: ignore[reportAssignmentType]

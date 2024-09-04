@@ -52,13 +52,16 @@ NumericVerbalisedConfidenceProcessorConfig = builds(
 )
 
 output_processor_store = store(group="output_processor")
-output_processor_store(AnswerProcessorConfig, name="answer_processor")
-output_processor_store(NumericAnswerProcessorConfig, name="numeric_answer_processor")
+output_processor_store(AnswerProcessorConfig, name="answer_with_token_confidence")
+output_processor_store(
+    NumericAnswerProcessorConfig,
+    name="numeric_answer_with_token_confidence",
+)
 output_processor_store(
     VerbalisedConfidenceProcessorConfig,
-    name="verbalised_confidence_processor",
+    name="answer_with_verbalised_confidence",
 )
 output_processor_store(
     NumericVerbalisedConfidenceProcessorConfig,
-    name="numeric_verbalised_confidence_processor",
+    name="numeric_answer_with_verbalised_confidence",
 )
