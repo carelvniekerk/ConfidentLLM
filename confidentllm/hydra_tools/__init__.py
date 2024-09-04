@@ -26,6 +26,7 @@
 from pathlib import Path
 
 from hydra_zen import make_custom_builds_fn
+from omegaconf.dictconfig import DictConfig
 
 __all__ = [
     "builds",
@@ -69,7 +70,11 @@ def resolve_generation_method(generation_method: dict[str, str | int | float]) -
 
     gm_str: Path = Path(function_path_to_name(name))
     for param in other_params:
-        val: str | int | float = generation_method[param]
+        val: str | float | DictConfig | None = generation_method[param]
+        if not val:
+            continue
+        if isinstance(val, DictConfig):
+            val = function_path_to_name(val.get("_target_", ""))
         if isinstance(val, str):
             val = val.replace(" ", "_")
         gm_str = gm_str / f"{param}_{val}"
