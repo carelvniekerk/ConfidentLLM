@@ -23,9 +23,11 @@
 # limitations under the License.
 """Set up generation configuration for project."""
 
-from confidentllm.generation import (  # noqa: F401
-    causal_lm_generation_methods,
+from confidentllm.generation import (  # noqa: F401 - Importing to add methods to the hydra store
+    beam_causal_lm_generation,
     confidence_extraction_methods,
+    cot_causal_lm_generation,
+    greedy_causal_lm_generation,
 )
 from confidentllm.generation.types import CausalLMGenerationMethod
 
