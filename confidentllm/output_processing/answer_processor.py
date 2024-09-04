@@ -111,10 +111,6 @@ class AnswerProcessor(OutputProcessor):
         # Add the answer extraction prompt
         output_text = [f"{text_item} {self.prompt}" for text_item in output_text]
 
-        import pdb
-
-        pdb.set_trace()
-
         inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             output_text,
             return_tensors="pt",
