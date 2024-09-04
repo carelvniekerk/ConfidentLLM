@@ -130,9 +130,9 @@ class MathematicalReasoningRunner:
     hydra_defaults=[
         "_self_",
         {"model": "default"},
-        {"generation_method": "greedy_causal_lm_generation_method"},
+        {"generation_method": "greedy_decoding"},
         {"generation_method/confidence_extraction_method": "probability_disparity"},
-        {"output_processor": "numeric_answer_processor"},
+        {"output_processor": "numeric_answer_with_token_confidence"},
         {"data": "multiarith"},
         {"evaluator": "accuracy_and_calibration"},
     ],
