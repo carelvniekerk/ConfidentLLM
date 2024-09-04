@@ -99,6 +99,7 @@ class ModelLoader:
         model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(
             self.pretrained_model_name_or_path,
         )
+        model.eval()
 
         tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(
             self.pretrained_model_name_or_path,  # type: ignore[reportAssignmentType]
