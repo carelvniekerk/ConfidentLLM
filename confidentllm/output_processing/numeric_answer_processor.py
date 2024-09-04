@@ -48,6 +48,8 @@ class NumericAnswerProcessor(AnswerProcessor):
     def __call__(
         self,
         generation_output: GenerationOutput,
+        *,
+        return_best_answer_idx: bool = False,
         **kwargs: dict | None,
     ) -> Answer:
         """Process the output.
@@ -55,6 +57,7 @@ class NumericAnswerProcessor(AnswerProcessor):
         Args:
         ----
             generation_output (GenerationOutput): The generation output.
+            return_best_answer_idx (bool, optional): Return most confident answer index.
             **kwargs (dict, optional): Additional keyword arguments.
 
         Returns:
@@ -62,7 +65,11 @@ class NumericAnswerProcessor(AnswerProcessor):
             Answer: The processed answer and confidence.
 
         """
-        answer_object = super().__call__(generation_output, **kwargs)
+        answer_object = super().__call__(
+            generation_output,
+            return_best_answer_idx=return_best_answer_idx,
+            **kwargs,
+        )
         answer = self._extract_numbers(answer_object.answer)
         answer = answer[-1] if answer else -1
 

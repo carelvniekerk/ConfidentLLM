@@ -24,10 +24,11 @@
 """Model output answer processor."""
 
 import re
+from dataclasses import dataclass
 from typing import Callable, Protocol
 
 import torch
-from transformers import BatchEncoding, PreTrainedModel, PreTrainedTokenizer
+from transformers import BatchEncoding, PreTrainedModel, PreTrainedTokenizer, TensorType
 from transformers.generation import GenerateDecoderOnlyOutput
 
 from confidentllm.generation.types import GenerationOutput
@@ -54,23 +55,38 @@ class VerbalisedConfidenceAnswerProcessorProtocol(Protocol):
     _extract_confidence: Callable[[str], float]
 
 
+@dataclass
+class VerbalisedConfidences:
+    """Dataclass for verbalised confidences."""
+
+    confidence_terms: list[str]
+    confidences: torch.Tensor
+
+
 class VerbalisedConfidenceGenerator:
     """Class for generating verbalised confidence."""
 
-    def _generate_verbalised_confidence(
+    def _generate_verbalised_confidences(
         self: VerbalisedConfidenceAnswerProcessorProtocol,
         generation_output: GenerationOutput,
-    ) -> tuple[str, torch.Tensor]:
+    ) -> VerbalisedConfidences:
         """Generate the verbalised confidence."""
-        output_text = self.tokenizer.decode(
-            generation_output.generated_ids[0],
+        output_text: list[str] = self.tokenizer.batch_decode(
+            generation_output.generated_ids,
             skip_special_tokens=True,
+            clean_up_tokenization_spaces=True,
         )
-        output_text = f"{output_text} {self.confidence_prompt}"
+        # Remove new lines and trailing spaces
+        output_text = [text_item.replace("\n", "").strip() for text_item in output_text]
+        # Add the answer extraction prompt
+        output_text = [
+            f"{text_item} {self.confidence_prompt}" for text_item in output_text
+        ]
 
-        inputs: BatchEncoding = self.tokenizer(
+        inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             output_text,
-            return_tensors="pt",
+            return_tensors=TensorType.PYTORCH,
+            padding=True,
         )
 
         confidence_output: GenerateDecoderOnlyOutput = self.model.generate(
@@ -81,20 +97,25 @@ class VerbalisedConfidenceGenerator:
             pad_token_id=self.tokenizer.pad_token_id,
         )  # type: ignore[reportAssignmentType]
 
-        confidence_term_ids: torch.Tensor = confidence_output.sequences[0][
-            inputs.input_ids[0].size(-1) :
+        confidence_term_token_ids: torch.Tensor = confidence_output.sequences[
+            :,
+            inputs.input_ids.size(-1) :,
         ]
 
-        confidence_term: str = self.tokenizer.decode(  # type: ignore  # noqa: PGH003
-            confidence_term_ids,
+        confidence_terms: list[str] = self.tokenizer.batch_decode(  # type: ignore  # noqa: PGH003
+            confidence_term_token_ids,
             skip_special_tokens=True,
+            clean_up_tokenization_spaces=True,
         )
-        confidence_term = confidence_term.replace("\n", "").strip()
-        confidence: torch.Tensor = torch.Tensor(
-            [self._extract_confidence(confidence_term)],
+        confidence_terms = [term.replace("\n", "").strip() for term in confidence_terms]
+        confidences: torch.Tensor = torch.Tensor(
+            [self._extract_confidence(term) for term in confidence_terms],
         )
 
-        return confidence_term, confidence
+        return VerbalisedConfidences(
+            confidence_terms=confidence_terms,
+            confidences=confidences,
+        )
 
     @staticmethod
     def _extract_confidence(generated_text: str) -> float:
@@ -157,14 +178,31 @@ class VerbalisedConfidenceAnswerProcessor(
             torch.Tensor: The confidence of the answer.
 
         """
-        answer_object = super().__call__(generation_output, **kwargs)
+        answer_object = super().__call__(
+            generation_output,
+            return_best_answer_idx=True,
+            **kwargs,
+        )
 
-        confidence = self._generate_verbalised_confidence(generation_output)  # type: ignore[reportAttributeAccessIssue]
+        confidences: VerbalisedConfidences = self._generate_verbalised_confidences(  # type: ignore[reportAttributeAccessIssue]
+            generation_output,
+        )
+
+        confidence: torch.Tensor = confidences.confidences[
+            answer_object.best_answer_idx
+        ]
+
+        confidence_term: str = confidences.confidence_terms[
+            answer_object.best_answer_idx
+        ]
+        reasoning: str = (
+            f"{answer_object.reasoning} {self.confidence_prompt} {confidence_term}"
+        )
 
         return Answer(
             answer=answer_object.answer,
             confidence=confidence,
-            reasoning=answer_object.reasoning,
+            reasoning=reasoning,
         )
 
 
@@ -211,12 +249,23 @@ class VerbalisedConfidenceNumericAnswerProcessor(
             torch.Tensor: The confidence of the answer.
 
         """
-        answer_object = super().__call__(generation_output, **kwargs)
+        answer_object = super().__call__(
+            generation_output,
+            return_best_answer_idx=True,
+            **kwargs,
+        )
 
-        confidence_term, confidence = self._generate_verbalised_confidence(  # type: ignore[reportAttributeAccessIssue]
+        confidences: VerbalisedConfidences = self._generate_verbalised_confidences(  # type: ignore[reportAttributeAccessIssue]
             generation_output,
         )
 
+        confidence: torch.Tensor = confidences.confidences[
+            answer_object.best_answer_idx
+        ]
+
+        confidence_term: str = confidences.confidence_terms[
+            answer_object.best_answer_idx
+        ]
         reasoning: str = (
             f"{answer_object.reasoning} {self.confidence_prompt} {confidence_term}"
         )
