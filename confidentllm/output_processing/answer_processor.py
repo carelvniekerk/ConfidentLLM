@@ -102,18 +102,23 @@ class AnswerProcessor(OutputProcessor):
         if isinstance(self.tokenizer, type(None)):
             raise TokenizerNotSetError(self.tokenizer)
 
-        output_text: str = self.tokenizer.decode(
-            generation_output.generated_ids[0],
+        output_text: list[str] = self.tokenizer.batch_decode(
+            generation_output.generated_ids,
             skip_special_tokens=True,
         )
         # Remove new lines and trailing spaces
-        output_text = output_text.replace("\n", "").strip()
+        output_text = [text_item.replace("\n", "").strip() for text_item in output_text]
         # Add the answer extraction prompt
-        output_text = f"{output_text} {self.prompt}"
+        output_text = [f"{text_item} {self.prompt}" for text_item in output_text]
 
-        inputs: BatchEncoding = self.tokenizer(
+        import pdb
+
+        pdb.set_trace()
+
+        inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             output_text,
             return_tensors="pt",
+            padding=True,
         )
 
         answer_output: GenerateDecoderOnlyOutput = self.model.generate(
@@ -124,52 +129,78 @@ class AnswerProcessor(OutputProcessor):
             pad_token_id=self.tokenizer.pad_token_id,
         )  # type: ignore[reportAssignmentType]
 
-        search_term: list[int] = (
-            answer_output.sequences[0][inputs.input_ids[0].size(-1) :]
+        search_terms: list[list[int]] = (
+            answer_output.sequences[:, inputs.input_ids[0].size(-1) :]
             .detach()
             .cpu()
             .tolist()
         )
 
-        search_space: list[int] = (
-            generation_output.generated_ids[0][
-                -generation_output.generation_scores.size(-1) :
+        search_spaces: list[list[int]] = (
+            generation_output.generated_ids[
+                :,
+                -generation_output.generation_scores.size(-1) :,
             ]
             .detach()
             .cpu()
             .tolist()
         )
-        search_probs: list[float] = (
-            generation_output.generation_scores[0].detach().cpu().tolist()
+        search_probs: list[list[float]] = (
+            generation_output.generation_scores.detach().cpu().tolist()
         )
 
-        clean_search_space: list[int] = []
-        clean_search_probs: list[float] = []
-        for token, prob in zip(search_space, search_probs, strict=True):
-            if token not in self._ignore_tokens:
-                clean_search_space.append(token)
-                clean_search_probs.append(prob)
-        search_term = [
-            token for token in search_term if token not in self._ignore_tokens
+        clean_search_spaces: list[list[int]] = []
+        clean_search_probs: list[list[float]] = []
+        for space, probs in zip(search_spaces, search_probs, strict=True):
+            clean_search_space: list[int] = []
+            clean_search_space_probs: list[float] = []
+            for token, prob in zip(space, probs, strict=True):
+                if token not in self._ignore_tokens:
+                    clean_search_space.append(token)
+                    clean_search_space_probs.append(prob)
+            clean_search_spaces.append(clean_search_space)
+            clean_search_probs.append(clean_search_space_probs)
+
+        search_terms = [
+            [token for token in search_term if token not in self._ignore_tokens]
+            for search_term in search_terms
         ]
 
         try:
-            best_span: tuple[int, int] = self._find_largest_overlap_span(
-                clean_search_space,
-                search_term,
-            )
+            best_spans: list[tuple[int, int]] = [
+                self._find_largest_overlap_span(
+                    clean_search_space,
+                    search_term,
+                )
+                for clean_search_space, search_term in zip(
+                    clean_search_spaces,
+                    search_terms,
+                    strict=True,
+                )
+            ]
         except NoOverlappingSpanFoundError as err:
             logger.warning(err.message)
             return Answer()
 
-        conf: torch.Tensor = torch.tensor(
-            clean_search_probs[best_span[0] : best_span[1] + 1],
-        ).mean()
+        token_confidences_list: list[torch.Tensor] = [
+            torch.tensor(clean_search_probs[i][span[0] : span[1] + 1]).mean()
+            for i, span in enumerate(best_spans)
+        ]
+        conf: torch.Tensor = torch.tensor(token_confidences_list)
 
-        answer: str = self.tokenizer.decode(search_term, skip_special_tokens=True)
+        # Select the answer with the highest confidence
+        best_answer_id: int = torch.argmax(conf).item()  # type: ignore[assignment] # This number is a integer id
+
+        answer: str = self.tokenizer.decode(
+            search_terms[best_answer_id],
+            skip_special_tokens=True,
+        )
         answer = answer.replace("\n", "").strip()
 
-        reasoning: str = self.tokenizer.decode(search_space, skip_special_tokens=True)
+        reasoning: str = self.tokenizer.decode(
+            search_spaces[best_answer_id],
+            skip_special_tokens=True,
+        )
         reasoning = reasoning.replace("\n", "").strip()
         reasoning = f"{reasoning} {self.prompt} {answer}"
 

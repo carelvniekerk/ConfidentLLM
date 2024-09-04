@@ -96,10 +96,6 @@ class BeamSearchCausalLMGenerationMethod(CausalLMGenerationMethod):
         ).transpose(0, 1)
         generation_scores = torch.softmax(generation_scores, dim=-1)
 
-        import pdb
-
-        pdb.set_trace()
-
         generation_scores = self.confidence_extraction_method(
             next_token_ids=generation_output.sequences,
             scores=generation_scores,

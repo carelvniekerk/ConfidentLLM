@@ -112,6 +112,8 @@ class ModelLoader:
             tokenizer.pad_token_id = tokenizer.eos_token_id
             tokenizer.pad_token = tokenizer.eos_token
 
+        tokenizer.padding_side = "left"
+
         return model.to(self.device), tokenizer  # type: ignore[reportArgumentType]
 
 
