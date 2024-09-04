@@ -25,7 +25,7 @@
 
 import torch
 from hydra_zen import store
-from transformers import BatchEncoding
+from transformers import BatchEncoding, TensorType
 from transformers.generation import GenerateDecoderOnlyOutput
 
 from confidentllm.generation.confidence_extraction_methods import (
@@ -64,7 +64,7 @@ class BeamSearchCausalLMGenerationMethod(CausalLMGenerationMethod):
         inputs: BatchEncoding = self.tokenizer.apply_chat_template(
             list(conversation),
             add_generation_prompt=True,
-            return_tensors="pt",
+            return_tensors=TensorType.PYTORCH,
             return_dict=True,
         )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
 
