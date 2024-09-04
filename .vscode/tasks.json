@@ -83,6 +83,17 @@
                 "focus": false
             },
             "problemMatcher": []
+        },
+        {
+            "label": "Cleanup",
+            "type": "shell",
+            "command": "rm -r hpc_jobs outputs wandb; find . -type d -name \"__pycache__\" -exec rm -r {} +",
+            "presentation": {
+                "reveal": "never",
+                "panel": "shared",
+                "focus": false
+            },
+            "problemMatcher": []
         }
     ]
 }
