@@ -56,8 +56,8 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
             raise TokenizerNotSetError(self.tokenizer)
         if isinstance(self.model, type(None)):
             raise ModelNotSetError(self.model)
-        if self.temperature != 1.0:
-            msg = "Greedy generation does not use temperature."
+        if self.temperature != 1.0 and not self.sampling:
+            msg = "Greedy generation without sampling does not use temperature."
             raise RuntimeWarning(msg)
         if self.num_beams != 1:
             msg = "Greedy generation only generates one sequence."
@@ -77,7 +77,9 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
         generation_output: GenerateDecoderOnlyOutput = self.model.generate(
             input_ids=inputs.input_ids.to(self.model.device),
             attention_mask=inputs.attention_mask.to(self.model.device),
-            max_length=self.max_length + inputs.input_ids.size(-1),
+            max_new_tokens=self.max_length,
+            do_sample=self.sampling,
+            temperature=self.temperature,
             output_logits=True,
             return_dict_in_generate=True,
             pad_token_id=self.tokenizer.pad_token_id,
@@ -112,5 +114,5 @@ GreedyCausalLMGenerationConfig = builds(
 generation_method_store = store(group="generation_method")
 generation_method_store(
     GreedyCausalLMGenerationConfig,
-    name="greedy_causal_lm_generation_method",
+    name="greedy_decoding",
 )

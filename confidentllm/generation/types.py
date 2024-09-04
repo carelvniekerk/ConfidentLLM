@@ -117,20 +117,28 @@ class CausalLMGenerationMethod(ABC):
 
     def __init__(  # noqa: PLR0913
         self,
+        *,
         confidence_extraction_method: ConfidenceExtractionMethod,
         tokenizer: PreTrainedTokenizer | None = None,
         model: PreTrainedModel | None = None,
         max_length: int = 256,
+        sampling: bool = True,
         temperature: float = 1.0,
         num_beams: int = 1,
     ) -> None:
         """Initialize the generation method."""
         self.tokenizer = tokenizer
         self.model = model
+
         self.confidence_extraction_method = confidence_extraction_method
-        self.max_length = max_length
+
+        if not isinstance(sampling, bool):
+            msg = "Sampling must be a boolean value."
+            raise TypeError(msg)
+        self.sampling = sampling
         self.temperature = temperature
         self.num_beams = num_beams
+        self.max_length = max_length
 
     def set_tokenizer(self, tokenizer: PreTrainedTokenizer) -> None:
         """Set the tokenizer for the generation method."""
