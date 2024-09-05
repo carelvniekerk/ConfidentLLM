@@ -122,7 +122,7 @@ class CausalLMGenerationMethod(ABC):
         tokenizer: PreTrainedTokenizer | None = None,
         model: PreTrainedModel | None = None,
         max_length: int = 256,
-        sampling: bool = True,
+        sampling: bool = False,
         temperature: float = 1.0,
         num_beams: int = 1,
     ) -> None:
