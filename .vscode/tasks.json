@@ -2,56 +2,8 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Sync Project",
-            "command": "hpc sync_project",
-            "type": "shell",
-            "options": {
-                "shell": {
-                    "args": [
-                        "-c",
-                        "-l",
-                        "-i"
-                    ]
-                }
-            },
-            "group": {
-                "kind": "none",
-                "isDefault": true
-            },
-            "presentation": {
-                "reveal": "never",
-                "panel": "shared",
-                "focus": false
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Sync Huggingface",
-            "command": "hpc sync_hf",
-            "type": "shell",
-            "options": {
-                "shell": {
-                    "args": [
-                        "-c",
-                        "-l",
-                        "-i"
-                    ]
-                }
-            },
-            "group": {
-                "kind": "none",
-                "isDefault": true
-            },
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": false
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Sync Results",
-            "command": "hpc sync_results; hpc sync_job_logs; wandb sync --sync-all --project ConfidentLLM *",
+            "label": "Sync WANDB",
+            "command": "wandb sync --sync-all --project ConfidentLLM *",
             "type": "shell",
             "options": {
                 "shell": {
@@ -84,16 +36,5 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "Cleanup",
-            "type": "shell",
-            "command": "rm -r hpc_jobs outputs wandb; find . -type d -name \"__pycache__\" -exec rm -r {} +",
-            "presentation": {
-                "reveal": "never",
-                "panel": "shared",
-                "focus": false
-            },
-            "problemMatcher": []
-        }
     ]
 }
