@@ -36,7 +36,7 @@ class NumericAnswerProcessor(AnswerProcessor):
 
     def __init__(
         self,
-        prompt: str = "So the answer (in numbers) is:",
+        prompt: str = "So the answer as a number is",
         max_answer_generation_length: int = 20,
     ) -> None:
         """Initialize the processor."""

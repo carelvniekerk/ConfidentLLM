@@ -75,7 +75,7 @@ class AnswerProcessor(OutputProcessor):
 
     def __init__(
         self,
-        prompt: str = "So the answer is:",
+        prompt: str = "So the answer is",
         max_answer_generation_length: int = 20,
     ) -> None:
         """Initialize the processor."""
@@ -114,7 +114,7 @@ class AnswerProcessor(OutputProcessor):
         # Remove new lines and trailing spaces
         output_text = [text_item.replace("\n", "").strip() for text_item in output_text]
         # Add the answer extraction prompt
-        output_text = [f"{text_item} {self.prompt}" for text_item in output_text]
+        output_text = [f"{text_item}. {self.prompt}" for text_item in output_text]
 
         inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             batch_text_or_text_pairs=output_text,
@@ -219,7 +219,7 @@ class AnswerProcessor(OutputProcessor):
             clean_up_tokenization_spaces=True,
         )
         reasoning = reasoning.replace("\n", "").strip()
-        reasoning = f"{reasoning} {self.prompt} {answer}"
+        reasoning = f"{reasoning}. {self.prompt} {answer}"
 
         if return_best_answer_idx:
             return Answer(

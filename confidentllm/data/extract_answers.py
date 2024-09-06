@@ -68,7 +68,6 @@ def extract_answers(
     for answer in data["answer"]:
         # Search for the pattern in the input string
         match = re.search(pattern, answer)
-        # pdb.set_trace()
 
         # Check if a match is found and extract the answer
         if match:

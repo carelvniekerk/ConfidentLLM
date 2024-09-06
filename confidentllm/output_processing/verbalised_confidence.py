@@ -80,7 +80,7 @@ class VerbalisedConfidenceGenerator:
         output_text = [text_item.replace("\n", "").strip() for text_item in output_text]
         # Add the answer extraction prompt
         output_text = [
-            f"{text_item} {self.confidence_prompt}" for text_item in output_text
+            f"{text_item}. {self.confidence_prompt}" for text_item in output_text
         ]
 
         inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
@@ -145,13 +145,12 @@ class VerbalisedConfidenceAnswerProcessor(
     def __init__(
         self,
         prompt: str = (
-            "So the answer is: My confidence that this answer is correct (0-100):"
+            "So the answer is/My confidence that this answer is correct (0-100)"
         ),
         max_answer_generation_length: int = 20,
     ) -> None:
         """Initialize the processor."""
-        answer_prompt, confidence_prompt = prompt.split(":", 1)
-        answer_prompt += ":"
+        answer_prompt, confidence_prompt = prompt.split("/", 1)
 
         super().__init__(
             prompt=answer_prompt,
@@ -196,7 +195,7 @@ class VerbalisedConfidenceAnswerProcessor(
             answer_object.best_answer_idx
         ]
         reasoning: str = (
-            f"{answer_object.reasoning} {self.confidence_prompt} {confidence_term}"
+            f"{answer_object.reasoning}. {self.confidence_prompt} {confidence_term}"
         )
 
         return Answer(

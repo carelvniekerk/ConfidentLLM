@@ -67,10 +67,11 @@ class CoTDecodingCausalLMGenerationMethod(CausalLMGenerationMethod):
             return_tensors=TensorType.PYTORCH,
             return_dict=True,
         )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
+        inputs = inputs.to(self.model.device)
 
         first_token_generation_output: GenerateDecoderOnlyOutput = self.model.generate(
-            input_ids=inputs.input_ids.to(self.model.device),
-            attention_mask=inputs.attention_mask.to(self.model.device),
+            input_ids=inputs.input_ids,
+            attention_mask=inputs.attention_mask,
             max_new_tokens=1,
             do_sample=self.sampling,
             num_beams=self.num_beams,
@@ -86,10 +87,14 @@ class CoTDecodingCausalLMGenerationMethod(CausalLMGenerationMethod):
             [inputs.attention_mask] * self.num_beams,
             dim=0,
         )
-        attention_mask = torch.cat(
-            [attention_mask, torch.ones(self.num_beams, 1)],
-            dim=1,
+        first_token_attention_mask: torch.Tensor = torch.ones(
+            self.num_beams,
+            1,
         ).to(self.model.device)
+        attention_mask = torch.cat(
+            [attention_mask, first_token_attention_mask],
+            dim=1,
+        )
 
         generation_output: GenerateDecoderOnlyOutput = self.model.generate(
             input_ids=first_token_generation_output.sequences,
