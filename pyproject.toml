@@ -30,6 +30,7 @@ wandb = "^0.17"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
+pytest-cov = "^5.0"
 
 # Use HHU PyPI repository (Needed for HPC)
 [[tool.poetry.source]]

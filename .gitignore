@@ -18,3 +18,6 @@ hpc_jobs
 
 # Weights and Biases logs
 wandb
+
+# Pytest cache
+.coverage
