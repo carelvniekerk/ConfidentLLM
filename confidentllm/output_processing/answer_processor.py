@@ -187,6 +187,7 @@ class AnswerProcessor(OutputProcessor):
                 best_spans.append(span)
         except NoOverlappingSpanFoundError as err:
             logger.warning(err.message)
+            # TODO: Handle this case better
             best_spans = [(0, 0) for _ in range(len(answer_tokens))]
 
         # Extract the answer span confidence
