@@ -187,7 +187,7 @@ class AnswerProcessor(OutputProcessor):
                 best_spans.append(span)
         except NoOverlappingSpanFoundError as err:
             logger.warning(err.message)
-            return Answer()
+            best_spans = [(0, 0) for _ in range(len(answer_tokens))]
 
         # Extract the answer span confidence
         token_confidences_list: list[torch.Tensor] = []
