@@ -67,10 +67,11 @@ class BeamSearchCausalLMGenerationMethod(CausalLMGenerationMethod):
             return_tensors=TensorType.PYTORCH,
             return_dict=True,
         )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
+        inputs.to(self.model.device)
 
         generation_output: GenerateDecoderOnlyOutput = self.model.generate(
-            input_ids=inputs.input_ids.to(self.model.device),
-            attention_mask=inputs.attention_mask.to(self.model.device),
+            input_ids=inputs.input_ids,
+            attention_mask=inputs.attention_mask,
             max_new_tokens=self.max_length,
             num_beams=self.num_beams,
             num_return_sequences=self.num_beams,
