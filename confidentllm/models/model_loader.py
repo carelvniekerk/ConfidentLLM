@@ -102,7 +102,9 @@ class ModelLoader:
         model.eval()
 
         tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(
-            self.pretrained_model_name_or_path,  # type: ignore[reportAssignmentType]
+            self.pretrained_model_name_or_path,  # type: ignore[assignment]
+            clean_up_tokenization_spaces=True,
+            padding_side="left",
         )
 
         if self.chat_template:
@@ -111,8 +113,6 @@ class ModelLoader:
         if tokenizer.pad_token_id is None:
             tokenizer.pad_token_id = tokenizer.eos_token_id
             tokenizer.pad_token = tokenizer.eos_token
-
-        tokenizer.padding_side = "left"
 
         return model.to(self.device), tokenizer  # type: ignore[reportArgumentType]
 
