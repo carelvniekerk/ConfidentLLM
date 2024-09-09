@@ -56,9 +56,6 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
             raise TokenizerNotSetError(self.tokenizer)
         if isinstance(self.model, type(None)):
             raise ModelNotSetError(self.model)
-        if self.temperature != 1.0 and not self.sampling:
-            msg = "Greedy generation without sampling does not use temperature."
-            raise RuntimeWarning(msg)
         if self.num_beams != 1:
             msg = "Greedy generation only generates one sequence."
             raise RuntimeWarning(msg)

@@ -47,6 +47,7 @@ tests = "pytest:main"
 # Configuration for Pytest
 [tool.pytest.ini_options]
 addopts = "--cov confidentllm --verbose --cov-report=term-missing"
+filterwarnings = "error::RuntimeWarning"
 
 # Configuration for Ruff (Python linter and formatter)
 [tool.ruff]

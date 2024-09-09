@@ -33,6 +33,11 @@ from confidentllm.generation.beam_causal_lm_generation import (
     BeamSearchCausalLMGenerationMethod,
 )
 from confidentllm.generation.confidence_extraction_methods import PredictiveProbability
+from confidentllm.generation.types import (
+    CausalLMGenerationMethod,
+    ModelNotSetError,
+    TokenizerNotSetError,
+)
 from tests.generation.mock_transformers import (
     MOCK_LOGITS_MULTI_BEAM,
     MOCK_SEQUENCE_MULTI_BEAM,
@@ -61,6 +66,48 @@ def target_scores() -> torch.Tensor:
             dim=-1,
         ),  # shape (batch_size, gen_length, 1)
     ).squeeze(-1)
+
+
+def test_model_not_set_error(mock_tokenizer: PreTrainedTokenizer) -> None:  # noqa: F811 - pytest fixtures
+    """Test the model not set error."""
+    method: CausalLMGenerationMethod = BeamSearchCausalLMGenerationMethod(
+        confidence_extraction_method=PredictiveProbability(),
+        max_length=3,
+    )
+    method.set_tokenizer(mock_tokenizer)
+
+    with pytest.raises(ModelNotSetError):
+        method("This is a test.")
+
+
+def test_tokenizer_not_set_error(mock_model: PreTrainedModel) -> None:  # noqa: F811 - pytest fixtures
+    """Test the model not set error."""
+    method: CausalLMGenerationMethod = BeamSearchCausalLMGenerationMethod(
+        confidence_extraction_method=PredictiveProbability(),
+        max_length=3,
+    )
+    method.set_model(mock_model)
+
+    with pytest.raises(TokenizerNotSetError):
+        method("This is a test.")
+
+
+def test_no_logits_error(
+    mock_tokenizer: PreTrainedTokenizer,  # noqa: F811 - pytest fixtures
+    mock_model: PreTrainedModel,  # noqa: F811
+) -> None:
+    """Test the no logits error."""
+    method: CausalLMGenerationMethod = BeamSearchCausalLMGenerationMethod(
+        confidence_extraction_method=PredictiveProbability(),
+        max_length=3,
+    )
+    method.set_tokenizer(mock_tokenizer)
+    method.set_model(mock_model)
+
+    mock_model.output_logits = False  # type: ignore[reportArgumentType]
+
+    with pytest.raises(expected_exception=ValueError, match="The logits are not set."):
+        method("This is a test.")
 
 
 def test_generate(

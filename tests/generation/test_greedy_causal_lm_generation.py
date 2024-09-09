@@ -33,6 +33,7 @@ from confidentllm.generation.confidence_extraction_methods import PredictiveProb
 from confidentllm.generation.greedy_causal_lm_generation import (
     GreedyCausalLMGenerationMethod,
 )
+from confidentllm.generation.types import ModelNotSetError, TokenizerNotSetError
 from tests.generation.mock_transformers import (
     MOCK_LOGITS_SINGLE_BEAM,
     mock_model,  # noqa: F401
@@ -40,7 +41,10 @@ from tests.generation.mock_transformers import (
 )
 
 if TYPE_CHECKING:
-    from confidentllm.generation.types import CausalLMGenerationMethod, GenerationOutput
+    from confidentllm.generation.types import (
+        CausalLMGenerationMethod,
+        GenerationOutput,
+    )
 
 
 @pytest.fixture
@@ -50,6 +54,68 @@ def target_scores() -> torch.Tensor:
     logits = torch.softmax(logits, dim=-1)
 
     return logits.max(-1).values  # noqa: PD011
+
+
+def test_model_not_set_error(mock_tokenizer: PreTrainedTokenizer) -> None:  # noqa: F811 - pytest fixtures
+    """Test the model not set error."""
+    method: CausalLMGenerationMethod = GreedyCausalLMGenerationMethod(
+        confidence_extraction_method=PredictiveProbability(),
+        max_length=3,
+    )
+    method.set_tokenizer(mock_tokenizer)
+
+    with pytest.raises(ModelNotSetError):
+        method("This is a test.")
+
+
+def test_tokenizer_not_set_error(mock_model: PreTrainedModel) -> None:  # noqa: F811 - pytest fixtures
+    """Test the model not set error."""
+    method: CausalLMGenerationMethod = GreedyCausalLMGenerationMethod(
+        confidence_extraction_method=PredictiveProbability(),
+        max_length=3,
+    )
+    method.set_model(mock_model)
+
+    with pytest.raises(TokenizerNotSetError):
+        method("This is a test.")
+
+
+def test_multibeam_warning(
+    mock_tokenizer: PreTrainedTokenizer,  # noqa: F811 - pytest fixtures
+    mock_model: PreTrainedModel,  # noqa: F811
+) -> None:
+    """Test the multi-beam warning."""
+    method: CausalLMGenerationMethod = GreedyCausalLMGenerationMethod(
+        confidence_extraction_method=PredictiveProbability(),
+        max_length=3,
+        num_beams=2,
+    )
+    method.set_tokenizer(mock_tokenizer)
+    method.set_model(mock_model)
+
+    with pytest.raises(
+        expected_exception=RuntimeWarning,
+        match="Greedy generation only generates one sequence.",
+    ):
+        method("This is a test.")
+
+
+def test_no_logits_error(
+    mock_tokenizer: PreTrainedTokenizer,  # noqa: F811 - pytest fixtures
+    mock_model: PreTrainedModel,  # noqa: F811
+) -> None:
+    """Test the no logits error."""
+    method: CausalLMGenerationMethod = GreedyCausalLMGenerationMethod(
+        confidence_extraction_method=PredictiveProbability(),
+        max_length=3,
+    )
+    method.set_tokenizer(mock_tokenizer)
+    method.set_model(mock_model)
+
+    mock_model.output_logits = False  # type: ignore[reportArgumentType]
+
+    with pytest.raises(expected_exception=ValueError, match="The logits are not set."):
+        method("This is a test.")
 
 
 def test_generate(

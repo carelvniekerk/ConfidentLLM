@@ -106,6 +106,7 @@ def mock_model() -> PreTrainedModel:
     """Fixture to mock the model."""
     model = MagicMock(spec=PreTrainedModel)
     model.device = torch.device("cpu")
+    model.output_logits = True
 
     def generate_side_effect(
         *args: tuple[Any, ...],  # noqa: ARG001
@@ -114,6 +115,10 @@ def mock_model() -> PreTrainedModel:
         """Customize behavior for the generate method."""
         # Greedy decoding
         if kwargs.get("num_beams", 1) == 1:
+            if not model.output_logits:
+                return GenerateDecoderOnlyOutput(
+                    sequences=MOCK_SEQUENCE_SINGLE_BEAM,  # type: ignore[argument]
+                )
             if kwargs.get("max_new_tokens", 3) == 3:  # noqa: PLR2004
                 return GenerateDecoderOnlyOutput(
                     sequences=MOCK_SEQUENCE_SINGLE_BEAM,  # type: ignore[argument]
