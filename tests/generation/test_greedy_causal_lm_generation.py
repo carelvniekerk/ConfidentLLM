@@ -133,14 +133,14 @@ def test_generate(
 
     generation_output: GenerationOutput = method("This is a test.")
 
-    if (generation_output.generated_ids != mock_model.generate().sequences).all():  # type: ignore[attrtibute]
+    if (generation_output.generated_ids != mock_model.generate().sequences).any():  # type: ignore[attrtibute]
         msg = (
             f"Generated IDs are incorrect, expected {mock_model.generate().sequences}, "  # type: ignore[attrtibute]
             f"got {generation_output.generated_ids}"
         )
         raise AssertionError(msg)
 
-    if (generation_output.generation_scores != target_scores).all():
+    if (generation_output.generation_scores != target_scores).any():
         msg = (
             f"Generation scores are incorrect, expected {target_scores}, "
             f"got {generation_output.generation_scores}"
