@@ -26,7 +26,7 @@
 from dataclasses import dataclass, field
 from typing import Any
 
-from confidentllm.evaluation.types import BaseResults, Evaluator
+from confidentllm.evaluation.types import BaseResults, EvaluationBatch, Evaluator
 from confidentllm.hydra_tools import builds
 
 __all__ = ["CombinedEvaluatorConfig"]
@@ -61,7 +61,7 @@ class CombinedEvaluator(Evaluator):
     def __init__(self, evaluators: list[Evaluator], padding_value: int = -1) -> None:
         """Initialize the combined evaluator with a list of evaluators."""
         super().__init__(padding_value)
-        shared_buffer = {}
+        shared_buffer: EvaluationBatch = EvaluationBatch()
         self.buffer = shared_buffer
         for evaluator in evaluators:
             evaluator.buffer = shared_buffer

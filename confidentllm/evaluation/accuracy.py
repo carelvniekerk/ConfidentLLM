@@ -59,8 +59,8 @@ class AccuracyEvaluator(Evaluator):
 
     def evaluate(self) -> AccuracyResults:
         """Evaluate the model."""
-        predictions = np.array(self.buffer["predictions"])
-        labels = np.array(self.buffer["labels"])
+        predictions = np.array(self.buffer.predictions)
+        labels = np.array(self.buffer.labels)
 
         predictions = predictions[labels != self.padding_value]
         labels = labels[labels != self.padding_value]

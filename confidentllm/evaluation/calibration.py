@@ -158,17 +158,13 @@ class CalibrationEvaluator(Evaluator):
 
     def evaluate(self) -> CalibrationResults:
         """Evaluate the model."""
-        if (
-            "predictions" not in self.buffer
-            or "confidences" not in self.buffer
-            or "labels" not in self.buffer
-        ):
-            msg = "Predictions, confidences, and labels must be present in the buffer."
+        if not self.buffer.confidences:
+            msg = "The buffer does not contain confidence scores."
             raise ValueError(msg)
 
-        predictions = np.array(self.buffer["predictions"])
-        confidences = torch.Tensor(self.buffer["confidences"])
-        labels = np.array(self.buffer["labels"])
+        predictions = np.array(self.buffer.predictions)
+        confidences = torch.Tensor(self.buffer.confidences)
+        labels = np.array(self.buffer.labels)
 
         valid_mask = labels != self.padding_value
         predictions = predictions[valid_mask]

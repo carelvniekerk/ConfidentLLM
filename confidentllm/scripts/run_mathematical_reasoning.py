@@ -31,7 +31,7 @@ from tqdm import tqdm
 
 import wandb
 from confidentllm import data  # noqa: F401
-from confidentllm.evaluation import Evaluator
+from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
 from confidentllm.models import ModelLoader
 from confidentllm.output_processing import (
@@ -101,11 +101,11 @@ class MathematicalReasoningRunner:
 
             # Add the batch to the evaluator
             self.evaluator.add_batch(
-                {
-                    "labels": [float(example.get("answer", "-1").replace(",", ""))],  # type: ignore  # noqa: PGH003
-                    "predictions": [float(answer.answer)],
-                    "confidences": [answer.confidence.mean().item()],
-                },
+                batch=EvaluationBatch(
+                    labels=[float(example.get("answer", "-1").replace(",", ""))],  # type: ignore[reportAttributeAccessType]
+                    predictions=[float(answer.answer)],
+                    confidences=[answer.confidence.mean().item()],
+                ),
             )
 
             # Log the answers and predictions

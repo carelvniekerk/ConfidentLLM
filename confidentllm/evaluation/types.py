@@ -24,10 +24,10 @@
 """Types for the evaluation module."""
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
-__all__ = ["BaseResults", "Evaluator"]
+__all__ = ["BaseResults", "EvaluationBatch", "Evaluator"]
 
 
 @dataclass
@@ -45,6 +45,22 @@ class BaseResults:
         return f"Evaluator: {self.evaluator_name}"
 
 
+@dataclass
+class EvaluationBatch:
+    """Class for evaluation batch."""
+
+    labels: list[str | float] = field(default_factory=list)
+    predictions: list[str | float] = field(default_factory=list)
+    confidences: list[float] = field(default_factory=list)
+
+    def __add__(self, other: "EvaluationBatch") -> "EvaluationBatch":
+        """Add values from another batch to this batch."""
+        self.labels += other.labels
+        self.predictions += other.predictions
+        self.confidences += other.confidences
+        return self
+
+
 class Evaluator(ABC):
     """Abstract base class for evaluators."""
 
@@ -52,10 +68,10 @@ class Evaluator(ABC):
         self,
         padding_value: int = -1,
     ) -> None:
-        self.buffer: dict = {}
+        self.buffer: EvaluationBatch = EvaluationBatch()
         self.padding_value = padding_value
 
-    def add_batch(self, batch: dict) -> None:
+    def add_batch(self, batch: EvaluationBatch) -> None:
         """Add a batch of data to the buffer.
 
         Args:
@@ -63,10 +79,7 @@ class Evaluator(ABC):
             batch: The data to add to the buffer.
 
         """
-        for key, value in batch.items():
-            if key not in self.buffer:
-                self.buffer[key] = []
-            self.buffer[key] += value
+        self.buffer += batch
 
     @abstractmethod
     def evaluate(self) -> BaseResults:
