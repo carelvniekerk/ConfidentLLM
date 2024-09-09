@@ -145,7 +145,7 @@ class VerbalisedConfidenceAnswerProcessor(
     def __init__(
         self,
         prompt: str = (
-            "So the answer is/My confidence that this answer is correct (0-100)"
+            "So the answer is/My confidence that this answer is correct (0-100) is"
         ),
         max_answer_generation_length: int = 20,
     ) -> None:
@@ -214,8 +214,8 @@ class VerbalisedConfidenceNumericAnswerProcessor(
     def __init__(
         self,
         prompt: str = (
-            "So the answer (in numbers) is: "
-            "My confidence that this answer is correct (0-100):"
+            "So the answer as a number is/"
+            "My confidence that this answer is correct (0-100) is"
         ),
         max_answer_generation_length: int = 20,
     ) -> None:
