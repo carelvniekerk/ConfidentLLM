@@ -21,3 +21,4 @@ wandb
 
 # Pytest cache
 .coverage
+.pytest_cache
