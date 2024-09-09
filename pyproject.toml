@@ -42,6 +42,11 @@ url = "http://pypi.repo.test.hhu.de/simple/"
 download-and-sync = "confidentllm.scripts:download_and_sync"
 mathematical-reasoning = "confidentllm.scripts:mathematical_reasoning"
 reporting = "confidentllm.scripts:reporting"
+tests = "pytest:main"
+
+# Configuration for Pytest
+[tool.pytest.ini_options]
+addopts = "--cov confidentllm --verbose --cov-report=term-missing"
 
 # Configuration for Ruff (Python linter and formatter)
 [tool.ruff]
