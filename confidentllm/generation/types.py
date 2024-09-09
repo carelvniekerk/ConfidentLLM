@@ -109,7 +109,7 @@ class ConfidenceExtractionMethod(ABC):
         scores: Tensor,
     ) -> Tensor:
         """Extract the confidence scores from the logits."""
-        ...
+        ...  # pragma: no cover
 
 
 class CausalLMGenerationMethod(ABC):
@@ -132,9 +132,6 @@ class CausalLMGenerationMethod(ABC):
 
         self.confidence_extraction_method = confidence_extraction_method
 
-        if not isinstance(sampling, bool):
-            msg = "Sampling must be a boolean value."
-            raise TypeError(msg)
         self.sampling = sampling
         self.temperature = temperature
         self.num_beams = num_beams
@@ -167,4 +164,4 @@ class CausalLMGenerationMethod(ABC):
             GenerationOutput: The generated text and their scores.
 
         """
-        ...
+        ...  # pragma: no cover
