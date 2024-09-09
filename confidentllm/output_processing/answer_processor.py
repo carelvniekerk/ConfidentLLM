@@ -187,8 +187,7 @@ class AnswerProcessor(OutputProcessor):
                 best_spans.append(span)
         except NoOverlappingSpanFoundError as err:
             logger.warning(err.message)
-            # TODO: Handle this case better
-            best_spans = [(0, 0) for _ in range(len(answer_tokens))]
+            best_spans = [(-1, -1) for _ in range(len(answer_tokens))]
 
         # Extract the answer span confidence
         token_confidences_list: list[torch.Tensor] = []
@@ -197,6 +196,10 @@ class AnswerProcessor(OutputProcessor):
             clean_generated_response_token_probabilities,
             strict=True,
         ):
+            if span[0] == -1:
+                # No overlapping span found use confidence of 0
+                token_confidences_list.append(torch.tensor(0.0))
+                continue
             # Average of the answer span tokens used to reduce answer confidence
             token_confidences_list.append(
                 torch.tensor(probs[span[0] : span[1] + 1]).mean(),
