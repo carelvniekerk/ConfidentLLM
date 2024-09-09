@@ -60,6 +60,7 @@ def test_generate(
     """Test the generation method."""
     method: CausalLMGenerationMethod = GreedyCausalLMGenerationMethod(
         confidence_extraction_method=PredictiveProbability(),
+        max_length=3,
     )
     method.set_tokenizer(mock_tokenizer)
     method.set_model(mock_model)

@@ -72,6 +72,7 @@ def test_generate(
     method = BeamSearchCausalLMGenerationMethod(
         confidence_extraction_method=PredictiveProbability(),
         num_beams=len(MOCK_LOGITS_MULTI_BEAM),
+        max_length=3,
     )
     method.set_tokenizer(mock_tokenizer)
     method.set_model(mock_model)

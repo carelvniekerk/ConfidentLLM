@@ -111,17 +111,33 @@ def mock_model() -> PreTrainedModel:
         *args: tuple[Any, ...],  # noqa: ARG001
         **kwargs: dict[str, Any],
     ) -> GenerateDecoderOnlyOutput:
-        # Custom behavior based on input arguments
+        """Customize behavior for the generate method."""
+        # Greedy decoding
         if kwargs.get("num_beams", 1) == 1:
-            return GenerateDecoderOnlyOutput(
-                sequences=MOCK_SEQUENCE_SINGLE_BEAM,  # type: ignore[argument]
-                logits=MOCK_LOGITS_SINGLE_BEAM,  # type: ignore[argument]
-            )
+            if kwargs.get("max_new_tokens", 3) == 3:  # noqa: PLR2004
+                return GenerateDecoderOnlyOutput(
+                    sequences=MOCK_SEQUENCE_SINGLE_BEAM,  # type: ignore[argument]
+                    logits=MOCK_LOGITS_SINGLE_BEAM,  # type: ignore[argument]
+                )
+            if kwargs.get("max_new_tokens", 3) == 2:  # noqa: PLR2004
+                return GenerateDecoderOnlyOutput(
+                    sequences=MOCK_SEQUENCE_MULTI_BEAM,  # type: ignore[argument]
+                    logits=MOCK_LOGITS_MULTI_BEAM[1:],  # type: ignore[argument]
+                )
+        # Beam search decoding
         if kwargs.get("num_beams", 1) == len(MOCK_LOGITS_MULTI_BEAM):
-            return GenerateDecoderOnlyOutput(
-                sequences=MOCK_SEQUENCE_MULTI_BEAM,  # type: ignore[argument]
-                logits=MOCK_LOGITS_MULTI_BEAM,  # type: ignore[argument]
-            )
+            # Single token sampling for CoT Decoding
+            if kwargs.get("max_new_tokens", 3) == 1:
+                return GenerateDecoderOnlyOutput(
+                    sequences=MOCK_SEQUENCE_MULTI_BEAM[:, : MOCK_INPUTS.size(1) + 1],  # type: ignore[argument]
+                    logits=MOCK_LOGITS_MULTI_BEAM[:1],  # type: ignore[argument]
+                )
+            if kwargs.get("max_new_tokens", 3) == 3:  # noqa: PLR2004
+                return GenerateDecoderOnlyOutput(
+                    sequences=MOCK_SEQUENCE_MULTI_BEAM,  # type: ignore[argument]
+                    logits=MOCK_LOGITS_MULTI_BEAM,  # type: ignore[argument]
+                )
+
         return GenerateDecoderOnlyOutput()
 
     # Set the side_effect to the generate method
