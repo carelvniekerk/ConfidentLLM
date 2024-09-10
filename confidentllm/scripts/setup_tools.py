@@ -39,12 +39,14 @@ from confidentllm.logging import (
     initialize_wandb,
     setup_exception_logging,
 )
-from hydra_plugins.hpc_submission_launcher.launcher import (
-    HPCSubmissionLauncher,  # noqa: F401 - Import Launcher to make it available in the Zen Store
+from hydra_plugins.hpc_submission_launcher import (
+    register_plugin as register_hpc_submission_launcher_plugin,
 )
 
 __all__ = ["setup_hydra_config_and_logging", "init_wandb"]
 logger = logging.getLogger("__main__")
+
+register_hpc_submission_launcher_plugin()
 
 OmegaConf.register_new_resolver("resolve_generation_method", resolve_generation_method)
 OmegaConf.register_new_resolver("resolve_output_processor", resolve_output_processor)
