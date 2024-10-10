@@ -26,6 +26,7 @@
 from pathlib import Path
 
 from hydra_zen import make_custom_builds_fn
+from hydra_zen.typing._builds_overloads import FullBuilds
 from omegaconf.dictconfig import DictConfig
 
 __all__ = [
@@ -34,7 +35,7 @@ __all__ = [
     "resolve_generation_method",
 ]
 
-builds = make_custom_builds_fn(populate_full_signature=True)
+builds: FullBuilds = make_custom_builds_fn(populate_full_signature=True)
 
 
 def function_path_to_name(function_path: str) -> str:
@@ -44,7 +45,7 @@ def function_path_to_name(function_path: str) -> str:
 
 def resolve_output_processor(output_processor: dict[str, str | int | float]) -> str:
     """Resolve the output processor."""
-    name: str = output_processor.get("_target_", "")  # type:ignore[reportAssignmentType]
+    name: str = output_processor.get("_target_", "")  # type: ignore[assignment]
 
     other_params: list[str] = [
         key for key in output_processor if key not in ["_target_", "generator"]
@@ -62,7 +63,7 @@ def resolve_output_processor(output_processor: dict[str, str | int | float]) -> 
 
 def resolve_generation_method(generation_method: dict[str, str | int | float]) -> str:
     """Resolve the generation method."""
-    name: str = generation_method.get("_target_", "")  # type:ignore[reportAssignmentType]
+    name: str = generation_method.get("_target_", "")  # type: ignore[assignment]
 
     other_params: list[str] = [
         key for key in generation_method if key not in ["_target_", "generator"]

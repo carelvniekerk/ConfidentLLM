@@ -67,7 +67,7 @@ def create_run_dir(
         )
         for key in config_keys[1:]:
             _key = "${" + key + "}"
-            sub_dir = sub_dir / _key  # type: ignore[reportOptionalOperand]
+            sub_dir = sub_dir / _key  # type: ignore[operator]
 
         sub_dir = (
             sub_dir / "${now:%Y-%m-%d_%H-%M-%S}"
@@ -143,7 +143,7 @@ def setup_hydra_config_and_logging(
             sweep=sweep_dir,
         )
     else:
-        hydra_config: HydraConf = HydraConf(
+        hydra_config = HydraConf(
             job=job_config,
             job_logging=logging_config,
             run=run_dir,

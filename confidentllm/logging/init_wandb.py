@@ -25,9 +25,8 @@
 
 from pathlib import Path
 
-from omegaconf import DictConfig, OmegaConf
-
 import wandb
+from omegaconf import DictConfig, OmegaConf
 
 __all__ = ["initialize_wandb"]
 
@@ -92,4 +91,4 @@ def initialize_wandb(
 
     # Add the run config to the wandb config
     # (so that they are tracked in the wandb run)
-    wandb.config.run = cfg_dict
+    wandb.config.run = cfg_dict  # type: ignore[attr-defined]

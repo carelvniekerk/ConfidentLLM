@@ -24,9 +24,11 @@
 """Model output answer processor."""
 
 import re
+from typing import Unpack
 
 from confidentllm.generation.types import GenerationOutput
 from confidentllm.output_processing.answer_processor import Answer, AnswerProcessor
+from confidentllm.output_processing.types import OutputProcessorKwargs
 
 __all__ = ["NumericAnswerProcessor"]
 
@@ -48,9 +50,7 @@ class NumericAnswerProcessor(AnswerProcessor):
     def __call__(
         self,
         generation_output: GenerationOutput,
-        *,
-        return_best_answer_idx: bool = False,
-        **kwargs: dict | None,
+        **kwargs: Unpack[OutputProcessorKwargs],
     ) -> Answer:
         """Process the output.
 
@@ -67,7 +67,6 @@ class NumericAnswerProcessor(AnswerProcessor):
         """
         answer_object = super().__call__(
             generation_output,
-            return_best_answer_idx=return_best_answer_idx,
             **kwargs,
         )
         answer = self._extract_numbers(answer_object.answer)

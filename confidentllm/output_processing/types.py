@@ -25,6 +25,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import TypedDict, Unpack
 
 from transformers import PreTrainedModel, PreTrainedTokenizer
 
@@ -33,7 +34,14 @@ from confidentllm.generation.types import GenerationOutput
 __all__ = [
     "ProcessedOutput",
     "OutputProcessor",
+    "OutputProcessorKwargs",
 ]
+
+
+class OutputProcessorKwargs(TypedDict, total=False):
+    """Keyword arguments for the output processor."""
+
+    return_best_answer_idx: bool
 
 
 @dataclass
@@ -59,7 +67,7 @@ class OutputProcessor(ABC):
     def __call__(
         self,
         generation_output: GenerationOutput,
-        **kwargs: dict | None,
+        **kwargs: Unpack[OutputProcessorKwargs],
     ) -> ProcessedOutput:
         """Process the generated answer."""
         ...

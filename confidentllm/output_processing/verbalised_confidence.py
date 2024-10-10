@@ -25,7 +25,7 @@
 
 import re
 from dataclasses import dataclass
-from typing import Callable, Protocol
+from typing import Callable, Protocol, Unpack
 
 import torch
 from transformers import BatchEncoding, PreTrainedModel, PreTrainedTokenizer, TensorType
@@ -36,6 +36,7 @@ from confidentllm.output_processing.answer_processor import Answer, AnswerProces
 from confidentllm.output_processing.numeric_answer_processor import (
     NumericAnswerProcessor,
 )
+from confidentllm.output_processing.types import OutputProcessorKwargs
 
 __all__ = [
     "VerbalisedConfidenceAnswerProcessor",
@@ -162,7 +163,7 @@ class VerbalisedConfidenceAnswerProcessor(
     def __call__(
         self,
         generation_output: GenerationOutput,
-        **kwargs: dict | None,
+        **kwargs: Unpack[OutputProcessorKwargs],
     ) -> Answer:
         """Process the output.
 
@@ -179,11 +180,10 @@ class VerbalisedConfidenceAnswerProcessor(
         """
         answer_object = super().__call__(
             generation_output,
-            return_best_answer_idx=True,
             **kwargs,
         )
 
-        confidences: VerbalisedConfidences = self._generate_verbalised_confidences(  # type: ignore[reportAttributeAccessIssue]
+        confidences: VerbalisedConfidences = self._generate_verbalised_confidences(  # type: ignore[misc]
             generation_output,
         )
 
@@ -233,7 +233,7 @@ class VerbalisedConfidenceNumericAnswerProcessor(
     def __call__(
         self,
         generation_output: GenerationOutput,
-        **kwargs: dict | None,
+        **kwargs: Unpack[OutputProcessorKwargs],
     ) -> Answer:
         """Process the output.
 
@@ -250,11 +250,10 @@ class VerbalisedConfidenceNumericAnswerProcessor(
         """
         answer_object = super().__call__(
             generation_output,
-            return_best_answer_idx=True,
             **kwargs,
         )
 
-        confidences: VerbalisedConfidences = self._generate_verbalised_confidences(  # type: ignore[reportAttributeAccessIssue]
+        confidences: VerbalisedConfidences = self._generate_verbalised_confidences(  # type: ignore[misc]
             generation_output,
         )
 

@@ -50,7 +50,7 @@ PRETRAINED_MODEL_NAME_OR_PATH = {
 
 def get_pretrained_model_name_or_path(name: ModelName | Path) -> str | Path:
     """Get the pretrained model name or path for the given model name."""
-    return PRETRAINED_MODEL_NAME_OR_PATH.get(name, name)  # type: ignore[reportAssignmentType]
+    return PRETRAINED_MODEL_NAME_OR_PATH.get(name, name)  # type: ignore[arg-type]
 
 
 CHAT_TEMPLATES: dict[ModelName, str] = {

@@ -29,7 +29,7 @@ from confidentllm.data.gsm8k import load_gsm8k_data
 from confidentllm.data.multi_arith import load_multi_arith_data
 from confidentllm.hydra_tools import builds
 
-__all__ = []
+__all__: list[str] = []
 
 GSM8KConfig = builds(load_gsm8k_data)
 MultiArithConfig = builds(load_multi_arith_data)

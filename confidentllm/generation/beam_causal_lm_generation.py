@@ -41,7 +41,7 @@ from confidentllm.generation.types import (
 )
 from confidentllm.hydra_tools import builds
 
-__all__ = []
+__all__: list[str] = []
 
 
 class BeamSearchCausalLMGenerationMethod(CausalLMGenerationMethod):

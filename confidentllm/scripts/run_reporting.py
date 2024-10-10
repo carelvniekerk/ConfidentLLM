@@ -27,11 +27,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import wandb
 from hydra_zen import store, zen
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
-import wandb
 from confidentllm.logging.init_wandb import initialize_wandb
 from confidentllm.reporting import load_wandb_data
 from confidentllm.scripts.setup_tools import setup_hydra_config_and_logging
@@ -70,7 +70,7 @@ def tabulate_results(data_df: pd.DataFrame) -> pd.DataFrame:
     pivot_table = pivot_table.sort_index(axis=1, level=[0, 1])
 
     # Adjust the column levels to achieve the desired hierarchy
-    pivot_table.columns = pivot_table.columns.reorder_levels(  # type: ignore  # noqa: PGH003
+    pivot_table.columns = pivot_table.columns.reorder_levels(  # type: ignore[attr-defined]
         ["Dataset", "Split", None],
     )
 
@@ -162,8 +162,8 @@ def create_calibration_plot(data_df: pd.DataFrame) -> dict[str, Figure]:
 
                 # Remove empty bins
                 mask: np.ndarray = accuracy != -1
-                accuracy: np.ndarray = accuracy[mask]
-                confidence: np.ndarray = confidence[mask]
+                accuracy = accuracy[mask]
+                confidence = confidence[mask]
 
                 ax.plot(
                     confidence,

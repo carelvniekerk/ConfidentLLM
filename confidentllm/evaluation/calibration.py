@@ -97,7 +97,7 @@ class CalibrationEvaluator(Evaluator):
     def compute_bin_stats(
         self,
         bin_data: dict[str, torch.Tensor | np.ndarray],
-    ) -> dict[str, float | int]:
+    ) -> dict[str, float]:
         """Compute accuracy and average confidence for a bin.
 
         Args:
@@ -111,10 +111,10 @@ class CalibrationEvaluator(Evaluator):
         """
         bin_size: int = bin_data["labels"].shape[0]
         if bin_size == 0:
-            accuracy = -1
-            avg_confidence = -1
+            accuracy: float = -1
+            avg_confidence: float = -1
         else:
-            accuracy: float = (bin_data["predictions"] == bin_data["labels"]).mean()  # type: ignore[reportAssignmentType]
+            accuracy = (bin_data["predictions"] == bin_data["labels"]).mean().item()
             avg_confidence = bin_data["confidences"].mean().item()
 
         return {
@@ -143,7 +143,7 @@ class CalibrationEvaluator(Evaluator):
         ece: float = 0.0
 
         for _stats in bin_stats.values():
-            bin_size: int = _stats["bin_size"]  # type: ignore  # noqa: PGH003 - Bin size is an integer.
+            bin_size: int = _stats["bin_size"]  # type: ignore[assignment]
             accuracy = _stats["accuracy"]
             avg_confidence = _stats["avg_confidence"]
 

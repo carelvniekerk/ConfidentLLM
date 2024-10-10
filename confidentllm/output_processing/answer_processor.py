@@ -26,6 +26,7 @@
 import difflib
 import logging
 from dataclasses import dataclass, field
+from typing import Unpack
 
 import torch
 from transformers import BatchEncoding, TensorType
@@ -35,7 +36,11 @@ from confidentllm.generation.types import (
     GenerationOutput,
     TokenizerNotSetError,
 )
-from confidentllm.output_processing.types import OutputProcessor, ProcessedOutput
+from confidentllm.output_processing.types import (
+    OutputProcessor,
+    OutputProcessorKwargs,
+    ProcessedOutput,
+)
 
 __all__ = ["Answer", "AnswerProcessor"]
 
@@ -86,9 +91,7 @@ class AnswerProcessor(OutputProcessor):
     def __call__(
         self,
         generation_output: GenerationOutput,
-        *,
-        return_best_answer_idx: bool = False,
-        **kwargs: dict | None,  # noqa: ARG002
+        **kwargs: Unpack[OutputProcessorKwargs],
     ) -> Answer:
         """Process the output.
 
@@ -103,6 +106,8 @@ class AnswerProcessor(OutputProcessor):
             Answer: The answer and confidence.
 
         """
+        return_best_answer_idx: bool = kwargs.get("return_best_answer_idx", False)
+
         if isinstance(self.tokenizer, type(None)):
             raise TokenizerNotSetError(self.tokenizer)
 
@@ -279,7 +284,7 @@ class AnswerProcessor(OutputProcessor):
             size=match.size,
         )
 
-        best_span = (
+        best_span: tuple[int, int] | tuple[()] = (
             (match.a, match.a + match.size) if match.a < search_space_size else ()
         )
 

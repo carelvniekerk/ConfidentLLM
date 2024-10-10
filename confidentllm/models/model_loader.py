@@ -80,7 +80,7 @@ class ModelLoader:
         )
         self.device: torch.device = torch.device(device)
         self.chat_template: str | None = get_chat_template(
-            pretrained_model_name_or_path,  # type: ignore[reportArgumentType]
+            pretrained_model_name_or_path,  # type: ignore[arg-type]
         )
 
     def load(self) -> tuple[PreTrainedModel, PreTrainedTokenizer]:

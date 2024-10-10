@@ -25,11 +25,11 @@
 
 import logging
 
+import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
-import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
@@ -86,7 +86,7 @@ class MathematicalReasoningRunner:
 
         """
         generation_output = self.generation_method(question)
-        answer: Answer = self.answer_processor(generation_output)  # type: ignore[reportAssignmentType]
+        answer: Answer = self.answer_processor(generation_output)  # type: ignore[assignment]
 
         return answer
 
@@ -96,13 +96,13 @@ class MathematicalReasoningRunner:
             columns=["Question", "Reasoning", "Answer", "True Answer", "Confidence"],
         )
         for example in tqdm(data, desc="Answering questions"):
-            question: str = example.get("question", "")  # type: ignore  # noqa: PGH003
+            question: str = example.get("question", "")  # type: ignore[attr-access]
             answer = self._answer_question(question)
 
             # Add the batch to the evaluator
             self.evaluator.add_batch(
                 batch=EvaluationBatch(
-                    labels=[float(example.get("answer", "-1").replace(",", ""))],  # type: ignore[reportAttributeAccessType]
+                    labels=[float(example.get("answer", "-1").replace(",", ""))],  # type: ignore[attr-access]
                     predictions=[float(answer.answer)],
                     confidences=[answer.confidence.mean().item()],
                 ),
@@ -113,7 +113,7 @@ class MathematicalReasoningRunner:
                 question,
                 answer.reasoning,
                 float(answer.answer),
-                float(example.get("answer", "-1").replace(",", "")),  # type: ignore  # noqa: PGH003
+                float(example.get("answer", "-1").replace(",", "")),  # type: ignore[attr-access]
                 answer.confidence.mean().item(),
             )
 
