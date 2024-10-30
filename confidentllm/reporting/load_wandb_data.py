@@ -24,7 +24,6 @@
 """Modules for accessing the weights and biases API and loading run data."""
 
 import pandas as pd
-
 import wandb
 from wandb.apis.public.runs import Run, Runs
 from wandb.old.summary import HTTPSummary, SummarySubDict

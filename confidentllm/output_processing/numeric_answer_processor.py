@@ -69,8 +69,8 @@ class NumericAnswerProcessor(AnswerProcessor):
             generation_output,
             **kwargs,
         )
-        answer = self._extract_numbers(answer_object.answer)
-        answer = answer[-1] if answer else -1
+        possible_answer: list[float] = self._extract_numbers(answer_object.answer)
+        answer: float = possible_answer[-1] if possible_answer else -1
 
         return Answer(
             answer=str(answer),
@@ -79,7 +79,7 @@ class NumericAnswerProcessor(AnswerProcessor):
         )
 
     @staticmethod
-    def _extract_numbers(text: str) -> list:
+    def _extract_numbers(text: str) -> list[float]:
         """Extract numbers from the text."""
         # Use a regex pattern that matches numbers with optional commas
         number_pattern = r"\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\b"
