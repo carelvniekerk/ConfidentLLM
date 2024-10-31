@@ -26,6 +26,7 @@
 import difflib
 import logging
 from dataclasses import dataclass, field
+from functools import cached_property
 from typing import Unpack
 
 import torch
@@ -196,8 +197,10 @@ class AnswerProcessor(OutputProcessor):
 
         # Extract the answer span confidence
         token_confidences_list: list[torch.Tensor] = []
-        for span, probs in zip(
+        reasoning_with_highlighted_answer: list[list[int]] = []
+        for span, tokens, probs in zip(
             best_spans,
+            clean_generated_response_tokens,
             clean_generated_response_token_probabilities,
             strict=True,
         ):
@@ -208,6 +211,13 @@ class AnswerProcessor(OutputProcessor):
             # Average of the answer span tokens used to reduce answer confidence
             token_confidences_list.append(
                 torch.tensor(probs[span[0] : span[1] + 1]).mean(),
+            )
+            highlighted_answer_tokens: list[int] = self._highlight_answer_span(
+                response_tokens=tokens,
+                span=span,
+            )
+            reasoning_with_highlighted_answer.append(
+                highlighted_answer_tokens,
             )
         answer_confidences: torch.Tensor = torch.tensor(token_confidences_list)
 
@@ -223,7 +233,7 @@ class AnswerProcessor(OutputProcessor):
         answer_confidence: torch.Tensor = answer_confidences[best_answer_id]
 
         reasoning: str = self.tokenizer.decode(
-            generated_response_tokens[best_answer_id],
+            reasoning_with_highlighted_answer[best_answer_id],
             skip_special_tokens=True,
             clean_up_tokenization_spaces=True,
         )
@@ -239,7 +249,7 @@ class AnswerProcessor(OutputProcessor):
             )
         return Answer(answer=answer, confidence=answer_confidence, reasoning=reasoning)
 
-    @property
+    @cached_property
     def _ignore_tokens(self) -> list[int]:
         """Get the tokens to ignore during answer extraction and mathing."""
         if isinstance(self.tokenizer, type(None)):
@@ -253,10 +263,37 @@ class AnswerProcessor(OutputProcessor):
         if self.tokenizer.bos_token_id is not None:
             ignore_tokens.append(self.tokenizer.bos_token_id)
 
-        new_line_token_id: int = self.tokenizer.convert_tokens_to_ids("\n")  # type: ignore[reportAssignmentType]
-        ignore_tokens.append(new_line_token_id)
+        new_line_token_id: list[int] = self.tokenizer.convert_tokens_to_ids(["\n", "Ċ"])  # type: ignore[assignment]
+        ignore_tokens.extend(new_line_token_id)
+
+        full_stop_token_id: int = self.tokenizer.convert_tokens_to_ids(".")  # type: ignore[assignment]
+        ignore_tokens.append(full_stop_token_id)
 
         return ignore_tokens
+
+    @cached_property
+    def _bracket_token_ids(self) -> list[int]:
+        """Get the tokens ids of the brackets `[]`."""
+        bracket_tokens: list[str] = ["[", "]"]
+        bracket_token_ids: list[int] = self.tokenizer.convert_tokens_to_ids(
+            bracket_tokens,
+        )  # type: ignore[assignment]
+
+        return bracket_token_ids
+
+    def _highlight_answer_span(
+        self,
+        response_tokens: list[int],
+        span: tuple[int, int],
+    ) -> list[int]:
+        """Highlight the answer span in the tokens."""
+        highlighted_answer_tokens: list[int] = response_tokens[: span[0]]
+        highlighted_answer_tokens.append(self._bracket_token_ids[0])
+        highlighted_answer_tokens.extend(response_tokens[span[0] : span[1] + 1])
+        highlighted_answer_tokens.append(self._bracket_token_ids[1])
+        highlighted_answer_tokens.extend(response_tokens[span[1] + 1 :])
+
+        return highlighted_answer_tokens
 
     def _find_largest_overlap_span(
         self,
@@ -271,31 +308,26 @@ class AnswerProcessor(OutputProcessor):
             isjunk=None,
             a=search_space,
             b=search_span,
-        )  # type: ignore  # noqa: PGH003 - numpy arrays can be dealt with as sequences in this method.
+        )
         match = seq_matcher.find_longest_match(
             alo=0,
             ahi=search_space_size,
             blo=0,
             bhi=search_span_size,
         )
-        match = difflib.Match(
-            a=search_space_size - match.a - match.size,
-            b=search_span_size - match.b - match.size,
-            size=match.size,
-        )
 
         best_span: tuple[int, int] | tuple[()] = (
-            (match.a, match.a + match.size) if match.a < search_space_size else ()
+            (match.a, match.a + match.size - 1) if match.a < search_space_size else ()
         )
 
         if not best_span:
             raise NoOverlappingSpanFoundError(
-                search_term=self.tokenizer.decode(  # type: ignore  # noqa: PGH003
+                search_term=self.tokenizer.decode(
                     search_span,
                     skip_special_tokens=True,
                     clean_up_tokenization_spaces=True,
                 ),
-                search_space=self.tokenizer.decode(  # type: ignore  # noqa: PGH003
+                search_space=self.tokenizer.decode(
                     search_space,
                     skip_special_tokens=True,
                     clean_up_tokenization_spaces=True,
