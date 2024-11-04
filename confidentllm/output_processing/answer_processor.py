@@ -127,10 +127,11 @@ class AnswerProcessor(OutputProcessor):
             return_tensors=TensorType.PYTORCH,
             padding=True,
         )
+        inputs.to(self.model.device)
 
         answer_output: GenerateDecoderOnlyOutput = self.model.generate(
-            input_ids=inputs.input_ids.to(self.model.device),
-            attention_mask=inputs.attention_mask.to(self.model.device),
+            input_ids=inputs.input_ids,
+            attention_mask=inputs.attention_mask,
             max_new_tokens=self.max_answer_generation_length,
             return_dict_in_generate=True,
             pad_token_id=self.tokenizer.pad_token_id,
