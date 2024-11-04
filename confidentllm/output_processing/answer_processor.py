@@ -207,6 +207,7 @@ class AnswerProcessor(OutputProcessor):
             if span[0] == -1:
                 # No overlapping span found use confidence of 0
                 token_confidences_list.append(torch.tensor(0.0))
+                reasoning_with_highlighted_answer.append(tokens)
                 continue
             # Average of the answer span tokens used to reduce answer confidence
             token_confidences_list.append(
@@ -216,9 +217,7 @@ class AnswerProcessor(OutputProcessor):
                 response_tokens=tokens,
                 span=span,
             )
-            reasoning_with_highlighted_answer.append(
-                highlighted_answer_tokens,
-            )
+            reasoning_with_highlighted_answer.append(highlighted_answer_tokens)
         answer_confidences: torch.Tensor = torch.tensor(token_confidences_list)
 
         # Select the answer with the highest confidence
