@@ -120,7 +120,7 @@ class MathematicalReasoningRunner:
         results = self.evaluator.evaluate()
         logging_message: str = str(results)
         logger.info(logging_message)
-        wandb_log = {"results_table": results_table}
+        wandb_log: dict[str, wandb.Table] = {"results_table": results_table}
         wandb_log.update(results.to_dict())
         wandb.log(wandb_log)
 
@@ -150,10 +150,10 @@ def run_mathematical_reasoning(  # noqa: PLR0913
     init_wandb()
 
     runner = MathematicalReasoningRunner(
-        model,
-        generation_method,
-        output_processor,
-        evaluator,
+        model=model,
+        generation_method=generation_method,
+        answer_processor=output_processor,
+        evaluator=evaluator,
     )
     runner.run(data)
 
