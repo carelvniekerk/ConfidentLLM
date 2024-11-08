@@ -25,6 +25,7 @@
 
 import difflib
 import logging
+import re
 from dataclasses import dataclass, field
 from functools import cached_property
 from typing import Unpack
@@ -112,18 +113,11 @@ class AnswerProcessor(OutputProcessor):
         if isinstance(self.tokenizer, type(None)):
             raise TokenizerNotSetError(self.tokenizer)
 
-        output_text: list[str] = self.tokenizer.batch_decode(
-            generation_output.generated_ids,
-            skip_special_tokens=True,
-            clean_up_tokenization_spaces=True,
-        )
-        for beam_idx, beam_text in enumerate(output_text):
-            # Remove new lines and trailing spaces
-            processed_beam_text: str = beam_text.replace("\n", " ").strip()
-            # Add the answer extraction prompt
-            processed_beam_text += ". " if processed_beam_text[-1] != "." else " "
-            processed_beam_text += self.prompt
-            output_text[beam_idx] = processed_beam_text
+        output_text: list[str] = self._decode_tokens(generation_output.generated_ids)
+        output_text = [
+            self._concatenate_prompt(beam_text, self.prompt)
+            for beam_text in output_text
+        ]
 
         inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             batch_text_or_text_pairs=output_text,
@@ -228,22 +222,14 @@ class AnswerProcessor(OutputProcessor):
         # Select the answer with the highest confidence
         best_answer_id: int = int(torch.argmax(answer_confidences).item())
 
-        answer: str = self.tokenizer.decode(
-            answer_tokens[best_answer_id],
-            skip_special_tokens=True,
-            clean_up_tokenization_spaces=True,
-        )
-        answer = answer.replace("\n", "").strip()
+        answer: str = self._decode_tokens([answer_tokens[best_answer_id]])[0]
         answer_confidence: torch.Tensor = answer_confidences[best_answer_id]
 
-        reasoning: str = self.tokenizer.decode(
-            reasoning_with_highlighted_answer[best_answer_id],
-            skip_special_tokens=True,
-            clean_up_tokenization_spaces=True,
-        )
-        reasoning = reasoning.replace("\n", "").strip()
-        reasoning += ". " if reasoning[-1] != "." else " "
-        reasoning += f"{self.prompt} {answer}"
+        reasoning: str = self._decode_tokens(
+            tokens=[reasoning_with_highlighted_answer[best_answer_id]],
+        )[0]
+        reasoning = self._concatenate_prompt(reasoning, f"{self.prompt} {answer}")
+        reasoning = self._postprocess_reasoning_text(reasoning)
 
         if return_best_answer_idx:
             return Answer(
@@ -286,6 +272,29 @@ class AnswerProcessor(OutputProcessor):
 
         return bracket_token_ids
 
+    def _decode_tokens(self, tokens: list[list[int]] | torch.Tensor) -> list[str]:
+        """Decode the tokens to a string."""
+        if isinstance(self.tokenizer, type(None)):
+            raise TokenizerNotSetError(self.tokenizer)
+
+        text: list[str] = self.tokenizer.batch_decode(
+            sequences=tokens,
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=True,
+        )
+
+        text = [txt.replace("\n", " ").strip() for txt in text]
+
+        return text
+
+    @staticmethod
+    def _concatenate_prompt(text: str, prompt: str) -> str:
+        """Concatenate the text with the prompt."""
+        text += ". " if text[-1] != "." else " "
+        text += f"{prompt}"
+
+        return text
+
     def _highlight_answer_span(
         self,
         response_tokens: list[int],
@@ -299,6 +308,34 @@ class AnswerProcessor(OutputProcessor):
         highlighted_answer_tokens.extend(response_tokens[span[1] + 1 :])
 
         return highlighted_answer_tokens
+
+    @staticmethod
+    def _postprocess_reasoning_text(reasoning: str) -> str:
+        """Postprocess the reasoning text."""
+        # Step 1: Split lowercase-uppercase, e.g., "sentenceAnd" -> "sentence. And"
+        reasoning = re.sub(r"([a-z])([A-Z])", r"\1. \2", reasoning)
+
+        # Step 2: Split word-number pairs, e.g., "reasoning12" -> "reasoning 12"
+        reasoning = re.sub(r"([a-zA-Z])(\d)", r"\1 \2", reasoning)
+
+        # Step 3: Ensure space after text and before brackets
+        reasoning = re.sub(r"(\w)(\[) ", r"\1 [", reasoning)
+        reasoning = re.sub(r"(=)(\[) ", r"\1 [", reasoning)
+        reasoning = re.sub(r"^\[ ", r"[", reasoning)
+
+        # Step 4: Add full stop at the end if missing
+        if not reasoning.endswith("."):
+            reasoning += "."
+
+        # Step 5: Capitalize the first letter of each sentence
+        reasoning = re.sub(r"([a-z]) ([A-Z])", r"\1. \2", reasoning)
+        reasoning = re.sub(
+            pattern=r"(^|(?<=\.\s))([a-z])",
+            repl=lambda match: match.group(1) + match.group(2).upper(),
+            string=reasoning,
+        )
+
+        return reasoning
 
     def _find_largest_overlap_span(
         self,
