@@ -29,12 +29,16 @@ import pytest
 import torch
 
 from confidentllm.models.model_loader import ModelLoader
-from confidentllm.models.model_name import ModelName
+from confidentllm.models.model_name_and_type import ModelName, ModelType
 
 
 def test_model_loader_with_name() -> None:
     """Test the model loader class."""
-    loader = ModelLoader(pretrained_model_name_or_path=ModelName.GPT2, device="meta")
+    loader = ModelLoader(
+        pretrained_model_name_or_path=ModelName.GPT2,
+        model_type=ModelType.CAUSAL_LM,
+        device="meta",
+    )
 
     model, tokenizer = loader.load()
 
@@ -61,9 +65,17 @@ def test_model_loader_with_name() -> None:
 def test_model_loader_with_path() -> None:
     """Test the model loader class."""
     with pytest.raises(FileNotFoundError):
-        _ = ModelLoader(pretrained_model_name_or_path=Path("gpt2"), device="meta")
+        _ = ModelLoader(
+            pretrained_model_name_or_path=Path("gpt2"),
+            model_type=ModelType.CAUSAL_LM,
+            device="meta",
+        )
 
-    loader = ModelLoader(pretrained_model_name_or_path=Path("GPT2"), device="meta")
+    loader = ModelLoader(
+        pretrained_model_name_or_path=Path("GPT2"),
+        model_type=ModelType.CAUSAL_LM,
+        device="meta",
+    )
 
     if loader.pretrained_model_name_or_path != "gpt2":
         msg = "Pretrained model name or path is not set correctly."
