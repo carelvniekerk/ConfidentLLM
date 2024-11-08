@@ -25,7 +25,7 @@
 
 from pathlib import Path
 
-from confidentllm.models.model_name import ModelName
+from confidentllm.models.model_name_and_type import ModelName
 
 __all__ = ["get_chat_template", "get_pretrained_model_name_or_path"]
 

@@ -23,12 +23,15 @@
 # limitations under the License.
 """Module to load pretrained models and tokenizers from Hugging Face's model hub."""
 
+from functools import partial
 from pathlib import Path
+from typing import Protocol
 
 import torch
 from hydra_zen import store
 from hydra_zen.third_party.pydantic import pydantic_parser
 from transformers import (
+    AutoModel,
     AutoModelForCausalLM,
     AutoTokenizer,
     PreTrainedModel,
@@ -40,7 +43,12 @@ from confidentllm.models.configuration import (
     get_chat_template,
     get_pretrained_model_name_or_path,
 )
-from confidentllm.models.model_name import ModelName
+from confidentllm.models.model_name_and_type import (
+    ModelDataTypes,
+    ModelMode,
+    ModelName,
+    ModelType,
+)
 
 __all__ = ["ModelLoader"]
 
@@ -50,13 +58,24 @@ DEFAULT_DEVICE: str = "mps" if torch.backends.mps.is_available() else "cpu"
 DEFAULT_DEVICE = "cuda" if torch.cuda.is_available() else DEFAULT_DEVICE
 
 
+class ModelLoaderFunction(Protocol):
+    def __call__(
+        self,
+        pretrained_model_name_or_path: str | Path,
+    ) -> PreTrainedModel: ...
+
+
 class ModelLoader:
     """Abstract class to load a pretrained model and tokenizer."""
 
     def __init__(
         self,
         pretrained_model_name_or_path: ModelName | Path,
+        *,
+        model_type: ModelType,
         device: str = DEFAULT_DEVICE,
+        data_type: ModelDataTypes = ModelDataTypes.BFLOAT16,
+        model_mode: ModelMode = ModelMode.EVAL,
     ) -> None:
         """Initialize the model loader."""
         if (
@@ -82,6 +101,40 @@ class ModelLoader:
         self.chat_template: str | None = get_chat_template(
             pretrained_model_name_or_path,  # type: ignore[arg-type]
         )
+        self.data_type: torch.dtype = self._get_dtype(data_type)
+        self.model_type: ModelType = model_type
+        self.model_mode: ModelMode = model_mode
+
+        self._get_model_class()
+
+    @staticmethod
+    def _get_dtype(data_type: ModelDataTypes) -> torch.dtype:
+        """Get the torch data type."""
+        if data_type == ModelDataTypes.BFLOAT16:
+            dtype: torch.dtype = torch.bfloat16
+        elif data_type == ModelDataTypes.FLOAT16:
+            dtype = torch.float16
+        elif data_type == ModelDataTypes.FLOAT32:
+            dtype = torch.float32
+        elif data_type == ModelDataTypes.FLOAT64:
+            dtype = torch.float64
+        else:
+            raise ValueError(f"Invalid data type: {data_type}")  # noqa: EM102, TRY003
+
+        return dtype
+
+    def _get_model_class(self) -> None:
+        """Get the model class."""
+        if self.model_type == ModelType.CAUSAL_LM:
+            self.model_class: AutoModel = AutoModelForCausalLM  # type: ignore[assignment] # All auto models are of type AutoModel
+        else:
+            raise ValueError(f"Invalid model type: {self.model_type}")  # noqa: EM102, TRY003
+
+        self.model_loader: ModelLoaderFunction = partial(
+            self.model_class.from_pretrained,
+            device_map=self.device,
+            torch_dtype=self.data_type,
+        )  # type: ignore[assignment] # Paths can also be passed to from_pretrained
 
     def load(self) -> tuple[PreTrainedModel, PreTrainedTokenizer]:
         """Load a pretrained model from Hugging Face's model hub.
@@ -96,13 +149,19 @@ class ModelLoader:
             Module: The model loaded on the specified device.
 
         """
-        model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(
-            self.pretrained_model_name_or_path,
+        model: PreTrainedModel = self.model_loader(
+            pretrained_model_name_or_path=self.pretrained_model_name_or_path,
         )
-        model.eval()
+
+        if self.model_mode == ModelMode.TRAIN:
+            model.train()
+        elif self.model_mode == ModelMode.EVAL:
+            model.eval()
+        else:
+            raise ValueError(f"Invalid model mode: {self.model_mode}")  # noqa: EM102, TRY003
 
         tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(
-            self.pretrained_model_name_or_path,  # type: ignore[assignment]
+            pretrained_model_name_or_path=self.pretrained_model_name_or_path,  # type: ignore[assignment]
             clean_up_tokenization_spaces=True,
             padding_side="left",
         )
@@ -118,9 +177,10 @@ class ModelLoader:
 
 
 # Add default model loader to the store
-ModelConfig = builds(
+CausalLMModelConfig = builds(
     ModelLoader,
     pretrained_model_name_or_path=ModelName.GPT2,
+    model_type=ModelType.CAUSAL_LM,
     zen_wrappers=[pydantic_parser],
 )
-store(ModelConfig, name="default", group="model")
+store(CausalLMModelConfig, name="causal_lm", group="model")
