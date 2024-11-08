@@ -25,7 +25,12 @@
 
 from enum import StrEnum, auto
 
-__all__ = ["ModelName"]
+__all__ = [
+    "ModelDataTypes",
+    "ModelMode",
+    "ModelName",
+    "ModelType",
+]
 
 
 class ModelName(StrEnum):
@@ -55,3 +60,26 @@ class ModelName(StrEnum):
     MISTRAL_7B_INSTRUCT = auto()
     MISTRAL_NEMO_12B = auto()
     MISTRAL_NEMO_12B_INSTRUCT = auto()
+
+
+class ModelType(StrEnum):
+    """Enum class to store the types of the models."""
+
+    CAUSAL_LM = auto()
+    SEQUENCE_CLS = auto()
+
+
+class ModelMode(StrEnum):
+    """Enum class to store the modes of the models."""
+
+    TRAIN = auto()
+    EVAL = auto()
+
+
+class ModelDataTypes(StrEnum):
+    """Enum class to store the data types of the models."""
+
+    FLOAT64 = auto()
+    FLOAT32 = auto()
+    FLOAT16 = auto()
+    BFLOAT16 = auto()
