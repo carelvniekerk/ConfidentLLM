@@ -290,7 +290,7 @@ class AnswerProcessor(OutputProcessor):
     @staticmethod
     def _concatenate_prompt(text: str, prompt: str) -> str:
         """Concatenate the text with the prompt."""
-        text += ". " if text[-1] != "." else " "
+        text += ". " if text.endswith(".") else " "
         text += f"{prompt}"
 
         return text
