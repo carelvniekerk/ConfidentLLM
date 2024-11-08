@@ -109,7 +109,7 @@ def setup_hydra_config_and_logging(
             "model.pretrained_model_name_or_path",
             "resolve_generation_method:${generation_method}",
             "resolve_output_processor:${output_processor}",
-            "seed",
+            "run_config.seed",
         ]
 
     run_dir: RunDir = create_run_dir(
