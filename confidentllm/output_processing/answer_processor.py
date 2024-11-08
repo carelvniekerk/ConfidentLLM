@@ -117,10 +117,13 @@ class AnswerProcessor(OutputProcessor):
             skip_special_tokens=True,
             clean_up_tokenization_spaces=True,
         )
-        # Remove new lines and trailing spaces
-        output_text = [text_item.replace("\n", "").strip() for text_item in output_text]
-        # Add the answer extraction prompt
-        output_text = [f"{text_item}. {self.prompt}" for text_item in output_text]
+        for beam_idx, beam_text in enumerate(output_text):
+            # Remove new lines and trailing spaces
+            processed_beam_text: str = beam_text.replace("\n", " ").strip()
+            # Add the answer extraction prompt
+            processed_beam_text += ". " if processed_beam_text[-1] != "." else " "
+            processed_beam_text += self.prompt
+            output_text[beam_idx] = processed_beam_text
 
         inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             batch_text_or_text_pairs=output_text,
@@ -180,21 +183,22 @@ class AnswerProcessor(OutputProcessor):
             for search_term in answer_tokens
         ]
 
-        try:
-            best_spans: list[tuple[int, int]] = []
-            for search_space, search_span in zip(
-                clean_generated_response_tokens,
-                answer_tokens,
-                strict=True,
-            ):
+        best_spans: list[tuple[int, int]] = []
+        for search_space, search_span in zip(
+            clean_generated_response_tokens,
+            answer_tokens,
+            strict=True,
+        ):
+            try:
                 span: tuple[int, int] = self._find_largest_overlap_span(
                     search_space=search_space,
                     search_span=search_span,
                 )
                 best_spans.append(span)
-        except NoOverlappingSpanFoundError as err:
-            logger.warning(err.message)
-            best_spans = [(-1, -1) for _ in range(len(answer_tokens))]
+            except NoOverlappingSpanFoundError as err:
+                logger.warning(err.message)
+                span = (-1, -1)
+                best_spans.append(span)
 
         # Extract the answer span confidence
         token_confidences_list: list[torch.Tensor] = []
@@ -222,7 +226,7 @@ class AnswerProcessor(OutputProcessor):
         answer_confidences: torch.Tensor = torch.tensor(token_confidences_list)
 
         # Select the answer with the highest confidence
-        best_answer_id: int = torch.argmax(answer_confidences).item()  # type: ignore[assignment] # This number is a integer id
+        best_answer_id: int = int(torch.argmax(answer_confidences).item())
 
         answer: str = self.tokenizer.decode(
             answer_tokens[best_answer_id],
@@ -238,7 +242,8 @@ class AnswerProcessor(OutputProcessor):
             clean_up_tokenization_spaces=True,
         )
         reasoning = reasoning.replace("\n", "").strip()
-        reasoning = f"{reasoning}. {self.prompt} {answer}"
+        reasoning += ". " if reasoning[-1] != "." else " "
+        reasoning += f"{self.prompt} {answer}"
 
         if return_best_answer_idx:
             return Answer(
@@ -317,7 +322,7 @@ class AnswerProcessor(OutputProcessor):
         )
 
         best_span: tuple[int, int] | tuple[()] = (
-            (match.a, match.a + match.size - 1) if match.a < search_space_size else ()
+            (match.a, match.a + match.size - 1) if match.size > 0 else ()
         )
 
         if not best_span:
