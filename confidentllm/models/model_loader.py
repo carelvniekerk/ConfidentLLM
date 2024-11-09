@@ -33,6 +33,7 @@ from hydra_zen.third_party.pydantic import pydantic_parser
 from transformers import (
     AutoModel,
     AutoModelForCausalLM,
+    AutoModelForSequenceClassification,
     AutoTokenizer,
     PreTrainedModel,
     PreTrainedTokenizer,
@@ -43,6 +44,7 @@ from confidentllm.models.configuration import (
     get_chat_template,
     get_pretrained_model_name_or_path,
 )
+from confidentllm.models.lora import LoRAConfig, NoLoRAConfig
 from confidentllm.models.model_name_and_type import (
     ModelDataTypes,
     ModelMode,
@@ -76,6 +78,7 @@ class ModelLoader:
         device: str = DEFAULT_DEVICE,
         data_type: ModelDataTypes = ModelDataTypes.BFLOAT16,
         model_mode: ModelMode = ModelMode.EVAL,
+        lora: LoRAConfig = NoLoRAConfig,
     ) -> None:
         """Initialize the model loader."""
         if (
@@ -104,6 +107,7 @@ class ModelLoader:
         self.data_type: torch.dtype = self._get_dtype(data_type)
         self.model_type: ModelType = model_type
         self.model_mode: ModelMode = model_mode
+        self.lora: LoRAConfig = lora
 
         self._get_model_class()
 
@@ -127,6 +131,8 @@ class ModelLoader:
         """Get the model class."""
         if self.model_type == ModelType.CAUSAL_LM:
             self.model_class: AutoModel = AutoModelForCausalLM  # type: ignore[assignment] # All auto models are of type AutoModel
+        elif self.model_type == ModelType.SEQUENCE_CLS:
+            self.model_class = AutoModelForSequenceClassification  # type: ignore[assignment]
         else:
             raise ValueError(f"Invalid model type: {self.model_type}")  # noqa: EM102, TRY003
 
@@ -155,10 +161,14 @@ class ModelLoader:
 
         if self.model_mode == ModelMode.TRAIN:
             model.train()
+            self.lora.inference_mode = False
         elif self.model_mode == ModelMode.EVAL:
             model.eval()
+            self.lora.inference_mode = True
         else:
             raise ValueError(f"Invalid model mode: {self.model_mode}")  # noqa: EM102, TRY003
+
+        model = self.lora.get_lora_model(model)  # type: ignore[assignment]
 
         tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path=self.pretrained_model_name_or_path,  # type: ignore[assignment]
@@ -181,6 +191,7 @@ CausalLMModelConfig = builds(
     ModelLoader,
     pretrained_model_name_or_path=ModelName.GPT2,
     model_type=ModelType.CAUSAL_LM,
+    lora=NoLoRAConfig,
     zen_wrappers=[pydantic_parser],
 )
 store(CausalLMModelConfig, name="causal_lm", group="model")
