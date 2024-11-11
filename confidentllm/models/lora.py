@@ -23,8 +23,6 @@
 # limitations under the License.
 """LoRA Configuration for Models."""
 
-from dataclasses import dataclass
-
 from hydra_zen import store
 from peft import (
     LoraConfig,  # type: ignore[import] # LoraConfig is publically available in peft
@@ -39,16 +37,27 @@ from confidentllm.hydra_tools import builds
 __all__ = ["LoRAConfig", "NoLoRAConfig"]
 
 
-@dataclass
 class LoRAConfig:
     """Configuration for the LoRA model."""
 
-    active: bool = False
-    task_type: TaskType = TaskType.CAUSAL_LM
-    inference_mode: bool = False
-    r: int = 32
-    lora_alpha: int = 64
-    lora_dropout: float = 0.1
+    def __init__(  # noqa: D107, PLR0913
+        self,
+        *,
+        active: bool = False,
+        task_type: TaskType = TaskType.CAUSAL_LM,
+        inference_mode: bool = False,
+        r: int = 32,
+        lora_alpha: int = -1,
+        lora_dropout: float = 0.1,
+        use_rslora: bool = True,
+    ) -> None:
+        self.active = active
+        self.task_type = task_type
+        self.inference_mode = inference_mode
+        self.r = r
+        self.lora_alpha = lora_alpha if lora_alpha > 0 else 2 * r
+        self.lora_dropout = lora_dropout
+        self.use_rslora = use_rslora
 
     def _get_lora_config_object(self) -> LoraConfig:
         """Get the LoraConfig object from the LoRAConfig object."""
@@ -58,6 +67,7 @@ class LoRAConfig:
             r=self.r,
             lora_alpha=self.lora_alpha,
             lora_dropout=self.lora_dropout,
+            use_rslora=self.use_rslora,
         )
 
     def get_lora_model(self, model: PreTrainedModel) -> PeftModel | PreTrainedModel:
@@ -67,11 +77,12 @@ class LoRAConfig:
         return get_peft_model(model, self._get_lora_config_object())  # type: ignore[return-type]
 
 
-NoLoRAConfig = LoRAConfig()
-CausalLMLoRAConfig = builds(LoRAConfig, active=True)
-SeqClsLoRAConfig = builds(LoRAConfig, active=True, task_type=TaskType.SEQ_CLS)
+HydraLoRAConfig = builds(LoRAConfig)
+NoLoRAConfig = HydraLoRAConfig(active=False)
+CausalLMLoRAConfig = HydraLoRAConfig(active=True, task_type=TaskType.CAUSAL_LM)
+SeqClsLoRAConfig = HydraLoRAConfig(active=True, task_type=TaskType.SEQ_CLS)
 
-LoRAConfigStore = store(group="models/lora")
-LoRAConfigStore(NoLoRAConfig, name="no_lora")
-LoRAConfigStore(CausalLMLoRAConfig, name="causal_lm")
-LoRAConfigStore(SeqClsLoRAConfig, name="seq_cls")
+lora_config_store = store(group="model/lora")
+lora_config_store(NoLoRAConfig, name="no_lora")
+lora_config_store(CausalLMLoRAConfig, name="causal_lm")
+lora_config_store(SeqClsLoRAConfig, name="seq_cls")
