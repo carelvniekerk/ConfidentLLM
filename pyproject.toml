@@ -15,6 +15,7 @@ hydra-zen = "^0.13"
 matplotlib = "^3.9.1"
 pandas = "^2.2.2"
 pandas-stubs = "^2.2.2.240807"
+peft = "^0.13.2"
 pydantic = "^2.8.2"
 sentencepiece = "^0.2.0"
 transformers = "^4.43"
@@ -62,6 +63,10 @@ python_version = "3.12"
 module = [
     "datasets",
     "hydra-zen",
+    "peft",
+    "peft.mapping",
+    "peft.peft_models",
+    "peft.utils.peft_types",
     "torch",
     "transformers",
     "transformers.generation",

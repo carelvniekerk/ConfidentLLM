@@ -216,7 +216,8 @@ class MathematicalReasoningRunner:
     name="mathematical_reasoning",
     hydra_defaults=[
         "_self_",
-        {"model": "default"},
+        {"model": "causal_lm"},
+        {"model/lora": "no_lora"},
         {"generation_method": "greedy_decoding"},
         {"generation_method/confidence_extraction_method": "probability_disparity"},
         {"output_processor": "numeric_answer_with_token_confidence"},
