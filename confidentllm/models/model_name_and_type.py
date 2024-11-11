@@ -27,6 +27,7 @@ from enum import StrEnum, auto
 
 __all__ = [
     "ModelDataTypes",
+    "ModelDevice",
     "ModelMode",
     "ModelName",
     "ModelType",
@@ -83,3 +84,11 @@ class ModelDataTypes(StrEnum):
     FLOAT32 = auto()
     FLOAT16 = auto()
     BFLOAT16 = auto()
+
+
+class ModelDevice(StrEnum):
+    """Enum class to store the devices of the models."""
+
+    CPU = auto()
+    CUDA = auto()
+    MPS = auto()
