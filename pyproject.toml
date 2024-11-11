@@ -63,6 +63,10 @@ python_version = "3.12"
 module = [
     "datasets",
     "hydra-zen",
+    "peft",
+    "peft.mapping",
+    "peft.peft_models",
+    "peft.utils.peft_types",
     "torch",
     "transformers",
     "transformers.generation",
