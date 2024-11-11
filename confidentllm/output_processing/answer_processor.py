@@ -173,7 +173,12 @@ class AnswerProcessor(OutputProcessor):
             clean_generated_response_token_probabilities.append(clean_response_probs)
 
         answer_tokens = [
-            [token for token in search_term if token not in self._ignore_tokens]
+            [
+                token
+                for token in search_term
+                if token not in self._ignore_tokens
+                and token != self._full_stop_token_id
+            ]
             for search_term in answer_tokens
         ]
 
@@ -257,10 +262,13 @@ class AnswerProcessor(OutputProcessor):
         new_line_token_id: list[int] = self.tokenizer.convert_tokens_to_ids(["\n", "Ċ"])  # type: ignore[assignment]
         ignore_tokens.extend(new_line_token_id)
 
-        full_stop_token_id: int = self.tokenizer.convert_tokens_to_ids(".")  # type: ignore[assignment]
-        ignore_tokens.append(full_stop_token_id)
-
         return ignore_tokens
+
+    @cached_property
+    def _full_stop_token_id(self) -> int:
+        """Get the token id of the full stop `.`."""
+        full_stop_token_id: int = self.tokenizer.convert_tokens_to_ids(".")  # type: ignore[assignment]
+        return full_stop_token_id
 
     @cached_property
     def _bracket_token_ids(self) -> list[int]:
@@ -328,7 +336,6 @@ class AnswerProcessor(OutputProcessor):
             reasoning += "."
 
         # Step 5: Capitalize the first letter of each sentence
-        reasoning = re.sub(r"([a-z]) ([A-Z])", r"\1. \2", reasoning)
         reasoning = re.sub(
             pattern=r"(^|(?<=\.\s))([a-z])",
             repl=lambda match: match.group(1) + match.group(2).upper(),

@@ -92,3 +92,4 @@ class ModelDevice(StrEnum):
     CPU = auto()
     CUDA = auto()
     MPS = auto()
+    META = auto()
