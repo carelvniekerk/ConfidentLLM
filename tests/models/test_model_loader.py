@@ -29,7 +29,7 @@ import pytest
 import torch
 
 from confidentllm.models.model_loader import ModelLoader
-from confidentllm.models.model_name_and_type import ModelName, ModelType
+from confidentllm.models.model_name_and_type import ModelDevice, ModelName, ModelType
 
 
 def test_model_loader_with_name() -> None:
@@ -37,7 +37,7 @@ def test_model_loader_with_name() -> None:
     loader = ModelLoader(
         pretrained_model_name_or_path=ModelName.GPT2,
         model_type=ModelType.CAUSAL_LM,
-        device="meta",
+        device=ModelDevice.META,
     )
 
     model, tokenizer = loader.load()
@@ -68,13 +68,13 @@ def test_model_loader_with_path() -> None:
         _ = ModelLoader(
             pretrained_model_name_or_path=Path("gpt2"),
             model_type=ModelType.CAUSAL_LM,
-            device="meta",
+            device=ModelDevice.META,
         )
 
     loader = ModelLoader(
         pretrained_model_name_or_path=Path("GPT2"),
         model_type=ModelType.CAUSAL_LM,
-        device="meta",
+        device=ModelDevice.META,
     )
 
     if loader.pretrained_model_name_or_path != "gpt2":
