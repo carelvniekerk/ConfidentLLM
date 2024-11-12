@@ -46,6 +46,7 @@ def _cleanup_response(response: str) -> str:
 def prepare_reward_model_data(
     data: dict[str, list[str]],
     tokenizer: PreTrainedTokenizer,
+    max_length: int,
 ) -> dict[str, Tensor]:
     """Tokenize the input strings and return the tokenized data."""
     preferred_conversations: ChatConversation = ChatConversation(
@@ -81,6 +82,8 @@ def prepare_reward_model_data(
         add_generation_prompt=False,
         return_tensors=TensorType.PYTORCH,
         return_dict=True,
+        padding=True,
+        max_length=max_length,
     )  # type: ignore[assignment]
 
     rejected_inputs: BatchEncoding = tokenizer.apply_chat_template(
@@ -88,6 +91,8 @@ def prepare_reward_model_data(
         add_generation_prompt=False,
         return_tensors=TensorType.PYTORCH,
         return_dict=True,
+        padding=True,
+        max_length=max_length,
     )  # type: ignore[assignment]
 
     return {
