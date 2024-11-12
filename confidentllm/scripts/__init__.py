@@ -28,5 +28,11 @@ from confidentllm.scripts.run_mathematical_reasoning import (
     main as mathematical_reasoning,
 )
 from confidentllm.scripts.run_reporting import main as reporting
+from confidentllm.scripts.run_reward_model_training import main as reward_model_training
 
-__all__ = ["download_and_sync", "mathematical_reasoning", "reporting"]
+__all__ = [
+    "download_and_sync",
+    "mathematical_reasoning",
+    "reporting",
+    "reward_model_training",
+]

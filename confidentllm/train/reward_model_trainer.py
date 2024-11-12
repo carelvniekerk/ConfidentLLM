@@ -25,9 +25,11 @@
 
 from pathlib import Path
 
+from hydra_zen import store
 from trl import RewardConfig, RewardTrainer
 
 from confidentllm.generation.types import ModelNotSetError
+from confidentllm.hydra_tools import builds
 from confidentllm.train.types import BaseModelTrainer, IntervalStrategy
 
 __all__ = ["RewardModelTrainer"]
@@ -86,3 +88,9 @@ class RewardModelTrainer(BaseModelTrainer):
             train_dataset=self.train_dataset,
             eval_dataset=self.eval_dataset,
         )
+
+
+RewardModelTrainerConfig = builds(RewardModelTrainer)
+
+default_config = RewardModelTrainerConfig()
+store(default_config, group="trainer", name="reward_model")

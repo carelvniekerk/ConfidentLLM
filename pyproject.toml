@@ -50,6 +50,7 @@ url = "http://pypi.repo.test.hhu.de/simple/"
 download-and-sync = "confidentllm.scripts:download_and_sync"
 mathematical-reasoning = "confidentllm.scripts:mathematical_reasoning"
 reporting = "confidentllm.scripts:reporting"
+reward-model-training = "confidentllm.scripts:reward_model_training"
 tests = "pytest:main"
 
 # Configuration for Pytest
