@@ -48,8 +48,8 @@ logger = logging.getLogger("__main__")
         "_self_",
         {"model": "causal_lm"},
         {"model/lora": "no_lora"},
-        {"train_data": "mathematical_reasoning_train"},
-        {"eval_data": "mathematical_reasoning_eval"},
+        {"train_data": "cot_preference"},
+        {"eval_data": "cot_preference"},
         {"trainer": "reward_model_trainer"},
     ],
 )
