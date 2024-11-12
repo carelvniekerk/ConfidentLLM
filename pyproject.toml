@@ -24,6 +24,12 @@ torch = [
     { version = "==2.2.2", markers = "platform_machine == 'x86_64' and platform_system == 'Darwin'" },
     { version = "<2.4", markers = "platform_machine != 'x86_64' or platform_system != 'Darwin'" },
 ]
+# Numpy versioning:
+# Specific version for macOS with x86_64 architecture and latest version for other platforms
+numpy = [
+    { version = "<2.1", markers = "platform_machine == 'x86_64' and platform_system == 'Darwin'" },
+    { version = "*", markers = "platform_machine != 'x86_64' or platform_system != 'Darwin'" },
+]
 transformers = "^4.43"
 trl = "^0.12.0"
 tqdm = "^4.66.0"
