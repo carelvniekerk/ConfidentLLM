@@ -23,6 +23,9 @@
 # limitations under the License.
 """LoRA Configuration for Models."""
 
+from enum import StrEnum, auto
+from typing import Literal
+
 from hydra_zen import store
 from peft import (
     LoraConfig,  # type: ignore[import] # LoraConfig is publically available in peft
@@ -35,6 +38,14 @@ from transformers import PreTrainedModel
 from confidentllm.hydra_tools import builds
 
 __all__ = ["LoRAConfig", "NoLoRAConfig"]
+
+
+class LoRAWeightInitStrategy(StrEnum):
+    """Weight initialization strategies for LoRA."""
+
+    DEFAULT = auto()
+    PISSA = auto()
+    GAUSSIAN = auto()
 
 
 class LoRAConfig:
@@ -50,6 +61,7 @@ class LoRAConfig:
         lora_alpha: int = -1,
         lora_dropout: float = 0.1,
         use_rslora: bool = True,
+        weight_init_strategy: LoRAWeightInitStrategy = LoRAWeightInitStrategy.DEFAULT,
     ) -> None:
         self.active = active
         self.task_type = task_type
@@ -58,6 +70,11 @@ class LoRAConfig:
         self.lora_alpha = lora_alpha if lora_alpha > 0 else 2 * r
         self.lora_dropout = lora_dropout
         self.use_rslora = use_rslora
+        self.weight_init_strategy: str | Literal[True] = (
+            True
+            if weight_init_strategy == LoRAWeightInitStrategy.DEFAULT
+            else weight_init_strategy.value
+        )
 
     def _get_lora_config_object(self) -> LoraConfig:
         """Get the LoraConfig object from the LoRAConfig object."""
@@ -68,6 +85,7 @@ class LoRAConfig:
             lora_alpha=self.lora_alpha,
             lora_dropout=self.lora_dropout,
             use_rslora=self.use_rslora,
+            init_lora_weights=self.weight_init_strategy,  # type: ignore[arg-type]
         )
 
     def get_lora_model(self, model: PreTrainedModel) -> PeftModel | PreTrainedModel:
