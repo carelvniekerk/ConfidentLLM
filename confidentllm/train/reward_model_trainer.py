@@ -23,6 +23,8 @@
 # limitations under the License.
 """Trainer for the reward model."""
 
+from pathlib import Path
+
 from trl import RewardConfig, RewardTrainer
 
 from confidentllm.generation.types import ModelNotSetError
@@ -36,7 +38,7 @@ class RewardModelTrainer(BaseModelTrainer):
 
     def _get_trainer_config(self) -> RewardConfig:
         config = RewardConfig(
-            output_dir="TODO",  # TODO: Set the output directory based on the hydra dir structure
+            output_dir=str(Path.cwd()),
             eval_strategy=self.eval_strategy.value,
             eval_steps=self.eval_steps,
             logging_strategy=self.logging_strategy.value,
