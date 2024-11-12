@@ -23,7 +23,6 @@
 # limitations under the License.
 """Train a reward model."""
 
-import logging
 from functools import partial
 
 from datasets import Dataset
@@ -32,6 +31,7 @@ from hydra_zen import store, zen
 from confidentllm import data  # noqa: F401
 from confidentllm.models import ModelLoader
 from confidentllm.scripts.setup_tools import (
+    get_logger,
     init_wandb,
     set_seed,
     setup_hydra_config_and_logging,
@@ -39,7 +39,7 @@ from confidentllm.scripts.setup_tools import (
 from confidentllm.train import RewardModelTrainer, prepare_reward_model_data
 
 __all__ = ["main"]
-logger = logging.getLogger("__main__")
+logger = get_logger()
 
 
 @store(
@@ -67,7 +67,11 @@ def run_training(
     trainer.set_model(reward_model)
     trainer.set_tokenizer(tokenizer)
 
-    data_preperation_function = partial(prepare_reward_model_data, tokenizer=tokenizer)
+    data_preperation_function = partial(
+        prepare_reward_model_data,
+        tokenizer=tokenizer,
+        max_length=trainer.max_length,
+    )
     train_data = train_data.map(
         function=data_preperation_function,
         batched=True,
