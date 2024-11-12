@@ -46,7 +46,7 @@ logger = get_logger()
     name="reward_model_training",
     hydra_defaults=[
         "_self_",
-        {"model": "sequence_cls"},
+        {"model": "train_sequence_cls"},
         {"model/lora": "seq_cls"},
         {"train_data": "cot_preference"},
         {"eval_data": "cot_preference"},

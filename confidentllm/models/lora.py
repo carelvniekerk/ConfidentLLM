@@ -57,7 +57,7 @@ class LoRAConfig:
         active: bool = False,
         task_type: TaskType = TaskType.CAUSAL_LM,
         inference_mode: bool = False,
-        r: int = 32,
+        r: int = 8,
         lora_alpha: int = -1,
         lora_dropout: float = 0.1,
         use_rslora: bool = True,

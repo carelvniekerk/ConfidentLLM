@@ -201,11 +201,12 @@ CausalLMModelConfig = ModelLoaderConfig(
     lora=NoLoRAConfig,  # type: ignore[arg-type]
 )
 
-SequenceCLSModelConfig = ModelLoaderConfig(
+TrainSequenceCLSModelConfig = ModelLoaderConfig(
     pretrained_model_name_or_path=ModelName.GPT2,
     model_type=ModelType.SEQUENCE_CLS,
+    model_mode=ModelMode.TRAIN,
     lora=NoLoRAConfig,  # type: ignore[arg-type]
 )
 
 store(CausalLMModelConfig, name="causal_lm", group="model")
-store(SequenceCLSModelConfig, name="sequence_cls", group="model")
+store(TrainSequenceCLSModelConfig, name="train_sequence_cls", group="model")
