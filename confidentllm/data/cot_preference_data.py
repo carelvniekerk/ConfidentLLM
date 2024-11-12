@@ -35,6 +35,8 @@ from wandb.apis.public.runs import Run, Runs
 if TYPE_CHECKING:
     from wandb.apis.public.files import File, Files
 
+__all__ = ["load_cot_preference_data"]
+
 
 class Table(TypedDict):
     """Table type definition."""
@@ -167,4 +169,9 @@ def load_cot_preference_data(
     """Load the CoT preference data from a Weights and Biases run."""
     run: Run = _load_run(path=run_path, run_name=run_name)
     table: Table = _load_table(run=run, table_name=table_name)
-    return _process_data(table=table, ranking_threshold=ranking_threshold)
+    text_dataset: Dataset = _process_data(
+        table=table,
+        ranking_threshold=ranking_threshold,
+    )
+
+    return text_dataset
