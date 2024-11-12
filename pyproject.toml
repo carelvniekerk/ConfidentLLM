@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-accelerate = "^0.33"
+accelerate = ">=0.34"
 colorlog = "^6.8"
 datasets = "^2.20"
 hydra-zen = "^0.13"
@@ -18,13 +18,20 @@ pandas-stubs = "^2.2.2.240807"
 peft = "^0.13.2"
 pydantic = "^2.8.2"
 sentencepiece = "^0.2.0"
-transformers = "^4.43"
 # Torch versioning:
 # Specific version for macOS with x86_64 architecture and latest version for other platforms
 torch = [
     { version = "==2.2.2", markers = "platform_machine == 'x86_64' and platform_system == 'Darwin'" },
     { version = "<2.4", markers = "platform_machine != 'x86_64' or platform_system != 'Darwin'" },
 ]
+# Numpy versioning:
+# Specific version for macOS with x86_64 architecture and latest version for other platforms
+numpy = [
+    { version = "<2", markers = "platform_machine == 'x86_64' and platform_system == 'Darwin'" },
+    { version = "*", markers = "platform_machine != 'x86_64' or platform_system != 'Darwin'" },
+]
+transformers = "^4.43"
+trl = "^0.12.0"
 tqdm = "^4.66.0"
 types-tqdm = "^4.66.0.20240417"
 wandb = "^0.17"
@@ -43,6 +50,7 @@ url = "http://pypi.repo.test.hhu.de/simple/"
 download-and-sync = "confidentllm.scripts:download_and_sync"
 mathematical-reasoning = "confidentllm.scripts:mathematical_reasoning"
 reporting = "confidentllm.scripts:reporting"
+reward-model-training = "confidentllm.scripts:reward_model_training"
 tests = "pytest:main"
 
 # Configuration for Pytest
@@ -70,5 +78,6 @@ module = [
     "torch",
     "transformers",
     "transformers.generation",
+    "trl",
 ]
 ignore_missing_imports = true

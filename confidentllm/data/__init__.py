@@ -25,15 +25,29 @@
 
 from hydra_zen import store
 
+from confidentllm.data.cot_preference_data import load_cot_preference_data
 from confidentllm.data.gsm8k import load_gsm8k_data
 from confidentllm.data.multi_arith import load_multi_arith_data
 from confidentllm.hydra_tools import builds
 
 __all__: list[str] = []
 
+COTPreferenceDataConfig = builds(load_cot_preference_data)
 GSM8KConfig = builds(load_gsm8k_data)
 MultiArithConfig = builds(load_multi_arith_data)
 
 data_store = store(group="data")
 data_store(GSM8KConfig, name="gsm8k")
 data_store(MultiArithConfig, name="multiarith")
+
+cot_preference_train_data = COTPreferenceDataConfig(
+    run_path="dialgroup-hhu/ConfidentLLM",
+    run_name="rosy-meadow-149",
+    table_name="generation_path_data",
+)
+
+train_data_store = store(group="train_data")
+eval_data_store = store(group="eval_data")
+
+train_data_store(cot_preference_train_data, name="cot_preference")
+eval_data_store(cot_preference_train_data, name="cot_preference")

@@ -29,6 +29,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import transformers
 from hydra.conf import HydraConf, JobConf, RunDir, SweepDir
 from hydra_zen import store
 from omegaconf import DictConfig, OmegaConf
@@ -43,7 +44,7 @@ from hydra_plugins.hpc_submission_launcher import (
     register_plugin as register_hpc_submission_launcher_plugin,
 )
 
-__all__ = ["setup_hydra_config_and_logging", "init_wandb"]
+__all__ = ["setup_hydra_config_and_logging", "init_wandb", "set_seed", "get_logger"]
 logger = logging.getLogger("__main__")
 
 register_hpc_submission_launcher_plugin()
@@ -171,3 +172,15 @@ def set_seed(seed: int) -> None:
     torch.cuda.manual_seed_all(seed)
     random.seed(seed)
     np.random.default_rng(seed)
+
+
+def get_logger() -> logging.Logger:
+    """Get the logger."""
+    logger: logging.Logger = logging.getLogger("__main__")
+
+    # Get the transformer logger and propagate its logs to the Hydra root.
+    transformers_logger: logging.Logger = transformers.logging.get_logger()
+    transformers_logger.handlers = []
+    transformers_logger.propagate = True
+
+    return logger

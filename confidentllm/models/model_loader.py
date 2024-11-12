@@ -186,15 +186,27 @@ class ModelLoader:
             tokenizer.pad_token_id = tokenizer.eos_token_id
             tokenizer.pad_token = tokenizer.eos_token
 
+        if model.config.pad_token_id is None:
+            model.config.pad_token_id = tokenizer.pad_token_id
+            model.config.pad_token = tokenizer.pad_token
+
         return model.to(self.device), tokenizer  # type: ignore[reportArgumentType]
 
 
 # Add default model loader to the store
-CausalLMModelConfig = builds(
-    ModelLoader,
+ModelLoaderConfig = builds(ModelLoader, zen_wrappers=[pydantic_parser])
+CausalLMModelConfig = ModelLoaderConfig(
     pretrained_model_name_or_path=ModelName.GPT2,
     model_type=ModelType.CAUSAL_LM,
-    lora=NoLoRAConfig,
-    zen_wrappers=[pydantic_parser],
+    lora=NoLoRAConfig,  # type: ignore[arg-type]
 )
+
+TrainSequenceCLSModelConfig = ModelLoaderConfig(
+    pretrained_model_name_or_path=ModelName.GPT2,
+    model_type=ModelType.SEQUENCE_CLS,
+    model_mode=ModelMode.TRAIN,
+    lora=NoLoRAConfig,  # type: ignore[arg-type]
+)
+
 store(CausalLMModelConfig, name="causal_lm", group="model")
+store(TrainSequenceCLSModelConfig, name="train_sequence_cls", group="model")
