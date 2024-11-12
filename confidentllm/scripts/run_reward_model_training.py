@@ -46,11 +46,11 @@ logger = logging.getLogger("__main__")
     name="reward_model_training",
     hydra_defaults=[
         "_self_",
-        {"model": "causal_lm"},
-        {"model/lora": "no_lora"},
+        {"model": "sequence_cls"},
+        {"model/lora": "seq_cls"},
         {"train_data": "cot_preference"},
         {"eval_data": "cot_preference"},
-        {"trainer": "reward_model_trainer"},
+        {"trainer": "reward_model"},
     ],
 )
 def run_training(
