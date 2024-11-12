@@ -28,7 +28,7 @@ from pathlib import Path
 from hydra_zen import store
 from trl import RewardConfig, RewardTrainer
 
-from confidentllm.generation.types import ModelNotSetError
+from confidentllm.generation.types import ModelNotSetError, TokenizerNotSetError
 from confidentllm.hydra_tools import builds
 from confidentllm.train.types import BaseModelTrainer, IntervalStrategy
 
@@ -46,6 +46,7 @@ class RewardModelTrainer(BaseModelTrainer):
             logging_strategy=self.logging_strategy.value,
             logging_steps=self.logging_steps,
             log_level=self.log_level.value,
+            report_to=self.report_to,
             save_strategy=self.save_strategy.value,
             save_steps=self.save_steps,
             save_total_limit=self.save_total_limit,
@@ -74,6 +75,8 @@ class RewardModelTrainer(BaseModelTrainer):
     def _set_trainer(self) -> None:
         if self.model is None:
             raise ModelNotSetError(self.model)
+        if self.tokenizer is None:
+            raise TokenizerNotSetError(self.tokenizer)
 
         if self.train_dataset is None:
             msg = "The training dataset is not set."
@@ -84,6 +87,7 @@ class RewardModelTrainer(BaseModelTrainer):
 
         self.trainer: RewardTrainer = RewardTrainer(
             model=self.model,
+            processing_class=self.tokenizer,
             args=self._get_trainer_config(),
             train_dataset=self.train_dataset,
             eval_dataset=self.eval_dataset,

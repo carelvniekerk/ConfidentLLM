@@ -147,6 +147,7 @@ class BaseModelTrainer(ABC):
         self.logging_strategy = eval_strategy
         self.logging_steps = eval_steps
         self.log_level = log_level
+        self.report_to = ["wandb"]
         self.save_strategy = save_strategy
         self.save_steps = save_steps
         self.save_total_limit = save_total_limit
