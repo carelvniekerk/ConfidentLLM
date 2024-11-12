@@ -186,6 +186,10 @@ class ModelLoader:
             tokenizer.pad_token_id = tokenizer.eos_token_id
             tokenizer.pad_token = tokenizer.eos_token
 
+        if model.config.pad_token_id is None:
+            model.config.pad_token_id = tokenizer.pad_token_id
+            model.config.pad_token = tokenizer.pad_token
+
         return model.to(self.device), tokenizer  # type: ignore[reportArgumentType]
 
 
