@@ -89,9 +89,16 @@ def main() -> None:
     """Run the question answering process."""
     run_function = zen(run_training)
 
+    config_keys = [
+        "train_data.name",
+        "model.pretrained_model_name_or_path",
+        "trainer.seed",
+    ]
+
     setup_hydra_config_and_logging(
         job_name="reward_model_training",
         add_hpc_launcher=True,
+        config_keys=config_keys,
     )
 
     # Generate the CLI for run_extraction

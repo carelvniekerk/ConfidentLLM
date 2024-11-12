@@ -165,6 +165,7 @@ def load_cot_preference_data(
     run_name: str,
     table_name: str,
     ranking_threshold: float = 0.9,
+    name: str = "cot_preference",  # noqa: ARG001
 ) -> Dataset:
     """Load the CoT preference data from a Weights and Biases run."""
     run: Run = _load_run(path=run_path, run_name=run_name)
