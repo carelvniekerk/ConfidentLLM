@@ -25,6 +25,7 @@
 
 import torch
 from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
+from transformers.tokenization_utils_base import PaddingStrategy
 
 from confidentllm.generation.types import (
     ChatAssistantMessage,
@@ -84,7 +85,8 @@ def prepare_reward_model_data(
         add_generation_prompt=False,
         return_tensors=TensorType.PYTORCH,
         return_dict=True,
-        padding=True,
+        padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
+        truncation=True,
         max_length=max_length,
     )  # type: ignore[assignment]
 
@@ -93,7 +95,8 @@ def prepare_reward_model_data(
         add_generation_prompt=False,
         return_tensors=TensorType.PYTORCH,
         return_dict=True,
-        padding=True,
+        padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
+        truncation=True,
         max_length=max_length,
     )  # type: ignore[assignment]
 
