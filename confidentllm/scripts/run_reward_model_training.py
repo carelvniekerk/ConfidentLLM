@@ -71,6 +71,7 @@ def run_training(
         prepare_reward_model_data,
         tokenizer=tokenizer,
         max_length=trainer.max_length,
+        include_preference_margin=trainer.use_preference_margin,
     )
     train_data = train_data.map(
         function=data_preperation_function,

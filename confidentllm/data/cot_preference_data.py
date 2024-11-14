@@ -27,9 +27,8 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
-from datasets import Dataset
-
 import wandb
+from datasets import Dataset
 from wandb.apis.public.runs import Run, Runs
 
 if TYPE_CHECKING:
@@ -124,6 +123,7 @@ def _rank_data(
         "questions": [],
         "preferred_responses": [],
         "rejected_responses": [],
+        "margin": [],
     }
     for response_1 in response_data:
         if response_1["confidence"] < threshold:  # type: ignore[operator]
@@ -134,6 +134,9 @@ def _rank_data(
             ranked_data["questions"].append(question)
             ranked_data["preferred_responses"].append(response_1["answer"])  # type: ignore[arg-type]
             ranked_data["rejected_responses"].append(response_2["answer"])  # type: ignore[arg-type]
+            ranked_data["margin"].append(
+                response_1["confidence"] - response_2["confidence"],  # type: ignore[arg-type,operator]
+            )
 
     return ranked_data
 
@@ -144,6 +147,7 @@ def _process_data(table: Table, ranking_threshold: float) -> Dataset:
         "questions": [],
         "preferred_responses": [],
         "rejected_responses": [],
+        "margin": [],
     }
     for question, response_data in _reformat_table(table).items():
         ranked_data: dict[str, list[str]] = _rank_data(
@@ -156,6 +160,7 @@ def _process_data(table: Table, ranking_threshold: float) -> Dataset:
             ranked_data["preferred_responses"],
         )
         preference_data["rejected_responses"].extend(ranked_data["rejected_responses"])
+        preference_data["margin"].extend(ranked_data["margin"])
 
     return Dataset.from_dict(preference_data)
 
