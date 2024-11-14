@@ -26,6 +26,7 @@
 import logging
 import os
 import sys
+import warnings
 
 logger = logging.getLogger("__main__")
 
@@ -49,7 +50,7 @@ def setup_exception_logging(
     # Setting this environment variable to "1" makes Hydra print the full stack trace.
     print("Setting HYDRA_FULL_ERROR environment variable to '1'.")
     os.environ["HYDRA_FULL_ERROR"] = "1"
-    print(f"{os.environ['HYDRA_FULL_ERROR'] = }")
+    print(f"{os.environ['HYDRA_FULL_ERROR'] = }")  # noqa: G004
 
     def handle_exception(
         exc_type,  # noqa: ANN001
@@ -93,4 +94,16 @@ def setup_exception_logging(
             ),
         )
 
+    def handle_warning(  # noqa: PLR0913
+        message,  # noqa: ANN001
+        category,  # noqa: ANN001
+        filename,  # noqa: ANN001
+        lineno,  # noqa: ANN001
+        file=None,  # noqa: ANN001, ARG001
+        line=None,  # noqa: ANN001, ARG001
+    ) -> None:
+        """Handle warnings by logging them."""
+        logger.warning(f"{category.__name__} at {filename}:{lineno}: {message}")  # noqa: G004
+
     sys.excepthook = handle_exception
+    warnings.showwarning = handle_warning
