@@ -26,7 +26,6 @@
 from pathlib import Path
 
 from hydra_zen import store
-from transformers import PreTrainedModel, PreTrainedTokenizer
 from trl import RewardConfig, RewardTrainer
 
 from confidentllm.generation.types import ModelNotSetError, TokenizerNotSetError
@@ -42,8 +41,6 @@ class RewardModelTrainer(BaseModelTrainer):
     def __init__(  # noqa: PLR0913
         self,
         *,
-        tokenizer: PreTrainedTokenizer | None = None,
-        model: PreTrainedModel | None = None,
         eval_strategy: IntervalStrategy = IntervalStrategy.EPOCH,
         eval_steps: int = 1,
         log_level: LoggingLevel = LoggingLevel.INFO,
@@ -75,10 +72,6 @@ class RewardModelTrainer(BaseModelTrainer):
 
         Args:
         ----
-            tokenizer (PreTrainedTokenizer, optional): The tokenizer for the model.
-                Default is None.
-            model (PreTrainedModel, optional): The model for the trainer.
-                Default is None.
             eval_strategy (IntervalStrategy, optional): The evaluation strategy.
                 Default is IntervalStrategy.EPOCH.
             eval_steps (int, optional): The evaluation steps. Default is 1.
@@ -118,6 +111,10 @@ class RewardModelTrainer(BaseModelTrainer):
             fp16 (bool, optional): Use fp16 precision. Default is False.
             max_length (int, optional): The maximum length of the generated text.
                 Default is 256.
+            use_preference_margin (bool, optional): Use the preference margin.
+                Default is True.
+            center_rewards_coefficient (float, optional): The coefficient for centering
+                the rewards. Default is None.
 
         """
         super().__init__(

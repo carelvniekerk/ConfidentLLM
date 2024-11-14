@@ -62,8 +62,6 @@ class BaseModelTrainer(ABC):
     def __init__(  # noqa: PLR0913
         self,
         *,
-        tokenizer: PreTrainedTokenizer | None = None,
-        model: PreTrainedModel | None = None,
         eval_strategy: IntervalStrategy = IntervalStrategy.EPOCH,
         eval_steps: int = 1,
         log_level: LoggingLevel = LoggingLevel.INFO,
@@ -92,10 +90,6 @@ class BaseModelTrainer(ABC):
 
         Args:
         ----
-            tokenizer (PreTrainedTokenizer, optional): The tokenizer for the model.
-                Default is None.
-            model (PreTrainedModel, optional): The model for the trainer.
-                Default is None.
             eval_strategy (IntervalStrategy, optional): The evaluation strategy.
                 Default is IntervalStrategy.EPOCH.
             eval_steps (int, optional): The evaluation steps. Default is 1.
@@ -135,8 +129,8 @@ class BaseModelTrainer(ABC):
             fp16 (bool, optional): Use fp16 precision. Default is False.
 
         """
-        self.tokenizer = tokenizer
-        self.model = model
+        self.tokenizer: PreTrainedTokenizer | None = None
+        self.model: PreTrainedModel | None = None
 
         # Set the logging, evaluation and saving strategies
         self.eval_strategy = eval_strategy

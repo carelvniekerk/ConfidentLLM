@@ -145,6 +145,9 @@ class ModelLoader:
             torch_dtype=self.data_type,
         )  # type: ignore[assignment] # Paths can also be passed to from_pretrained
 
+        if self.model_type == ModelType.SEQUENCE_CLS:
+            self.model_loader = partial(self.model_loader, num_labels=1)
+
     def load(self) -> tuple[PreTrainedModel, PreTrainedTokenizer]:
         """Load a pretrained model from Hugging Face's model hub.
 
