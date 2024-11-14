@@ -62,8 +62,6 @@ class BaseModelTrainer(ABC):
     def __init__(  # noqa: PLR0913
         self,
         *,
-        tokenizer: PreTrainedTokenizer | None = None,
-        model: PreTrainedModel | None = None,
         eval_strategy: IntervalStrategy = IntervalStrategy.EPOCH,
         eval_steps: int = 1,
         log_level: LoggingLevel = LoggingLevel.INFO,
@@ -73,7 +71,6 @@ class BaseModelTrainer(ABC):
         load_best_model_at_end: bool = False,
         per_device_train_batch_size: int = 4,
         per_device_eval_batch_size: int = 8,
-        max_length: int = 128,
         gradient_accumulation_steps: int = 1,
         num_train_epochs: float = 3.0,
         seed: int = 42,
@@ -93,10 +90,6 @@ class BaseModelTrainer(ABC):
 
         Args:
         ----
-            tokenizer (PreTrainedTokenizer, optional): The tokenizer for the model.
-                Default is None.
-            model (PreTrainedModel, optional): The model for the trainer.
-                Default is None.
             eval_strategy (IntervalStrategy, optional): The evaluation strategy.
                 Default is IntervalStrategy.EPOCH.
             eval_steps (int, optional): The evaluation steps. Default is 1.
@@ -113,8 +106,6 @@ class BaseModelTrainer(ABC):
                 Default is 4.
             per_device_eval_batch_size (int, optional): The batch size for evaluation.
                 Default is 8.
-            max_length (int, optional): The maximum length of the generated text.
-                Default is 128.
             gradient_accumulation_steps (int, optional): The gradient accumulation
                 steps. Default is 1.
             num_train_epochs (float, optional): The number of training epochs.
@@ -138,8 +129,8 @@ class BaseModelTrainer(ABC):
             fp16 (bool, optional): Use fp16 precision. Default is False.
 
         """
-        self.tokenizer = tokenizer
-        self.model = model
+        self.tokenizer: PreTrainedTokenizer | None = None
+        self.model: PreTrainedModel | None = None
 
         # Set the logging, evaluation and saving strategies
         self.eval_strategy = eval_strategy
@@ -156,7 +147,6 @@ class BaseModelTrainer(ABC):
         # Set the training arguments
         self.per_device_train_batch_size = per_device_train_batch_size
         self.per_device_eval_batch_size = per_device_eval_batch_size
-        self.max_length = max_length
         self.gradient_accumulation_steps = gradient_accumulation_steps
         self.num_train_epochs = num_train_epochs
         self.seed = seed

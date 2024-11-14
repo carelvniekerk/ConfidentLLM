@@ -23,7 +23,9 @@
 # limitations under the License.
 """LoRA Configuration for Models."""
 
+import logging
 from enum import StrEnum, auto
+from pprint import pformat
 from typing import Literal
 
 from hydra_zen import store
@@ -88,11 +90,19 @@ class LoRAConfig:
             init_lora_weights=self.weight_init_strategy,  # type: ignore[arg-type]
         )
 
+    @staticmethod
+    def _log_lora_config(config: LoraConfig) -> None:
+        """Log the LoRA configuration."""
+        logger = logging.getLogger()
+        logger.info(f"LoRA Configuration:\n{pformat(config)}")  # noqa: G004
+
     def get_lora_model(self, model: PreTrainedModel) -> PeftModel | PreTrainedModel:
         """Get the LoRA model."""
         if not self.active:
             return model
-        return get_peft_model(model, self._get_lora_config_object())  # type: ignore[return-type]
+        config = self._get_lora_config_object()
+        self._log_lora_config(config)
+        return get_peft_model(model, config)  # type: ignore[return-type]
 
 
 HydraLoRAConfig = builds(LoRAConfig)

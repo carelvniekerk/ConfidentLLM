@@ -24,6 +24,7 @@
 """Train a reward model."""
 
 from functools import partial
+from pprint import pformat
 
 from datasets import Dataset
 from hydra_zen import store, zen
@@ -33,6 +34,7 @@ from confidentllm.models import ModelLoader
 from confidentllm.scripts.setup_tools import (
     get_logger,
     init_wandb,
+    log_system_info,
     set_seed,
     setup_hydra_config_and_logging,
 )
@@ -60,8 +62,9 @@ def run_training(
     trainer: RewardModelTrainer,
 ) -> None:
     """Run the question answering process."""
-    set_seed(trainer.seed)
     init_wandb()
+    log_system_info()
+    set_seed(trainer.seed)
 
     reward_model, tokenizer = model.load()
     trainer.set_model(reward_model)
@@ -71,6 +74,7 @@ def run_training(
         prepare_reward_model_data,
         tokenizer=tokenizer,
         max_length=trainer.max_length,
+        include_preference_margin=trainer.use_preference_margin,
     )
     train_data = train_data.map(
         function=data_preperation_function,
@@ -82,6 +86,9 @@ def run_training(
         batched=True,
         batch_size=512,
     )
+
+    logger.info(f"Training data: {pformat(train_data.info)}")  # noqa: G004
+    logger.info(f"Evaluation data: {pformat(eval_data.info)}")  # noqa: G004
 
     trainer.set_train_dataset(train_data)
     trainer.set_eval_dataset(eval_data)

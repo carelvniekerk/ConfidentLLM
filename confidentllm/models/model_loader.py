@@ -23,6 +23,7 @@
 # limitations under the License.
 """Module to load pretrained models and tokenizers from Hugging Face's model hub."""
 
+import logging
 from functools import partial
 from pathlib import Path
 from typing import Protocol
@@ -145,6 +146,25 @@ class ModelLoader:
             torch_dtype=self.data_type,
         )  # type: ignore[assignment] # Paths can also be passed to from_pretrained
 
+        if self.model_type == ModelType.SEQUENCE_CLS:
+            self.model_loader = partial(self.model_loader, num_labels=1)
+
+    @staticmethod
+    def _log_model_info(model: PreTrainedModel) -> None:
+        """Log model information and a list of all trainable parameters."""
+        logger = logging.getLogger()
+        logger.info(f"Model Summary:\n{model}")  # noqa: G004
+
+        # List all trainable parameters (parameters with requires_grad=True)
+        trainable_params = [
+            name for name, param in model.named_parameters() if param.requires_grad
+        ]
+
+        # Log the trainable parameters list
+        logger.info("Trainable Parameters:")
+        for param_name in trainable_params:
+            logger.info(f" - {param_name}")  # noqa: G004
+
     def load(self) -> tuple[PreTrainedModel, PreTrainedTokenizer]:
         """Load a pretrained model from Hugging Face's model hub.
 
@@ -189,6 +209,8 @@ class ModelLoader:
         if model.config.pad_token_id is None:
             model.config.pad_token_id = tokenizer.pad_token_id
             model.config.pad_token = tokenizer.pad_token
+
+        self._log_model_info(model)
 
         return model.to(self.device), tokenizer  # type: ignore[reportArgumentType]
 

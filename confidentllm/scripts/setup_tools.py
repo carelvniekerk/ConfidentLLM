@@ -1,7 +1,7 @@
 # coding=utf-8
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
-# Author: Carel van Niekerk
+# Author: Carel van Niekerk, Benjamin Ruppik
 # Year: 2024
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
@@ -25,15 +25,20 @@
 
 import logging
 import random
+import socket
+import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
 import torch
 import transformers
+from git import Repo
 from hydra.conf import HydraConf, JobConf, RunDir, SweepDir
 from hydra_zen import store
 from omegaconf import DictConfig, OmegaConf
 
+import wandb
 from confidentllm.hydra_tools import resolve_generation_method, resolve_output_processor
 from confidentllm.logging import (
     create_logging_config,
@@ -44,7 +49,13 @@ from hydra_plugins.hpc_submission_launcher import (
     register_plugin as register_hpc_submission_launcher_plugin,
 )
 
-__all__ = ["setup_hydra_config_and_logging", "init_wandb", "set_seed", "get_logger"]
+__all__ = [
+    "setup_hydra_config_and_logging",
+    "init_wandb",
+    "set_seed",
+    "get_logger",
+    "log_system_info",
+]
 logger = logging.getLogger("__main__")
 
 register_hpc_submission_launcher_plugin()
@@ -183,4 +194,84 @@ def get_logger() -> logging.Logger:
     transformers_logger.handlers = []
     transformers_logger.propagate = True
 
+    wandb.init()
+
     return logger
+
+
+def log_system_info() -> None:
+    """Log system hostname and environment information."""
+    try:
+        hostname = socket.gethostname()
+    except Exception:  # noqa: BLE001 - We want to proceed no matter what the error is
+        hostname = "unknown"
+
+    logging.info(
+        msg=f"Running on {hostname = }",  # noqa: G004 - low overhead
+    )
+
+    _log_python_env_info()
+    _log_git_info()
+
+
+def _log_git_info() -> None:
+    """Get the git info of the current branch and commit hash."""
+    try:
+        repo = Repo(
+            path=Path(__file__).resolve().parent,
+            search_parent_directories=True,
+        )
+        branch_name: str = repo.active_branch.name
+        commit_hex: str = repo.head.object.hexsha
+        logging.info(
+            msg=f"Git {branch_name = }",  # noqa: G004 - low overhead
+        )
+        logging.info(
+            msg=f"Git {commit_hex = }",  # noqa: G004 - low overhead
+        )
+    except Exception:  # noqa: BLE001 - We want to proceed no matter what the error is
+        logging.info(
+            msg="Unable to determine git branch/commit",
+        )
+
+
+def _log_python_env_info() -> None:
+    """Log Python environment and Poetry information."""
+    # Log Python version and executable
+    try:
+        python_version: str = sys.version.split()[0]
+        python_path: str = sys.executable
+        logging.info(
+            msg=f"Python version: {python_version = }",  # noqa: G004 - low overhead
+        )
+        logging.info(
+            msg=f"Python executable: {python_path = }",  # noqa: G004 - low overhead
+        )
+    except Exception:  # noqa: BLE001 - We want to proceed no matter what the error is
+        logger.info(msg="Unable to determine Python version/path")
+
+    # Check Poetry environment
+    try:
+        result = subprocess.run(
+            args=[
+                "poetry",
+                "env",
+                "info",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode == 0:
+            env_info: str = result.stdout.strip()
+            logging.info(
+                msg=f"Poetry environment:\n{env_info}",  # noqa: G004 - low overhead
+            )
+        else:
+            logging.info(
+                msg="Not running in a Poetry environment",
+            )
+    except Exception:  # noqa: BLE001 - We want to proceed no matter what the error is
+        logging.info(
+            msg="Unable to determine Poetry environment",
+        )

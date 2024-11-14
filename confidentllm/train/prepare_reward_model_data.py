@@ -23,8 +23,9 @@
 # limitations under the License.
 """Tokenization and data preparation for training a reward model."""
 
-from torch import Tensor
+import torch
 from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
+from transformers.tokenization_utils_base import PaddingStrategy
 
 from confidentllm.generation.types import (
     ChatAssistantMessage,
@@ -47,7 +48,9 @@ def prepare_reward_model_data(
     data: dict[str, list[str]],
     tokenizer: PreTrainedTokenizer,
     max_length: int,
-) -> dict[str, Tensor]:
+    *,
+    include_preference_margin: bool = True,
+) -> dict[str, torch.Tensor]:
     """Tokenize the input strings and return the tokenized data."""
     preferred_conversations: ChatConversation = ChatConversation(
         messages=[
@@ -82,7 +85,8 @@ def prepare_reward_model_data(
         add_generation_prompt=False,
         return_tensors=TensorType.PYTORCH,
         return_dict=True,
-        padding=True,
+        padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
+        truncation=True,
         max_length=max_length,
     )  # type: ignore[assignment]
 
@@ -91,13 +95,18 @@ def prepare_reward_model_data(
         add_generation_prompt=False,
         return_tensors=TensorType.PYTORCH,
         return_dict=True,
-        padding=True,
+        padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
+        truncation=True,
         max_length=max_length,
     )  # type: ignore[assignment]
 
-    return {
+    output_data: dict[str, torch.Tensor] = {
         "input_ids_chosen": preferred_inputs.input_ids,
         "attention_mask_chosen": preferred_inputs.attention_mask,
         "input_ids_rejected": rejected_inputs.input_ids,
         "attention_mask_rejected": rejected_inputs.attention_mask,
     }
+    if include_preference_margin:
+        output_data["margin"] = torch.tensor(data["margin"])
+
+    return output_data

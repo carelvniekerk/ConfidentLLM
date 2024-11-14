@@ -78,6 +78,7 @@ module = [
     "torch",
     "transformers",
     "transformers.generation",
+    "transformers.tokenization_utils_base",
     "trl",
 ]
 ignore_missing_imports = true
