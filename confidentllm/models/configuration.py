@@ -63,7 +63,7 @@ CHAT_TEMPLATES: dict[ModelName, str] = {
         "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"  # noqa: E501
         "{% endif %}{% if (message['role'] == 'assistant') %}"
         "{{ '\nOutput: ' + message['content'] | trim }}{% else %}"
-        "{{ 'Instruct: ' + message['content'] | trim + '\n' }}"
+        "{{ 'Instruct: ' + message['content'] | trim }}"
         "{% set role = message['role'] %}{% endif %}{% endfor %}"
         "{% if add_generation_prompt %}{{ '\nOutput:' }}{% endif %}"
     ),
