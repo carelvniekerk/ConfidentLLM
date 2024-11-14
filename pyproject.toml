@@ -17,6 +17,7 @@ pandas = "^2.2.2"
 pandas-stubs = "^2.2.2.240807"
 peft = "^0.13.2"
 pydantic = "^2.8.2"
+python-git = "^2018.2.1"
 sentencepiece = "^0.2.0"
 # Torch versioning:
 # Specific version for macOS with x86_64 architecture and latest version for other platforms
@@ -78,6 +79,7 @@ module = [
     "torch",
     "transformers",
     "transformers.generation",
+    "transformers.tokenization_utils_base",
     "trl",
 ]
 ignore_missing_imports = true
