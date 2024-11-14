@@ -9,6 +9,7 @@ poetry.lock
 multirun
 outputs
 hpc_jobs
+hydra_plugins
 
 # Python cache
 *__pycache__*
