@@ -27,10 +27,10 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
+import torch
+import wandb
 from datasets import Dataset
 from numpy import exp
-
-import wandb
 from wandb.apis.public.runs import Run, Runs
 
 if TYPE_CHECKING:
@@ -188,6 +188,11 @@ def load_cot_preference_data(
     name: str = "cot_preference",  # noqa: ARG001
 ) -> Dataset:
     """Load the CoT preference data from a Weights and Biases run."""
+    data_caching_path: Path = _find_project_root() / run_name / "cache.dataset"
+    if data_caching_path.exists():
+        dataset: Dataset = torch.load(data_caching_path)
+        return dataset
+
     run: Run = _load_run(path=run_path, run_name=run_name)
 
     initial_dataset_name: str = (
@@ -235,4 +240,5 @@ def load_cot_preference_data(
     text_dataset._info.license = f"See original dataset {initial_dataset_name}."  # noqa: SLF001
     text_dataset._info.homepage = run.url  # noqa: SLF001
 
+    torch.save(text_dataset, data_caching_path)
     return text_dataset
