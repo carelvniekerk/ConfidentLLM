@@ -27,8 +27,9 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
-import wandb
 from datasets import Dataset
+
+import wandb
 from wandb.apis.public.runs import Run, Runs
 
 if TYPE_CHECKING:
@@ -174,10 +175,50 @@ def load_cot_preference_data(
 ) -> Dataset:
     """Load the CoT preference data from a Weights and Biases run."""
     run: Run = _load_run(path=run_path, run_name=run_name)
+
+    initial_dataset_name: str = (
+        run.config.get("run", {}).get("data", {}).get("name", "")
+    )
+    generation_method_config: dict[str, str | float] = run.config.get("run", {}).get(
+        "generation_method",
+        {},
+    )
+
+    if "cotdecoding" not in generation_method_config.get("_target_", "").lower():  # type: ignore[union-attr]
+        raise ValueError(  # noqa: TRY003
+            "Expected generation method to be CoTDecoding, got "  # noqa: EM102
+            f"{generation_method_config.get('_target_', '')}",
+        )
+
+    confidence_method: str = (
+        generation_method_config.get(
+            "confidence_extraction_method",
+            {},
+        )
+        .get("_target_", "")  # type: ignore[union-attr, call-overload]
+        .split(".")[-1]
+    )
+
+    generation_method_description: str = (
+        f"CoTDecoding with {generation_method_config.get('num_beams')} beams each with "
+        f"a maximum length of {generation_method_config.get('max_length')}. During "
+        f"decoding sampling was set to {generation_method_config.get('sampling')} "
+        f"with a temperature of {generation_method_config.get('temperature')}. "
+        f"The answers were ranked based on the answer token {confidence_method}."
+    )
+
     table: Table = _load_table(run=run, table_name=table_name)
     text_dataset: Dataset = _process_data(
         table=table,
         ranking_threshold=ranking_threshold,
     )
+
+    text_dataset._info.description = (  # noqa: SLF001 # Adding description to dataset
+        f"CoT decoding based preference data for {initial_dataset_name}. "
+        f"The data was obtained using {generation_method_description}."
+    )
+    text_dataset._info.citation = f"See original dataset {initial_dataset_name}."  # noqa: SLF001
+    text_dataset._info.license = f"See original dataset {initial_dataset_name}."  # noqa: SLF001
+    text_dataset._info.homepage = run.url  # noqa: SLF001
 
     return text_dataset

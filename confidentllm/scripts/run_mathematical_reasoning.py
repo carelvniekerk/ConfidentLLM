@@ -25,12 +25,13 @@
 
 import logging
 from dataclasses import dataclass
+from pprint import pformat
 
-import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
+import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
@@ -239,6 +240,8 @@ def run_mathematical_reasoning(  # noqa: PLR0913
     init_wandb()
     log_system_info()
     set_seed(run_config.seed)
+
+    logger.info(f"Data: {pformat(data.info)}")  # noqa: G004
 
     runner = MathematicalReasoningRunner(
         model=model,
