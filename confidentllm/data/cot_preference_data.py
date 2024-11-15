@@ -59,12 +59,24 @@ def _load_run(path: str, run_name: str) -> Run:
     return run
 
 
+def _find_project_root() -> Path:
+    """Find the root of the project."""
+    directory: Path = Path.cwd()
+    while not (directory / "pyproject.toml").exists():
+        directory = directory.parent
+
+    return directory / "wandb_downloads"
+
+
 def _load_table(
     run: Run,
     table_name: str,
-    root: Path = Path("wandb_downloads"),
+    root: Path | None = None,
 ) -> Table:
     """Load a table from a Weights and Biases run."""
+    if root is None:
+        root = _find_project_root()
+
     files: Files = run.files()
     table_file: File = next(file for file in files if table_name in file.name)
 
