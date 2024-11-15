@@ -26,11 +26,11 @@
 import logging
 from dataclasses import dataclass
 
+import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
-import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
@@ -42,6 +42,7 @@ from confidentllm.output_processing import (
 )
 from confidentllm.scripts.setup_tools import (
     init_wandb,
+    log_system_info,
     set_seed,
     setup_hydra_config_and_logging,
 )
@@ -235,8 +236,9 @@ def run_mathematical_reasoning(  # noqa: PLR0913
     run_config: MathematicalReasoningRunConfig,
 ) -> None:
     """Run the question answering process."""
-    set_seed(run_config.seed)
     init_wandb()
+    log_system_info()
+    set_seed(run_config.seed)
 
     runner = MathematicalReasoningRunner(
         model=model,
@@ -252,8 +254,18 @@ def main() -> None:
     """Run the question answering process."""
     run_function = zen(run_mathematical_reasoning)
 
+    config_keys: list[str] = [
+        "data.name",
+        "data.split",
+        "model.pretrained_model_name_or_path",
+        "resolve_generation_method:${generation_method}",
+        "resolve_output_processor:${output_processor}",
+        "run_config.seed",
+    ]
+
     setup_hydra_config_and_logging(
         job_name="mathematical_reasoning",
+        config_keys=config_keys,
         add_hpc_launcher=True,
     )
 

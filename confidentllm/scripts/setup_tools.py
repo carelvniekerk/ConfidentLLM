@@ -33,12 +33,12 @@ from pathlib import Path
 import numpy as np
 import torch
 import transformers
+import wandb
 from git import Repo
 from hydra.conf import HydraConf, JobConf, RunDir, SweepDir
 from hydra_zen import store
 from omegaconf import DictConfig, OmegaConf
 
-import wandb
 from confidentllm.hydra_tools import resolve_generation_method, resolve_output_processor
 from confidentllm.logging import (
     create_logging_config,
@@ -104,7 +104,7 @@ def create_run_dir(
 def setup_hydra_config_and_logging(
     job_name: str,
     *,
-    config_keys: list[str] | None = None,
+    config_keys: list[str],
     change_to_output_dir: bool = True,
     add_hpc_launcher: bool = False,
 ) -> None:
@@ -113,16 +113,6 @@ def setup_hydra_config_and_logging(
 
     job_config: JobConf = JobConf(name=job_name, chdir=change_to_output_dir)
     logging_config: dict = create_logging_config()
-
-    if config_keys is None:
-        config_keys = [
-            "data.name",
-            "data.split",
-            "model.pretrained_model_name_or_path",
-            "resolve_generation_method:${generation_method}",
-            "resolve_output_processor:${output_processor}",
-            "run_config.seed",
-        ]
 
     run_dir: RunDir = create_run_dir(
         root_dir=Path("outputs"),

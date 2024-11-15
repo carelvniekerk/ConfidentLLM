@@ -149,8 +149,7 @@ class ModelLoader:
         if self.model_type == ModelType.SEQUENCE_CLS:
             self.model_loader = partial(self.model_loader, num_labels=1)
 
-    @staticmethod
-    def _log_model_info(model: PreTrainedModel) -> None:
+    def _log_model_info(self, model: PreTrainedModel) -> None:
         """Log model information and a list of all trainable parameters."""
         logger = logging.getLogger()
         logger.info(f"Model Summary:\n{model}")  # noqa: G004
@@ -160,6 +159,8 @@ class ModelLoader:
             name for name, param in model.named_parameters() if param.requires_grad
         ]
 
+        if self.model_mode != ModelMode.TRAIN:
+            return
         # Log the trainable parameters list
         logger.info("Trainable Parameters:")
         for param_name in trainable_params:
