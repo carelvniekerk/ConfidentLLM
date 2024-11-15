@@ -71,12 +71,12 @@ def load_multi_arith_data(
         split=split,
     )  # type: ignore[reportAssignmentType]
 
+    # Add metadata to the dataset
     data._info.description = (  # noqa: SLF001 # Provide description for the dataset
-        "The Multi-Arithm dataset contains elementary arithmetic problems with multiple"
+        "The Multi-Arith dataset contains elementary arithmetic problems with multiple"
         " operations, such as addition, subtraction, multiplication, and division, "
         "requiring sequential reasoning steps to solve."
     )
-
     data._info.citation = (  # noqa: SLF001 # Provide citation for the dataset
         '@inproceedings{roy-roth-2015-solving,\n  title = "Solving General Arithmetic '
         'Word Problems",\n  author = "Roy, Subhro and Roth, Dan",\n   booktitle = '
@@ -86,9 +86,8 @@ def load_multi_arith_data(
         '"https://aclanthology.org/D15-1202",\n  doi = "10.18653/v1/D15-1202",\n  '
         'pages = "1743--1752",\n  }'
     )
-
-    data._info.license = "CC BY 4.0"  # noqa: SLF001
     data._info.homepage = "https://huggingface.co/datasets/ChilleD/MultiArith"  # noqa: SLF001
+    data._info.license = "CC BY 4.0"  # noqa: SLF001
 
     data = data.map(
         multi_arith_key_mapping,

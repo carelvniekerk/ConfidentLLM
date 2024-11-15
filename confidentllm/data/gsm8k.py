@@ -59,6 +59,24 @@ def load_gsm8k_data(
         split=split,
     )  # type: ignore[reportAssignmentType]
 
+    # Add metadata to the dataset
+    data._info.description = (  # noqa: SLF001 # Adding description to dataset
+        "GSM8K (Grade School Math 8K) is a dataset of 8.5K high quality linguistically "
+        "diverse grade school math word problems. The dataset was created to support "
+        "the task of question answering on basic mathematical problems that require "
+        "multi-step reasoning."
+    )
+    data._info.citation = (  # noqa: SLF001 # Adding citation to dataset
+        "@article{cobbe2021gsm8k,\n  title={Training Verifiers to Solve Math Word "
+        "Problems},\n  author={Cobbe, Karl and Kosaraju, Vineet and Bavarian, "
+        "Mohammad and Chen, Mark and Jun, Heewoo and Kaiser, Lukasz and Plappert, "
+        "Matthias and Tworek, Jerry and Hilton, Jacob and Nakano, Reiichiro and "
+        "Hesse, Christopher and Schulman, John},\n  journal={arXiv preprint "
+        "arXiv:2110.14168},\n  year={2021}\n}"
+    )
+    data._info.homepage = "https://huggingface.co/datasets/openai/gsm8k"  # noqa: SLF001
+    data._info.license = "MIT License"  # noqa: SLF001
+
     data = data.map(
         partial(extract_answers, pattern=GSM8K_ANSWER_PATTERN),
         batched=True,
