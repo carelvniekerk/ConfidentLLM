@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 from datasets import Dataset
+from numpy import exp
 
 import wandb
 from wandb.apis.public.runs import Run, Runs
@@ -135,8 +136,9 @@ def _rank_data(
             ranked_data["questions"].append(question)
             ranked_data["preferred_responses"].append(response_1["answer"])  # type: ignore[arg-type]
             ranked_data["rejected_responses"].append(response_2["answer"])  # type: ignore[arg-type]
+            # Margin the the exponential of the difference in confidence scores. This
             ranked_data["margin"].append(
-                response_1["confidence"] - response_2["confidence"],  # type: ignore[arg-type,operator]
+                exp(response_1["confidence"] - response_2["confidence"]),  # type: ignore[arg-type,operator]
             )
 
     return ranked_data
