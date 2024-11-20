@@ -25,7 +25,7 @@
 
 from enum import Enum, StrEnum, auto
 
-from datasets import Dataset, load_dataset
+from datasets import Dataset, Features, Value, load_dataset
 
 from confidentllm.data.types import DatasetSplit
 
@@ -204,6 +204,12 @@ def load_mmlu_data(
         batched=True,
         batch_size=transformation_batch_size,
         remove_columns=data.column_names,
+        features=Features(
+            {
+                "question": Value("string"),
+                "answer": Value("string"),
+            },
+        ),
     )
 
     return data

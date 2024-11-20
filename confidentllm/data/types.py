@@ -23,7 +23,7 @@
 # limitations under the License.
 """Module containing enumerations for the datasets used in the project."""
 
-from enum import StrEnum
+from enum import StrEnum, auto
 
 __all__ = ["DatasetSplit"]
 
@@ -31,5 +31,6 @@ __all__ = ["DatasetSplit"]
 class DatasetSplit(StrEnum):
     """Split of the dataset."""
 
-    TRAIN = "train"
-    TEST = "test"
+    TRAIN = auto()
+    TEST = auto()
+    VALIDATION = auto()

@@ -23,6 +23,7 @@ sentencepiece = "^0.2.0"
 torch = [
     { version = "==2.2.2", markers = "platform_machine == 'x86_64' and platform_system == 'Darwin'" },
     { version = "<2.4", markers = "platform_machine != 'x86_64' or platform_system != 'Darwin'" },
+    { version = "*", markers = "platform_machine != 'x86_64' or platform_system == 'Darwin'" },
 ]
 # Numpy versioning:
 # Specific version for macOS with x86_64 architecture and latest version for other platforms
@@ -41,9 +42,9 @@ pytest = "^8"
 pytest-cov = "^5.0"
 
 # Use HHU PyPI repository (Needed for HPC)
-[[tool.poetry.source]]
-name = "hhu"
-url = "http://pypi.repo.test.hhu.de/simple/"
+# [[tool.poetry.source]]
+# name = "hhu"
+# url = "http://pypi.repo.test.hhu.de/simple/"
 
 # Script entry points for various tasks (e.g. question answering)
 [tool.poetry.scripts]
