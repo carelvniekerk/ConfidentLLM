@@ -68,13 +68,13 @@ def _commonsense_qa_map(
         f"{question_str}\n{_format_choices(choices)}"  # type: ignore[arg-type]
         for question_str, choices in zip(
             question,
-            examples["choices"]["text"],  # type: ignore[call-overload]
+            examples["choices"],  # type: ignore[call-overload]
             strict=True,
         )
     ]
 
     answer: list[str] = [
-        CommonsenseQAAnswers[raw_answer.upper()].name  # type: ignore[union-attr]
+        CommonsenseQAAnswers[raw_answer.upper()].name if raw_answer else "-1"  # type: ignore[union-attr]
         for raw_answer in examples["answerKey"]
     ]
 
@@ -142,5 +142,7 @@ def load_commonsense_qa_data(
             },
         ),
     )
+
+    data.choices = [CommonsenseQAAnswers(value=i + 1).name for i in range(5)]  # type: ignore[attr-defined]
 
     return data

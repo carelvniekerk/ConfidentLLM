@@ -42,14 +42,15 @@ pytest = "^8"
 pytest-cov = "^5.0"
 
 # Use HHU PyPI repository (Needed for HPC)
-# [[tool.poetry.source]]
-# name = "hhu"
-# url = "http://pypi.repo.test.hhu.de/simple/"
+[[tool.poetry.source]]
+name = "hhu"
+url = "http://pypi.repo.test.hhu.de/simple/"
 
 # Script entry points for various tasks (e.g. question answering)
 [tool.poetry.scripts]
 download-and-sync = "confidentllm.scripts:download_and_sync"
 mathematical-reasoning = "confidentllm.scripts:mathematical_reasoning"
+multiple-choice-qa = "confidentllm.scripts:multiple_choice_qa"
 reporting = "confidentllm.scripts:reporting"
 reward-model-training = "confidentllm.scripts:reward_model_training"
 tests = "pytest:main"

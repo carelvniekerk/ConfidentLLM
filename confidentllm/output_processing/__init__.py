@@ -27,6 +27,9 @@ from hydra_zen import store
 
 from confidentllm.hydra_tools import builds
 from confidentllm.output_processing.answer_processor import Answer, AnswerProcessor
+from confidentllm.output_processing.multiple_choice_answer_processor import (
+    MultipleChoiceAnswerProcessor,
+)
 from confidentllm.output_processing.numeric_answer_processor import (
     NumericAnswerProcessor,
 )
@@ -37,13 +40,15 @@ from confidentllm.output_processing.verbalised_confidence import (
 )
 
 __all__ = [
-    "OutputProcessor",
     "Answer",
+    "OutputProcessor",
 ]
 
 AnswerProcessorConfig = builds(AnswerProcessor)
 
 NumericAnswerProcessorConfig = builds(NumericAnswerProcessor)
+
+MultipleChoiceAnswerProcessorConfig = builds(MultipleChoiceAnswerProcessor)
 
 VerbalisedConfidenceProcessorConfig = builds(VerbalisedConfidenceAnswerProcessor)
 
@@ -56,6 +61,10 @@ output_processor_store(AnswerProcessorConfig, name="answer_with_token_confidence
 output_processor_store(
     NumericAnswerProcessorConfig,
     name="numeric_answer_with_token_confidence",
+)
+output_processor_store(
+    MultipleChoiceAnswerProcessorConfig,
+    name="multiple_choice_answer_with_token_confidence",
 )
 output_processor_store(
     VerbalisedConfidenceProcessorConfig,

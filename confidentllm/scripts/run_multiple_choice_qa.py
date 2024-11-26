@@ -53,14 +53,14 @@ logger = logging.getLogger("__main__")
 
 
 @dataclass
-class MathematicalReasoningRunConfig:
+class MultipleChoiceQARunConfig:
     """Configuration class for the mathematical reasoning process."""
 
     keep_all_generation_paths: bool = False
     seed: int = 20244202
 
 
-class MathematicalReasoningRunner:
+class MultipleChoiceQARunner:
     """Class to run the mathematical reasoning process."""
 
     def __init__(
@@ -172,8 +172,8 @@ class MathematicalReasoningRunner:
             # Add the batch to the evaluator
             self.evaluator.add_batch(
                 batch=EvaluationBatch(
-                    labels=[float(example.get("answer", "-1").replace(",", ""))],  # type: ignore[attr-access]
-                    predictions=[float(answer.answer)],
+                    labels=[example.get("answer", "-1").upper()],  # type: ignore[attr-access]
+                    predictions=[answer.answer.upper()],
                     confidences=[answer.confidence.mean().item()],
                 ),
             )
@@ -182,8 +182,8 @@ class MathematicalReasoningRunner:
             results_table.add_data(
                 question,
                 answer.reasoning,
-                float(answer.answer),
-                float(example.get("answer", "-1").replace(",", "")),  # type: ignore[attr-access]
+                answer.answer.upper(),
+                example.get("answer", "-1").upper(),  # type: ignore[attr-access]
                 answer.confidence.mean().item(),
             )
 
@@ -208,26 +208,26 @@ class MathematicalReasoningRunner:
 
 
 @store(
-    name="mathematical_reasoning",
+    name="multiple_choice_qa",
     hydra_defaults=[
         "_self_",
         {"model": "causal_lm"},
         {"model/lora": "no_lora"},
         {"generation_method": "greedy_decoding"},
         {"generation_method/confidence_extraction_method": "probability_disparity"},
-        {"output_processor": "numeric_answer_with_token_confidence"},
-        {"data": "multiarith"},
+        {"output_processor": "multiple_choice_answer_with_token_confidence"},
+        {"data": "commonsense_qa"},
         {"evaluator": "accuracy_and_calibration"},
         {"run_config": "default"},
     ],
 )
-def run_mathematical_reasoning(  # noqa: PLR0913
+def run_multiple_choice_qa(  # noqa: PLR0913
     data: Dataset,  # noqa: F811
     model: ModelLoader,
     generation_method: CausalLMGenerationMethod,
     output_processor: OutputProcessor,
     evaluator: Evaluator,
-    run_config: MathematicalReasoningRunConfig,
+    run_config: MultipleChoiceQARunConfig,
 ) -> None:
     """Run the question answering process."""
     init_wandb()
@@ -236,24 +236,25 @@ def run_mathematical_reasoning(  # noqa: PLR0913
 
     logger.info(f"Data: {pformat(data.info)}")  # noqa: G004
 
-    runner = MathematicalReasoningRunner(
+    runner = MultipleChoiceQARunner(
         model=model,
         generation_method=generation_method,
         answer_processor=output_processor,
         evaluator=evaluator,
         keep_all_generation_paths=run_config.keep_all_generation_paths,
     )
+    runner.answer_processor.set_choices(data.choices)  # type: ignore[attr-defined] # All QA datasets should have the choices attribute
     runner.run(data)
 
 
 def main() -> None:
     """Run the question answering process."""
     store(
-        MathematicalReasoningRunConfig,
+        MultipleChoiceQARunConfig,
         name="default",
         group="run_config",
     )
-    run_function = zen(run_mathematical_reasoning)
+    run_function = zen(run_multiple_choice_qa)
 
     config_keys: list[str] = [
         "data.name",
@@ -265,14 +266,14 @@ def main() -> None:
     ]
 
     setup_hydra_config_and_logging(
-        job_name="mathematical_reasoning",
+        job_name="multiple_choice_qa",
         config_keys=config_keys,
         add_hpc_launcher=True,
     )
 
     # Generate the CLI for run_extraction
     run_function.hydra_main(
-        config_name="mathematical_reasoning",
+        config_name="multiple_choice_qa",
         version_base="1.3",
     )
 
