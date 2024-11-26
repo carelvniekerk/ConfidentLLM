@@ -63,6 +63,10 @@ class OutputProcessor(ABC):
         """Set the tokenizer for the generation method."""
         self.tokenizer = tokenizer
 
+    def set_choices(self, choices: list[str]) -> None:
+        """Set the choices for the generation method."""
+        self.choices = choices
+
     @abstractmethod
     def __call__(
         self,

@@ -31,6 +31,8 @@ from typing import Protocol
 import torch
 from hydra_zen import store
 from hydra_zen.third_party.pydantic import pydantic_parser
+from peft.auto import AutoPeftModelForCausalLM, AutoPeftModelForSequenceClassification
+from peft.mixed_model import PeftMixedModel
 from transformers import (
     AutoModel,
     AutoModelForCausalLM,
@@ -113,6 +115,7 @@ class ModelLoader:
         self.model_mode: ModelMode = model_mode
         self.lora: LoRAConfig = lora
 
+        self.use_peft_model_class: bool = False
         self._get_model_class()
 
     @staticmethod
@@ -133,10 +136,24 @@ class ModelLoader:
 
     def _get_model_class(self) -> None:
         """Get the model class."""
+        if (
+            isinstance(self.pretrained_model_name_or_path, Path)
+            and (self.pretrained_model_name_or_path / "adapter_config.json").exists()
+        ):
+            self.use_peft_model_class = True
+
         if self.model_type == ModelType.CAUSAL_LM:
-            self.model_class: AutoModel = AutoModelForCausalLM  # type: ignore[assignment] # All auto models are of type AutoModel
+            self.model_class: AutoModel = (
+                AutoModelForCausalLM
+                if not self.use_peft_model_class
+                else AutoPeftModelForCausalLM
+            )  # type: ignore[assignment] # All auto models are of type AutoModel
         elif self.model_type == ModelType.SEQUENCE_CLS:
-            self.model_class = AutoModelForSequenceClassification  # type: ignore[assignment]
+            self.model_class = (
+                AutoModelForSequenceClassification
+                if not self.use_peft_model_class
+                else AutoPeftModelForSequenceClassification
+            )  # type: ignore[assignment]
         else:
             raise ValueError(f"Invalid model type: {self.model_type}")  # noqa: EM102, TRY003
 
@@ -149,7 +166,7 @@ class ModelLoader:
         if self.model_type == ModelType.SEQUENCE_CLS:
             self.model_loader = partial(self.model_loader, num_labels=1)
 
-    def _log_model_info(self, model: PreTrainedModel) -> None:
+    def _log_model_info(self, model: PeftMixedModel | PreTrainedModel) -> None:
         """Log model information and a list of all trainable parameters."""
         logger = logging.getLogger()
         logger.info(f"Model Summary:\n{model}")  # noqa: G004
@@ -179,7 +196,7 @@ class ModelLoader:
             Module: The model loaded on the specified device.
 
         """
-        model: PreTrainedModel = self.model_loader(
+        model: PeftMixedModel | PreTrainedModel = self.model_loader(
             pretrained_model_name_or_path=self.pretrained_model_name_or_path,
         )
 
@@ -192,7 +209,14 @@ class ModelLoader:
         else:
             raise ValueError(f"Invalid model mode: {self.model_mode}")  # noqa: EM102, TRY003
 
-        model = self.lora.get_lora_model(model)  # type: ignore[assignment]
+        model = self.lora.get_lora_model(model)
+
+        # During eval perform a merge and unload operation to incorporate the LoRA
+        # adapters and avoid extra memory and computation overhead
+        if (
+            self.lora.active or self.use_peft_model_class
+        ) and self.model_mode == ModelMode.EVAL:
+            model = model.merge_and_unload()  # type: ignore[assignment]
 
         tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path=self.pretrained_model_name_or_path,  # type: ignore[assignment]
@@ -207,13 +231,13 @@ class ModelLoader:
             tokenizer.pad_token_id = tokenizer.eos_token_id
             tokenizer.pad_token = tokenizer.eos_token
 
-        if model.config.pad_token_id is None:
-            model.config.pad_token_id = tokenizer.pad_token_id
-            model.config.pad_token = tokenizer.pad_token
+        if model.config.pad_token_id is None:  # type: ignore[attr-defined]
+            model.config.pad_token_id = tokenizer.pad_token_id  # type: ignore[attr-defined]
+            model.config.pad_token = tokenizer.pad_token  # type: ignore[attr-defined]
 
         self._log_model_info(model)
 
-        return model.to(self.device), tokenizer  # type: ignore[reportArgumentType]
+        return model.to(self.device), tokenizer  # type: ignore[arg-type]
 
 
 # Add default model loader to the store

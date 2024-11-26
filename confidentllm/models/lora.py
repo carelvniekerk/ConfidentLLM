@@ -33,7 +33,7 @@ from peft import (
     LoraConfig,  # type: ignore[import] # LoraConfig is publically available in peft
 )
 from peft.mapping import get_peft_model
-from peft.peft_model import PeftModel
+from peft.mixed_model import PeftMixedModel
 from peft.utils.peft_types import TaskType
 from transformers import PreTrainedModel
 
@@ -96,13 +96,16 @@ class LoRAConfig:
         logger = logging.getLogger()
         logger.info(f"LoRA Configuration:\n{pformat(config)}")  # noqa: G004
 
-    def get_lora_model(self, model: PreTrainedModel) -> PeftModel | PreTrainedModel:
+    def get_lora_model(
+        self,
+        model: PeftMixedModel | PreTrainedModel,
+    ) -> PeftMixedModel | PreTrainedModel:
         """Get the LoRA model."""
         if not self.active:
             return model
         config = self._get_lora_config_object()
         self._log_lora_config(config)
-        return get_peft_model(model, config)  # type: ignore[return-type]
+        return get_peft_model(model=model, peft_config=config)  # type: ignore[return-type]
 
 
 HydraLoRAConfig = builds(LoRAConfig)
