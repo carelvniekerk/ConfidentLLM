@@ -65,7 +65,7 @@ def _commonsense_qa_map(
 ) -> dict[str, list[str]]:
     question: list[str] = examples.get("question", [])  # type: ignore[assignment]
     question = [
-        f"{question_str}\n{_format_choices(choices)}"  # type: ignore[arg-type]
+        f"{question_str}\n{_format_choices(choices["text"])}"  # type: ignore[arg-type, index]
         for question_str, choices in zip(
             question,
             examples["choices"],  # type: ignore[call-overload]
