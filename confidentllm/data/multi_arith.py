@@ -51,6 +51,8 @@ def load_multi_arith_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
     name: str = "MultiArith",  # noqa: ARG001 - Used for creating the experiments path
+    *,
+    use_cache: bool = True,
 ) -> Dataset:
     """Load the MultiArith dataset.
 
@@ -93,6 +95,7 @@ def load_multi_arith_data(
         multi_arith_key_mapping,
         batched=True,
         batch_size=transformation_batch_size,
+        load_from_cache_file=use_cache,
     )
 
     return data

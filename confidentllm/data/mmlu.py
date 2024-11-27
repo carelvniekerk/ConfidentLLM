@@ -159,6 +159,8 @@ def load_mmlu_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
     name: str = "MMLU",
+    *,
+    use_cache: bool = True,
 ) -> Dataset:
     """Load the MMLU dataset.
 
@@ -203,6 +205,7 @@ def load_mmlu_data(
         function=_mmlu_map,
         batched=True,
         batch_size=transformation_batch_size,
+        load_from_cache_file=use_cache,
         remove_columns=data.column_names,
         features=Features(
             {

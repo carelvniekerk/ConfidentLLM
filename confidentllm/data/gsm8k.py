@@ -38,7 +38,9 @@ GSM8K_ANSWER_PATTERN = r"\n#### (.+)"
 def load_gsm8k_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
-    name: str = "GSM8K",  # noqa: ARG001
+    name: str = "GSM8K",  # noqa: ARG001,
+    *,
+    use_cache: bool = True,
 ) -> Dataset:
     """Load the GSM-8K dataset.
 
@@ -81,6 +83,7 @@ def load_gsm8k_data(
         partial(extract_answers, pattern=GSM8K_ANSWER_PATTERN),
         batched=True,
         batch_size=transformation_batch_size,
+        load_from_cache_file=use_cache,
     )
 
     return data

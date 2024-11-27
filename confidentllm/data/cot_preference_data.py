@@ -28,9 +28,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 import torch
-import wandb
 from datasets import Dataset
 from numpy import exp
+
+import wandb
 from wandb.apis.public.runs import Run, Runs
 
 if TYPE_CHECKING:
@@ -186,6 +187,8 @@ def load_cot_preference_data(
     table_name: str,
     ranking_threshold: float = 0.9,
     name: str = "cot_preference",  # noqa: ARG001
+    *,
+    use_cache: bool = True,
 ) -> Dataset:
     """Load the CoT preference data from a Weights and Biases run."""
     data_caching_path: Path = _find_project_root() / run_name / "cache.dataset"

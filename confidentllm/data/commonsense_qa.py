@@ -85,6 +85,8 @@ def load_commonsense_qa_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
     name: str = "CommonsenseQA",  # noqa: ARG001
+    *,
+    use_cache: bool = True,
 ) -> Dataset:
     """Load the MMLU dataset.
 
@@ -133,6 +135,7 @@ def load_commonsense_qa_data(
         function=_commonsense_qa_map,
         batched=True,
         batch_size=transformation_batch_size,
+        load_from_cache_file=use_cache,
         remove_columns=data.column_names,
         features=Features(
             {
