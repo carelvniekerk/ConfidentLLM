@@ -48,8 +48,8 @@ logger = get_logger()
     name="reward_model_training",
     hydra_defaults=[
         "_self_",
-        {"model": "train_sequence_cls"},
-        {"model/lora": "seq_cls"},
+        {"reward_model": "train_sequence_cls"},
+        {"reward_model/lora": "sequence_cls"},
         {"train_data": "cot_preference"},
         {"eval_data": "cot_preference"},
         {"trainer": "reward_model"},
@@ -58,7 +58,7 @@ logger = get_logger()
 def run_training(
     train_data: Dataset,
     eval_data: Dataset,
-    model: ModelLoader,
+    reward_model: ModelLoader,
     trainer: RewardModelTrainer,
 ) -> None:
     """Run the question answering process."""
@@ -66,8 +66,8 @@ def run_training(
     log_system_info()
     set_seed(trainer.seed)
 
-    reward_model, tokenizer = model.load()
-    trainer.set_model(reward_model)
+    model, tokenizer = reward_model.load()
+    trainer.set_model(model)
     trainer.set_tokenizer(tokenizer)
 
     data_preperation_function = partial(
@@ -102,7 +102,7 @@ def main() -> None:
 
     config_keys = [
         "train_data.name",
-        "model.pretrained_model_name_or_path",
+        "reward_model.pretrained_model_name_or_path",
         "trainer.seed",
     ]
 
