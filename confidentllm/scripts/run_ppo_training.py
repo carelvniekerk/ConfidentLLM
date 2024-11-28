@@ -46,7 +46,7 @@ logger = get_logger()
 
 
 @store(
-    name="reward_ppo_training",
+    name="ppo_training",
     hydra_defaults=[
         "_self_",
         {"model": "train_causal_lm"},
@@ -131,14 +131,14 @@ def main() -> None:
     ]
 
     setup_hydra_config_and_logging(
-        job_name="reward_ppo_training",
+        job_name="ppo_training",
         add_hpc_launcher=True,
         config_keys=config_keys,
     )
 
     # Generate the CLI for run_extraction
     run_function.hydra_main(
-        config_name="reward_ppo_training",
+        config_name="ppo_training",
         version_base="1.3",
     )
 
