@@ -147,5 +147,6 @@ def load_commonsense_qa_data(
     )
 
     data.choices = [CommonsenseQAAnswers(value=i + 1).name for i in range(5)]  # type: ignore[attr-defined]
+    data.cached_version = use_cache  # type: ignore[attr-defined]
 
     return data

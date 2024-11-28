@@ -248,6 +248,13 @@ CausalLMModelConfig = ModelLoaderConfig(
     lora=NoLoRAConfig,  # type: ignore[arg-type]
 )
 
+TrainCausalLMModelConfig = ModelLoaderConfig(
+    pretrained_model_name_or_path=ModelName.GPT2,
+    model_type=ModelType.CAUSAL_LM,
+    model_mode=ModelMode.TRAIN,
+    lora=NoLoRAConfig,  # type: ignore[arg-type]
+)
+
 TrainSequenceCLSModelConfig = ModelLoaderConfig(
     pretrained_model_name_or_path=ModelName.GPT2,
     model_type=ModelType.SEQUENCE_CLS,
@@ -255,5 +262,14 @@ TrainSequenceCLSModelConfig = ModelLoaderConfig(
     lora=NoLoRAConfig,  # type: ignore[arg-type]
 )
 
+SequenceCLSModelConfig = ModelLoaderConfig(
+    pretrained_model_name_or_path=ModelName.GPT2,
+    model_type=ModelType.SEQUENCE_CLS,
+    model_mode=ModelMode.EVAL,
+    lora=NoLoRAConfig,  # type: ignore[arg-type]
+)
+
 store(CausalLMModelConfig, name="causal_lm", group="model")
-store(TrainSequenceCLSModelConfig, name="train_sequence_cls", group="model")
+store(TrainCausalLMModelConfig, name="train_causal_lm", group="model")
+store(TrainSequenceCLSModelConfig, name="train_sequence_cls", group="reward_model")
+store(SequenceCLSModelConfig, name="sequence_cls", group="reward_model")

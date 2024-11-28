@@ -114,6 +114,11 @@ CausalLMLoRAConfig = HydraLoRAConfig(active=True, task_type=TaskType.CAUSAL_LM)
 SeqClsLoRAConfig = HydraLoRAConfig(active=True, task_type=TaskType.SEQ_CLS)
 
 lora_config_store = store(group="model/lora")
+reward_model_lora_config_store = store(group="reward_model/lora")
+
 lora_config_store(NoLoRAConfig, name="no_lora")
+reward_model_lora_config_store(NoLoRAConfig, name="no_lora")
 lora_config_store(CausalLMLoRAConfig, name="causal_lm")
-lora_config_store(SeqClsLoRAConfig, name="seq_cls")
+reward_model_lora_config_store(CausalLMLoRAConfig, name="causal_lm")
+lora_config_store(SeqClsLoRAConfig, name="sequence_cls")
+reward_model_lora_config_store(SeqClsLoRAConfig, name="sequence_cls")
