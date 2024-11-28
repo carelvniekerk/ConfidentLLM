@@ -31,8 +31,8 @@ from omegaconf.dictconfig import DictConfig
 
 __all__ = [
     "builds",
-    "resolve_output_processor",
     "resolve_generation_method",
+    "resolve_output_processor",
 ]
 
 builds: FullBuilds = make_custom_builds_fn(populate_full_signature=True)
