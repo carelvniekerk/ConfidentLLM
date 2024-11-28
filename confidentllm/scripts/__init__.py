@@ -28,6 +28,7 @@ from confidentllm.scripts.run_mathematical_reasoning import (
     main as mathematical_reasoning,
 )
 from confidentllm.scripts.run_multiple_choice_qa import main as multiple_choice_qa
+from confidentllm.scripts.run_ppo_training import main as ppo_training
 from confidentllm.scripts.run_reporting import main as reporting
 from confidentllm.scripts.run_reward_model_training import main as reward_model_training
 
@@ -35,6 +36,7 @@ __all__ = [
     "download_and_sync",
     "mathematical_reasoning",
     "multiple_choice_qa",
+    "ppo_training",
     "reporting",
     "reward_model_training",
 ]

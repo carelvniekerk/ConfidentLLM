@@ -98,4 +98,6 @@ def load_multi_arith_data(
         load_from_cache_file=use_cache,
     )
 
+    data.cached_version = use_cache  # type: ignore[attr-defined]
+
     return data
