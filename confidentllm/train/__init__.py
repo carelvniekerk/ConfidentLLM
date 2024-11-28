@@ -23,7 +23,14 @@
 # limitations under the License.
 """Init file for training module."""
 
+from confidentllm.train.ppo_trainer import PPORLTrainer
 from confidentllm.train.prepare_reward_model_data import prepare_reward_model_data
+from confidentllm.train.prepare_rl_data import prepare_rl_data
 from confidentllm.train.reward_model_trainer import RewardModelTrainer
 
-__all__ = ["prepare_reward_model_data", "RewardModelTrainer"]
+__all__ = [
+    "PPORLTrainer",
+    "RewardModelTrainer",
+    "prepare_reward_model_data",
+    "prepare_rl_data",
+]

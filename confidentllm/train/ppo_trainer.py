@@ -59,6 +59,7 @@ class PPORLTrainer(BaseModelTrainer):
         stop_token_id: int | None = None,
         temperature: float = 0.7,
         response_length: int = 256,
+        max_input_length: int = 256,
         seed: int = 42,
         learning_rate: float = 5e-5,
         weight_decay: float = 0,
@@ -105,6 +106,8 @@ class PPORLTrainer(BaseModelTrainer):
             temperature (float, optional): The temperature for sampling.
                 Default is 0.7.
             response_length (int, optional): The maximum length of the response.
+                Default is 256.
+            max_input_length (int, optional): The maximum length of the input.
                 Default is 256.
             seed (int, optional): The seed for reproducibility. Default is 42.
             learning_rate (float, optional): The learning rate for optimization.
@@ -165,6 +168,7 @@ class PPORLTrainer(BaseModelTrainer):
         self.stop_token_id = stop_token_id
         self.temperature = temperature
         self.response_length = response_length
+        self.max_input_length = max_input_length
 
     def _get_trainer_config(self) -> PPOConfig:
         config = PPOConfig(
@@ -205,7 +209,7 @@ class PPORLTrainer(BaseModelTrainer):
 
     def set_reference_model(
         self,
-        model: PreTrainedModel,
+        model: PreTrainedModel | None,
         *,
         lora: bool = False,
     ) -> None:
@@ -236,7 +240,7 @@ class PPORLTrainer(BaseModelTrainer):
 
         self.trainer: PPOTrainer = PPOTrainer(
             policy=self.model,
-            ref_policy=self.reference_model,
+            ref_policy=self.reference_model,  # type: ignore[assignment] # In the case of LoRA, the reference model can be None
             processing_class=self.tokenizer,
             config=self._get_trainer_config(),
             reward_model=self.reward_model,
