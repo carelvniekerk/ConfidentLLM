@@ -49,11 +49,11 @@ logger = get_logger()
     hydra_defaults=[
         "_self_",
         {"model": "train_causal_lm"},
-        {"model/lora": "seq_cls"},
+        {"model/lora": "sequence_cls"},
         {"reward_model": "train_sequence_cls"},
         {"reward_model/lora": "sequence_cls"},
-        {"train_data": "cot_preference"},
-        {"eval_data": "cot_preference"},
+        {"train_data": "multiarith"},
+        {"eval_data": "multiarith"},
         {"trainer": "ppo"},
     ],
 )
