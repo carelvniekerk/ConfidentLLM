@@ -36,7 +36,16 @@ accuracy_and_calibration_config = CombinedEvaluatorConfig(
     evaluators=[accuracy_config, calibration_config],  # type: ignore  # noqa: PGH003 - Configs return Evaluator objects during execution.
 )
 
+accuracy_and_calibration_for_string_config = CombinedEvaluatorConfig(
+    evaluators=[accuracy_config, calibration_config],  # type: ignore  # noqa: PGH003 - Configs return Evaluator objects during execution.
+    padding_value="-1",
+)
+
 evaluator_store = store(group="evaluator")
 evaluator_store(accuracy_config, name="accuracy")
 evaluator_store(calibration_config, name="calibration")
 evaluator_store(accuracy_and_calibration_config, name="accuracy_and_calibration")
+evaluator_store(
+    accuracy_and_calibration_for_string_config,
+    name="accuracy_and_calibration_for_string",
+)

@@ -58,7 +58,11 @@ class CombinedResults(BaseResults):
 class CombinedEvaluator(Evaluator):
     """Pipeline for combining multiple evaluators."""
 
-    def __init__(self, evaluators: list[Evaluator], padding_value: int = -1) -> None:
+    def __init__(
+        self,
+        evaluators: list[Evaluator],
+        padding_value: int | str = -1,
+    ) -> None:
         """Initialize the combined evaluator with a list of evaluators."""
         super().__init__(padding_value)
         shared_buffer: EvaluationBatch = EvaluationBatch()
