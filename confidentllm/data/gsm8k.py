@@ -86,4 +86,6 @@ def load_gsm8k_data(
         load_from_cache_file=use_cache,
     )
 
+    data.cached_version = use_cache  # type: ignore[attr-defined]
+
     return data

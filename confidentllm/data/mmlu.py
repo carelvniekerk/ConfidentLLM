@@ -216,5 +216,6 @@ def load_mmlu_data(
     )
 
     data.choices = [MMLUAnswers(value=i + 1).name for i in range(4)]  # type: ignore[attr-defined]
+    data.cached_version = use_cache  # type: ignore[attr-defined]
 
     return data

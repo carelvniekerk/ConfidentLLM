@@ -49,7 +49,7 @@ class PPORLTrainer(BaseModelTrainer):
         save_steps: int = 1,
         save_total_limit: int | None = None,
         load_best_model_at_end: bool = False,
-        per_device_train_batch_size: int = 4,
+        per_device_train_batch_size: int = 8,
         num_train_epochs: float = 3.0,
         normalise_rewards: bool = True,
         kl_coefficient: float = 0.05,
@@ -207,15 +207,9 @@ class PPORLTrainer(BaseModelTrainer):
         )
         return config
 
-    def set_reference_model(
-        self,
-        model: PreTrainedModel | None,
-        *,
-        lora: bool = False,
-    ) -> None:
+    def set_reference_model(self, model: PreTrainedModel) -> None:
         """Set the model for reference."""
         self.reference_model = model
-        self.reference_model_lora = lora
 
     def set_reward_model(self, model: PreTrainedModel) -> None:
         """Set the reward model."""
@@ -226,7 +220,7 @@ class PPORLTrainer(BaseModelTrainer):
             raise ModelNotSetError(self.model)
         if self.reward_model is None:
             raise ModelNotSetError(self.reward_model)
-        if self.reference_model is None and not self.reference_model_lora:
+        if self.reference_model is None:
             raise ModelNotSetError(self.reference_model)
         if self.tokenizer is None:
             raise TokenizerNotSetError(self.tokenizer)
@@ -240,10 +234,11 @@ class PPORLTrainer(BaseModelTrainer):
 
         self.trainer: PPOTrainer = PPOTrainer(
             policy=self.model,
-            ref_policy=self.reference_model,  # type: ignore[assignment] # In the case of LoRA, the reference model can be None
+            ref_policy=self.reference_model,
             processing_class=self.tokenizer,
             config=self._get_trainer_config(),
             reward_model=self.reward_model,
+            value_model=self.reward_model,
             train_dataset=self.train_dataset,
             eval_dataset=self.eval_dataset,
         )

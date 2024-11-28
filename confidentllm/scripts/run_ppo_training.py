@@ -31,6 +31,7 @@ from hydra_zen import store, zen
 
 from confidentllm import data  # noqa: F401
 from confidentllm.models import ModelLoader
+from confidentllm.models.model_name_and_type import ModelMode
 from confidentllm.scripts.setup_tools import (
     get_logger,
     init_wandb,
@@ -50,8 +51,8 @@ logger = get_logger()
         "_self_",
         {"model": "train_causal_lm"},
         {"model/lora": "sequence_cls"},
-        {"reward_model": "train_sequence_cls"},
-        {"reward_model/lora": "sequence_cls"},
+        {"reward_model": "sequence_cls"},
+        {"reward_model/lora": "no_lora"},
         {"train_data": "multiarith"},
         {"eval_data": "multiarith"},
         {"trainer": "ppo"},
@@ -75,16 +76,18 @@ def run_training(
     if reward_tokenizer.__class__ != policy_tokenizer.__class__:
         raise ValueError("The reward and policy models must use the same tokenizer.")  # noqa: EM101, TRY003
 
-    if policy_model.lora.active:
-        policy_reference_model = None
-    else:
-        raise NotImplementedError("Only LoRA models are supported for now.")  # noqa: EM101
+    # Disable Lora setup and set model mode to EVAL to load a reference model version of
+    # the model. Further disable gradient computation for the reference model.
+    model.lora.active = False
+    model.model_mode = ModelMode.EVAL
+    policy_reference_model, _ = model.load()
+    for param in policy_reference_model.parameters():
+        param.requires_grad = False
 
     trainer.set_model(policy_model)
     trainer.set_tokenizer(policy_tokenizer)
     trainer.set_reference_model(
         model=policy_reference_model,
-        lora=policy_model.lora.active,
     )
     trainer.set_reward_model(reward_model_instance)
 
@@ -97,11 +100,15 @@ def run_training(
         function=data_preperation_function,
         batched=True,
         batch_size=512,
+        load_from_cache_file=eval_data.cached_version,  # type: ignore[attr-defined]
+        remove_columns=train_data.column_names,
     )
     eval_data = eval_data.map(
         function=data_preperation_function,
         batched=True,
         batch_size=512,
+        load_from_cache_file=eval_data.cached_version,  # type: ignore[attr-defined]
+        remove_columns=eval_data.column_names,
     )
 
     logger.info(f"Training data: {pformat(train_data.info)}")  # noqa: G004
