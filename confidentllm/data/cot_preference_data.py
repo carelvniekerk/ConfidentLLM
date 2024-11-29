@@ -192,7 +192,7 @@ def load_cot_preference_data(
 ) -> Dataset:
     """Load the CoT preference data from a Weights and Biases run."""
     data_caching_path: Path = _find_project_root() / run_name / "cache.dataset"
-    if data_caching_path.exists():
+    if data_caching_path.exists() and use_cache:
         dataset: Dataset = torch.load(data_caching_path)
         return dataset
 
@@ -243,5 +243,6 @@ def load_cot_preference_data(
     text_dataset._info.license = f"See original dataset {initial_dataset_name}."  # noqa: SLF001
     text_dataset._info.homepage = run.url  # noqa: SLF001
 
+    text_dataset.cached_version = use_cache  # type: ignore[attr-defined]
     torch.save(text_dataset, data_caching_path)
     return text_dataset
