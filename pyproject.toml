@@ -49,6 +49,7 @@ url = "http://pypi.repo.test.hhu.de/simple/"
 # Script entry points for various tasks (e.g. question answering)
 [tool.poetry.scripts]
 download-and-sync = "confidentllm.scripts:download_and_sync"
+dpo-training = "confidentllm.scripts:dpo_training"
 mathematical-reasoning = "confidentllm.scripts:mathematical_reasoning"
 multiple-choice-qa = "confidentllm.scripts:multiple_choice_qa"
 ppo-training = "confidentllm.scripts:ppo_training"

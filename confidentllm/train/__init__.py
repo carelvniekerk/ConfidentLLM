@@ -23,7 +23,9 @@
 # limitations under the License.
 """Init file for training module."""
 
+from confidentllm.train.dpo_trainer import DPOTrainer
 from confidentllm.train.ppo_trainer import PPORLTrainer
+from confidentllm.train.prepare_dpo_data import prepare_dpo_data
 from confidentllm.train.prepare_reward_model_data import prepare_reward_model_data
 from confidentllm.train.prepare_rl_data import prepare_rl_data
 from confidentllm.train.prepare_supervised_data import prepare_supervised_data
@@ -31,9 +33,11 @@ from confidentllm.train.reward_model_trainer import RewardModelTrainer
 from confidentllm.train.supervised_trainer import SupervisedFinetuningTrainer
 
 __all__ = [
+    "DPOTrainer",
     "PPORLTrainer",
     "RewardModelTrainer",
     "SupervisedFinetuningTrainer",
+    "prepare_dpo_data",
     "prepare_reward_model_data",
     "prepare_rl_data",
     "prepare_supervised_data",
