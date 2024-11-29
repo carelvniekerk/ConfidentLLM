@@ -31,6 +31,7 @@ from confidentllm.scripts.run_multiple_choice_qa import main as multiple_choice_
 from confidentllm.scripts.run_ppo_training import main as ppo_training
 from confidentllm.scripts.run_reporting import main as reporting
 from confidentllm.scripts.run_reward_model_training import main as reward_model_training
+from confidentllm.scripts.run_supervised_finetuning import main as supervised_finetuning
 
 __all__ = [
     "download_and_sync",
@@ -39,4 +40,5 @@ __all__ = [
     "ppo_training",
     "reporting",
     "reward_model_training",
+    "supervised_finetuning",
 ]
