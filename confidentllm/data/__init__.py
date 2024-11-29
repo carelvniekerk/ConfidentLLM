@@ -25,6 +25,7 @@
 
 from hydra_zen import store
 
+from confidentllm.data.arc import load_arc_data
 from confidentllm.data.commonsense_qa import load_commonsense_qa_data
 from confidentllm.data.cot_preference_data import load_cot_preference_data
 from confidentllm.data.gsm8k import load_gsm8k_data
@@ -39,12 +40,14 @@ CommonsenseQAConfig = builds(load_commonsense_qa_data)
 GSM8KConfig = builds(load_gsm8k_data)
 MMLUConfig = builds(load_mmlu_data)
 MultiArithConfig = builds(load_multi_arith_data)
+ARCConfig = builds(load_arc_data)
 
 data_store = store(group="data")
 data_store(GSM8KConfig, name="gsm8k")
 data_store(MMLUConfig, name="mmlu")
 data_store(MultiArithConfig, name="multiarith")
 data_store(CommonsenseQAConfig, name="commonsense_qa")
+data_store(ARCConfig, name="arc")
 
 cot_preference_train_data = COTPreferenceDataConfig(
     run_path="dialgroup-hhu/ConfidentLLM",
@@ -65,3 +68,5 @@ train_data_store(MultiArithConfig, name="multiarith")
 eval_data_store(MultiArithConfig, name="multiarith")
 train_data_store(CommonsenseQAConfig, name="commonsense_qa")
 eval_data_store(CommonsenseQAConfig, name="commonsense_qa")
+train_data_store(ARCConfig, name="arc")
+eval_data_store(ARCConfig, name="arc")

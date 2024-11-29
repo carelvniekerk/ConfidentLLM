@@ -217,7 +217,7 @@ class MultipleChoiceQARunner:
         {"generation_method/confidence_extraction_method": "probability_disparity"},
         {"output_processor": "multiple_choice_answer_with_token_confidence"},
         {"data": "commonsense_qa"},
-        {"evaluator": "accuracy_and_calibration"},
+        {"evaluator": "accuracy_and_calibration_for_string"},
         {"run_config": "default"},
     ],
 )
