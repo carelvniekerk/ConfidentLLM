@@ -66,7 +66,7 @@ class Evaluator(ABC):
 
     def __init__(  # noqa: D107
         self,
-        padding_value: int = -1,
+        padding_value: int | str = -1,
     ) -> None:
         self.buffer: EvaluationBatch = EvaluationBatch()
         self.padding_value = padding_value
