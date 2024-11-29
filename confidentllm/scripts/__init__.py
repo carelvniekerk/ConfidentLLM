@@ -24,6 +24,7 @@
 """Execcution scripts for different tasks."""
 
 from confidentllm.scripts.run_download_and_sync import main as download_and_sync
+from confidentllm.scripts.run_dpo_training import main as dpo_training
 from confidentllm.scripts.run_mathematical_reasoning import (
     main as mathematical_reasoning,
 )
@@ -35,6 +36,7 @@ from confidentllm.scripts.run_supervised_finetuning import main as supervised_fi
 
 __all__ = [
     "download_and_sync",
+    "dpo_training",
     "mathematical_reasoning",
     "multiple_choice_qa",
     "ppo_training",
