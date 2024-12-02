@@ -70,19 +70,14 @@ def run_training(
     trainer.set_model(model_instance)
     trainer.set_tokenizer(tokenizer)
 
-    data_preperation_function = partial(
-        prepare_supervised_data,
-        tokenizer=tokenizer,
-        max_length=trainer.max_length,
-    )
     train_data = train_data.map(
-        function=data_preperation_function,
+        function=prepare_supervised_data,
         batched=True,
         batch_size=512,
         remove_columns=train_data.column_names,
     )
     eval_data = eval_data.map(
-        function=data_preperation_function,
+        function=prepare_supervised_data,
         batched=True,
         batch_size=512,
         remove_columns=eval_data.column_names,

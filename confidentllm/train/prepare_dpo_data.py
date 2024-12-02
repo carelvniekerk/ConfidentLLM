@@ -23,7 +23,6 @@
 # limitations under the License.
 """Tokenization and data preparation for dpo training."""
 
-import torch
 from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
 from transformers.tokenization_utils_base import PaddingStrategy
 
@@ -49,12 +48,12 @@ def prepare_dpo_data(
     max_prompt_length: int,
 ) -> dict[str, list[str]]:
     """Tokenize the input strings and return the tokenized data."""
-    prompt_convrsations: ChatConversation = ChatConversation(
+    prompt_conversations: ChatConversation = ChatConversation(
         messages=[[ChatUserMessage(question)] for question in data["questions"]],
     )
 
     prompt_inputs: BatchEncoding = tokenizer.apply_chat_template(
-        conversation=list(prompt_convrsations),
+        conversation=list(prompt_conversations),
         add_generation_prompt=True,
         return_tensors=TensorType.PYTORCH,
         return_dict=True,

@@ -46,9 +46,7 @@ def _cleanup_response(response: str) -> str:
 
 def prepare_supervised_data(
     data: dict[str, list[str]],
-    tokenizer: PreTrainedTokenizer,
-    max_length: int,
-) -> dict[str, torch.Tensor]:
+) -> dict[str, list[list[dict[str, str]]]]:
     """Tokenize the input strings and return the tokenized data."""
     conversations: ChatConversation = ChatConversation(
         messages=[
@@ -64,19 +62,4 @@ def prepare_supervised_data(
         ],
     )
 
-    inputs: BatchEncoding = tokenizer.apply_chat_template(
-        conversation=list(conversations),
-        add_generation_prompt=False,
-        return_tensors=TensorType.PYTORCH,
-        return_dict=True,
-        padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
-        truncation=True,
-        max_length=max_length,
-    )  # type: ignore[assignment]
-
-    output_data: dict[str, torch.Tensor] = {
-        "input_ids": inputs.input_ids,
-        "attention_mask": inputs.attention_mask,
-    }
-
-    return output_data
+    return {"messages": list(conversations)}
