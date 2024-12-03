@@ -21,7 +21,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing functions for loading the Commonsense QA dataset."""
+"""Module containing functions for loading the OpenBook QA dataset."""
 
 from enum import Enum, auto
 
@@ -29,17 +29,16 @@ from datasets import Dataset, Features, Value, load_dataset
 
 from confidentllm.data.types import DatasetSplit
 
-__all__ = ["load_commonsense_qa_data"]
+__all__ = ["load_openbook_qa_data"]
 
 
-class CommonsenseQAAnswers(Enum):
-    """Commonsense QA answers."""
+class OpenBookQAAnswers(Enum):
+    """Open Book QA answers."""
 
     A = auto()
     B = auto()
     C = auto()
     D = auto()
-    E = auto()
 
 
 def _format_choices(choices: list[str]) -> str:
@@ -56,14 +55,14 @@ def _format_choices(choices: list[str]) -> str:
     """
     choices_str: str = "Select one of the following:"
     for i, choice in enumerate(choices):
-        choices_str += f"\n{CommonsenseQAAnswers(value=i + 1).name}. {choice}"
+        choices_str += f"\n{OpenBookQAAnswers(value=i + 1).name}. {choice}"
     return choices_str
 
 
-def _commonsense_qa_map(
+def _openbook_qa_map(
     examples: dict[str, list[str | dict[str, list[str]]]],
 ) -> dict[str, list[str]]:
-    question: list[str] = examples.get("question", [])  # type: ignore[assignment]
+    question: list[str] = examples.get("question_stem", [])  # type: ignore[assignment]
     question = [
         f"{question_str}\n{_format_choices(choices["text"])}"  # type: ignore[arg-type, index]
         for question_str, choices in zip(
@@ -74,17 +73,17 @@ def _commonsense_qa_map(
     ]
 
     answer: list[str] = [
-        CommonsenseQAAnswers[raw_answer.upper()].name if raw_answer else "-1"  # type: ignore[union-attr]
+        OpenBookQAAnswers[raw_answer.upper()].name if raw_answer else "-1"  # type: ignore[union-attr]
         for raw_answer in examples["answerKey"]
     ]
 
     return {"id": examples["id"], "question": question, "answer": answer}  # type: ignore[dict-item]
 
 
-def load_commonsense_qa_data(
+def load_openbook_qa_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
-    name: str = "CommonsenseQA",  # noqa: ARG001
+    name: str = "OpenBookQA",  # noqa: ARG001
     *,
     use_cache: bool = True,
 ) -> Dataset:
@@ -103,37 +102,32 @@ def load_commonsense_qa_data(
 
     """
     data: Dataset = load_dataset(
-        path="tau/commonsense_qa",
+        path="allenai/openbookqa",
+        name="main",
         split=split,
-    )  # type: ignore[reportAssignmentType]
+    )  # type: ignore[assignment]
 
     # Add metadata to the dataset
     data._info.description = (  # noqa: SLF001 # Adding description to dataset
-        "CommonsenseQA is a new multiple-choice question answering dataset that "
-        "requires different types of commonsense knowledge to predict the correct "
-        "answers . It contains 12,102 questions with one correct answer and four "
-        "distractor answers. The dataset is provided in two major training/validation/"
-        "testing set splits: 'Random split' which is the main evaluation split, "
-        "and 'Question token split', see paper for details."
+        "OpenBookQA aims to promote research in advanced question-answering, probing a "
+        "deeper understanding of both the topic (with salient facts summarized as an "
+        "open book, also provided with the dataset) and the language it is expressed in"
+        ". In particular, it contains questions that require multi-step reasoning, use "
+        "of additional common and commonsense knowledge, and rich text comprehension. "
+        "OpenBookQA is a new kind of question-answering dataset modeled after open "
+        "book exams for assessing human understanding of a subject."
     )
     data._info.citation = (  # noqa: SLF001 # Adding citation to dataset
-        '@inproceedings{talmor-etal-2019-commonsenseqa,\n\ttitle = "{C}ommonsense{QA}:'
-        ' A Question Answering Challenge Targeting Commonsense Knowledge",\n\tauthor '
-        '= "Talmor, Alon  and Herzig, Jonathan  and Lourie, Nicholas  and Berant, '
-        'Jonathan",\n\tbooktitle = "Proceedings of the 2019 Conference of the North '
-        "{A}merican Chapter of the Association for Computational Linguistics: Human "
-        'Language Technologies, Volume 1 (Long and Short Papers)",\n\tmonth = jun,'
-        '\n\tyear = "2019",\n\taddress = "Minneapolis, Minnesota",\n\tpublisher '
-        '= "Association for Computational Linguistics",\n\turl = '
-        '"https://aclanthology.org/N19-1421",\n\tdoi = "10.18653/v1/N19-1421",'
-        '\n\tpages = "4149--4158",\n\tarchivePrefix = "arXiv",\n\teprint='
-        '"1811.00937",\n\tprimaryClass="cs",\n}'
+        "@inproceedings{OpenBookQA2018,\n\ttitle={Can a Suit of Armor Conduct "
+        "Electricity? A New Dataset for Open Book Question Answering},\n\tauthor={Todor"
+        " Mihaylov and Peter Clark and Tushar Khot and Ashish Sabharwal},\n\tbooktitle="
+        "{EMNLP},\n\tyear={2018}\n}"
     )
-    data._info.homepage = "https://huggingface.co/datasets/tau/commonsense_qa"  # noqa: SLF001
+    data._info.homepage = "https://huggingface.co/datasets/allenai/openbookqa"  # noqa: SLF001
     data._info.license = "MIT License"  # noqa: SLF001
 
     data = data.map(
-        function=_commonsense_qa_map,
+        function=_openbook_qa_map,
         batched=True,
         batch_size=transformation_batch_size,
         load_from_cache_file=use_cache,
@@ -147,7 +141,7 @@ def load_commonsense_qa_data(
         ),
     )
 
-    data.choices = [CommonsenseQAAnswers(value=i + 1).name for i in range(5)]  # type: ignore[attr-defined]
+    data.choices = [OpenBookQAAnswers(value=i + 1).name for i in range(4)]  # type: ignore[attr-defined]
     data.cached_version = use_cache  # type: ignore[attr-defined]
 
     return data
