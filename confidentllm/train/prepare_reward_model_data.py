@@ -59,8 +59,8 @@ def prepare_reward_model_data(
                 ChatAssistantMessage(_cleanup_response(response)),
             ]
             for question, response in zip(
-                data["questions"],
-                data["preferred_responses"],
+                data["question"],
+                data["preferred_response"],
                 strict=True,
             )
         ],
@@ -73,8 +73,8 @@ def prepare_reward_model_data(
                 ChatAssistantMessage(_cleanup_response(response)),
             ]
             for question, response in zip(
-                data["questions"],
-                data["rejected_responses"],
+                data["question"],
+                data["rejected_response"],
                 strict=True,
             )
         ],
