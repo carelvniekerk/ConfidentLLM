@@ -24,8 +24,11 @@
 """Module containing enumerations for the datasets used in the project."""
 
 from enum import StrEnum, auto
+from typing import Protocol
 
-__all__ = ["DatasetSplit"]
+from datasets import Dataset
+
+__all__ = ["DatasetSplit", "LoadDatasetFunction"]
 
 
 class DatasetSplit(StrEnum):
@@ -34,3 +37,39 @@ class DatasetSplit(StrEnum):
     TRAIN = auto()
     TEST = auto()
     VALIDATION = auto()
+
+
+class LoadDatasetFunction(Protocol):
+    """Function type for loading a dataset."""
+
+    def __call__(  # noqa: PLR0913
+        self,
+        split: DatasetSplit,
+        transformation_batch_size: int,
+        name: str,
+        *,
+        use_cache: bool,
+        run_path: str | None = None,
+        run_name: str | None = None,
+        table_name: str | None = None,
+        ranking_threshold: float | None = None,
+    ) -> Dataset:
+        """Load the dataset.
+
+        Args:
+        ----
+            split: The split of the dataset to load.
+            transformation_batch_size: The batch size to use for the transformation.
+            name: The name of the dataset.
+            use_cache: Whether to use the cache.
+            run_path: The path to the wandb run.
+            run_name: The name of the wandb run.
+            table_name: The name of the table.
+            ranking_threshold: The ranking threshold for creating ranked pairs.
+
+        Returns:
+        -------
+            The dataset.
+
+        """
+        ...
