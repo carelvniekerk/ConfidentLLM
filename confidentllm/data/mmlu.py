@@ -161,6 +161,7 @@ def load_mmlu_data(
     name: str = "MMLU",
     *,
     use_cache: bool = True,
+    **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
     """Load the MMLU dataset.
 

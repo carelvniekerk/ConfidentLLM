@@ -114,6 +114,7 @@ def load_arc_data(
     name: str = "ARC_EASY",
     *,
     use_cache: bool = True,
+    **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
     """Load the MMLU dataset.
 

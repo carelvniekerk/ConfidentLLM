@@ -49,7 +49,7 @@ def prepare_dpo_data(
 ) -> dict[str, list[str]]:
     """Tokenize the input strings and return the tokenized data."""
     prompt_conversations: ChatConversation = ChatConversation(
-        messages=[[ChatUserMessage(question)] for question in data["questions"]],
+        messages=[[ChatUserMessage(question)] for question in data["question"]],
     )
 
     prompt_inputs: BatchEncoding = tokenizer.apply_chat_template(
@@ -68,11 +68,11 @@ def prepare_dpo_data(
     )
 
     preferred_responses: list[str] = [
-        _cleanup_response(response) for response in data["preferred_responses"]
+        _cleanup_response(response) for response in data["preferred_response"]
     ]
 
     rejected_responses: list[str] = [
-        _cleanup_response(response) for response in data["rejected_responses"]
+        _cleanup_response(response) for response in data["rejected_response"]
     ]
 
     output_data: dict[str, list[str]] = {
