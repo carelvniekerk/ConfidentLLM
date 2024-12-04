@@ -87,6 +87,7 @@ def load_commonsense_qa_data(
     name: str = "CommonsenseQA",  # noqa: ARG001
     *,
     use_cache: bool = True,
+    **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
     """Load the MMLU dataset.
 

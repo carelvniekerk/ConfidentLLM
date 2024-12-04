@@ -28,10 +28,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 import torch
+import wandb
 from datasets import Dataset
 from numpy import exp
-
-import wandb
 from wandb.apis.public.runs import Run, Runs
 
 if TYPE_CHECKING:
@@ -160,9 +159,9 @@ def _rank_data(
 def _process_data(table: Table, ranking_threshold: float) -> Dataset:
     """Process the table data into a dataset."""
     preference_data: dict[str, list[str]] = {
-        "questions": [],
-        "preferred_responses": [],
-        "rejected_responses": [],
+        "question": [],
+        "preferred_response": [],
+        "rejected_response": [],
         "margin": [],
     }
     for question, response_data in _reformat_table(table).items():
@@ -189,6 +188,7 @@ def load_cot_preference_data(
     name: str = "cot_preference",  # noqa: ARG001
     *,
     use_cache: bool = True,
+    **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
     """Load the CoT preference data from a Weights and Biases run."""
     data_caching_path: Path = _find_project_root() / run_name / "cache.dataset"
