@@ -188,6 +188,7 @@ def load_cot_preference_data(
     name: str = "cot_preference",  # noqa: ARG001
     *,
     use_cache: bool = True,
+    **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
     """Load the CoT preference data from a Weights and Biases run."""
     data_caching_path: Path = _find_project_root() / run_name / "cache.dataset"

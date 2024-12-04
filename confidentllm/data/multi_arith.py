@@ -53,6 +53,7 @@ def load_multi_arith_data(
     name: str = "MultiArith",  # noqa: ARG001 - Used for creating the experiments path
     *,
     use_cache: bool = True,
+    **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
     """Load the MultiArith dataset.
 

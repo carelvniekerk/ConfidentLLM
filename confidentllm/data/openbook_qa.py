@@ -86,6 +86,7 @@ def load_openbook_qa_data(
     name: str = "OpenBookQA",  # noqa: ARG001
     *,
     use_cache: bool = True,
+    **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
     """Load the MMLU dataset.
 

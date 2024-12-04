@@ -41,6 +41,7 @@ def load_gsm8k_data(
     name: str = "GSM8K",  # noqa: ARG001,
     *,
     use_cache: bool = True,
+    **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
     """Load the GSM-8K dataset.
 
