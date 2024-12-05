@@ -28,9 +28,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 import torch
-import wandb
 from datasets import Dataset
 from numpy import exp
+
+import wandb
 from wandb.apis.public.runs import Run, Runs
 
 if TYPE_CHECKING:
@@ -134,9 +135,9 @@ def _rank_data(
 ) -> dict[str, list[str]]:
     """Rank the response data based on the confidence scores."""
     ranked_data: dict[str, list[str]] = {
-        "questions": [],
-        "preferred_responses": [],
-        "rejected_responses": [],
+        "question": [],
+        "preferred_response": [],
+        "rejected_response": [],
         "margin": [],
     }
     for response_1 in response_data:
@@ -145,9 +146,9 @@ def _rank_data(
         for response_2 in response_data:
             if response_1["confidence"] <= response_2["confidence"]:  # type: ignore[operator]
                 continue
-            ranked_data["questions"].append(question)
-            ranked_data["preferred_responses"].append(response_1["answer"])  # type: ignore[arg-type]
-            ranked_data["rejected_responses"].append(response_2["answer"])  # type: ignore[arg-type]
+            ranked_data["question"].append(question)
+            ranked_data["preferred_response"].append(response_1["answer"])  # type: ignore[arg-type]
+            ranked_data["rejected_response"].append(response_2["answer"])  # type: ignore[arg-type]
             # Margin the the exponential of the difference in confidence scores. This
             ranked_data["margin"].append(
                 exp(response_1["confidence"] - response_2["confidence"]),  # type: ignore[arg-type,operator]
@@ -170,11 +171,11 @@ def _process_data(table: Table, ranking_threshold: float) -> Dataset:
             response_data=response_data,  # type: ignore[arg-type]
             threshold=ranking_threshold,
         )
-        preference_data["questions"].extend(ranked_data["questions"])
-        preference_data["preferred_responses"].extend(
-            ranked_data["preferred_responses"],
+        preference_data["question"].extend(ranked_data["question"])
+        preference_data["preferred_response"].extend(
+            ranked_data["preferred_response"],
         )
-        preference_data["rejected_responses"].extend(ranked_data["rejected_responses"])
+        preference_data["rejected_response"].extend(ranked_data["rejected_response"])
         preference_data["margin"].extend(ranked_data["margin"])
 
     return Dataset.from_dict(preference_data)
