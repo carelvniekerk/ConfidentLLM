@@ -47,6 +47,23 @@ class Table(TypedDict):
     data: list[list[str | float]]
 
 
+def _cleanup_text(text: str, *, remove_prompt: bool = True) -> str:
+    """Clean up the text by removing the prompt."""
+    if remove_prompt:
+        sentences: list[str] = [sentence for sentence in text.split(".") if sentence]
+        sentences = sentences[:-1]
+        text = ". ".join(sentences)
+        text += "." if text[-1] not in [".", "?", "!"] else ""
+
+    if text[0] == " ":
+        text = text[1:]
+    if text[-1] == " ":
+        text = text[:-1]
+    text = text.strip()
+
+    return text
+
+
 def _load_run(path: str, run_name: str) -> Run:
     """Load a run from the Weights and Biases API."""
     api = wandb.Api()
@@ -146,9 +163,19 @@ def _rank_data(
         for response_2 in response_data:
             if response_1["confidence"] <= response_2["confidence"]:  # type: ignore[operator]
                 continue
-            ranked_data["question"].append(question)
-            ranked_data["preferred_response"].append(response_1["answer"])  # type: ignore[arg-type]
-            ranked_data["rejected_response"].append(response_2["answer"])  # type: ignore[arg-type]
+            ranked_data["question"].append(_cleanup_text(text=question))
+            ranked_data["preferred_response"].append(
+                _cleanup_text(
+                    text=response_1["answer"],  # type: ignore[arg-type]
+                    remove_prompt=True,
+                ),
+            )
+            ranked_data["rejected_response"].append(
+                _cleanup_text(
+                    text=response_2["answer"],  # type: ignore[arg-type]
+                    remove_prompt=True,
+                ),
+            )
             # Margin the the exponential of the difference in confidence scores. This
             ranked_data["margin"].append(
                 exp(response_1["confidence"] - response_2["confidence"]),  # type: ignore[arg-type,operator]
