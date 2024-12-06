@@ -184,6 +184,7 @@ class PPORLTrainer(BaseModelTrainer):
             save_total_limit=self.save_total_limit,
             load_best_model_at_end=self.load_best_model_at_end,
             num_ppo_epochs=int(self.num_train_epochs),
+            num_train_epochs=self.num_train_epochs,
             whiten_rewards=self.normalise_rewards,
             kl_coef=self.kl_coefficient,
             cliprange=self.ppo_clipping_range,
