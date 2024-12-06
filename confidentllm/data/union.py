@@ -136,4 +136,7 @@ def load_union_data(  # noqa: PLR0913
 
         datasets.append(dataset)
 
-    return concatenate_datasets(datasets)
+    union_dataset = concatenate_datasets(datasets)
+    union_dataset.cached_version = datasets[0].cached_version  # type: ignore[attr-defined]
+
+    return union_dataset
