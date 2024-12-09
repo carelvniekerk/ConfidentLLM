@@ -47,6 +47,44 @@ class Table(TypedDict):
     data: list[list[str | float]]
 
 
+def _remove_prompt(text: str) -> str:
+    """Remove the prompt from the text."""
+    sentences: list[str] = [sentence for sentence in text.split(".") if sentence]
+    sentences = sentences[:-1]
+
+    text = ""
+    for sentence in sentences:
+        if sentence[0] == " ":
+            sentence = sentence[1:]  # noqa: PLW2901
+        if sentence[-1] == " ":
+            sentence = sentence[:-1]  # noqa: PLW2901
+        sentence = sentence.strip()  # noqa: PLW2901
+        text += sentence + ". " if sentence else ""
+
+    if not text:
+        return text
+    if text[-1] == " ":
+        text = text[:-1]
+    text += "." if text[-1] not in [".", "?", "!"] else ""
+
+    return text
+
+
+def _cleanup_text(text: str, *, remove_prompt: bool = False) -> str:
+    """Clean up the text by removing the prompt."""
+    if remove_prompt:
+        text = _remove_prompt(text)
+
+    if not text:
+        return text
+
+    if text[0] == " ":
+        text = text[1:]
+    if text[-1] == " ":
+        text = text[:-1]
+    return text.strip()
+
+
 def _load_run(path: str, run_name: str) -> Run:
     """Load a run from the Weights and Biases API."""
     api = wandb.Api()
@@ -146,9 +184,23 @@ def _rank_data(
         for response_2 in response_data:
             if response_1["confidence"] <= response_2["confidence"]:  # type: ignore[operator]
                 continue
+
+            preferred_response = _cleanup_text(
+                text=response_1["answer"],  # type: ignore[arg-type]
+                remove_prompt=True,
+            )
+            if not preferred_response:
+                continue
+            rejected_response = _cleanup_text(
+                text=response_2["answer"],  # type: ignore[arg-type]
+                remove_prompt=True,
+            )
+            if not rejected_response:
+                continue
+
             ranked_data["question"].append(question)
-            ranked_data["preferred_response"].append(response_1["answer"])  # type: ignore[arg-type]
-            ranked_data["rejected_response"].append(response_2["answer"])  # type: ignore[arg-type]
+            ranked_data["preferred_response"].append(preferred_response)
+            ranked_data["rejected_response"].append(rejected_response)
             # Margin the the exponential of the difference in confidence scores. This
             ranked_data["margin"].append(
                 exp(response_1["confidence"] - response_2["confidence"]),  # type: ignore[arg-type,operator]
@@ -166,11 +218,16 @@ def _process_data(table: Table, ranking_threshold: float) -> Dataset:
         "margin": [],
     }
     for question, response_data in _reformat_table(table).items():
+        question = _cleanup_text(text=question)  # noqa: PLW2901
+        if not question:
+            continue
         ranked_data: dict[str, list[str]] = _rank_data(
             question=question,
             response_data=response_data,  # type: ignore[arg-type]
             threshold=ranking_threshold,
         )
+        if not ranked_data["question"]:
+            continue
         preference_data["question"].extend(ranked_data["question"])
         preference_data["preferred_response"].extend(
             ranked_data["preferred_response"],

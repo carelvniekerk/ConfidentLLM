@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "confidentllm"
-version = "0.1.0"
+version = "0.2.0"
 description = "Evaluate the confidence of various LLM models using different confidence methods and generation techniques."
 authors = ["Carel van Niekerk <cvanniekerk@hhu.de>"]
 license = "Apache2.0"
