@@ -216,6 +216,10 @@ class PPORLTrainer(BaseModelTrainer):
         """Set the reward model."""
         self.reward_model = model
 
+    def set_value_model(self, model: PreTrainedModel) -> None:
+        """Set the value model."""
+        self.value_model = model
+
     def _set_trainer(self) -> None:
         if self.model is None:
             raise ModelNotSetError(self.model)
@@ -223,6 +227,8 @@ class PPORLTrainer(BaseModelTrainer):
             raise ModelNotSetError(self.reward_model)
         if self.reference_model is None:
             raise ModelNotSetError(self.reference_model)
+        if self.value_model is None:
+            raise ModelNotSetError(self.value_model)
         if self.tokenizer is None:
             raise TokenizerNotSetError(self.tokenizer)
 
@@ -239,7 +245,7 @@ class PPORLTrainer(BaseModelTrainer):
             processing_class=self.tokenizer,
             config=self._get_trainer_config(),
             reward_model=self.reward_model,
-            value_model=self.reward_model,
+            value_model=self.value_model,
             train_dataset=self.train_dataset,
             eval_dataset=self.eval_dataset,
         )
