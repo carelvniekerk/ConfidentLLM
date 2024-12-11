@@ -26,9 +26,10 @@
 import logging
 from functools import partial
 from pathlib import Path
-from typing import Protocol
+from typing import Literal, Protocol
 
 import torch
+from accelerate import Accelerator
 from hydra_zen import store
 from hydra_zen.third_party.pydantic import pydantic_parser
 from peft.auto import AutoPeftModelForCausalLM, AutoPeftModelForSequenceClassification
@@ -106,7 +107,9 @@ class ModelLoader:
                 pretrained_model_name_or_path,
             )
         )
-        self.device: torch.device = torch.device(device.value)
+        self.device: torch.device | Literal["auto"] = (
+            torch.device(device.value) if device != ModelDevice.AUTO else "auto"
+        )
         self.chat_template: str | None = get_chat_template(
             pretrained_model_name_or_path,  # type: ignore[arg-type]
         )
@@ -159,7 +162,9 @@ class ModelLoader:
 
         self.model_loader: ModelLoaderFunction = partial(
             self.model_class.from_pretrained,
-            device_map=self.device,
+            device_map=self.device
+            if self.device != "auto"
+            else {"": Accelerator().local_process_index},
             torch_dtype=self.data_type,
         )  # type: ignore[assignment] # Paths can also be passed to from_pretrained
 
@@ -237,7 +242,11 @@ class ModelLoader:
 
         self._log_model_info(model)
 
-        return model.to(self.device), tokenizer  # type: ignore[arg-type]
+        # if self.device == "auto":
+        #     accelerator = Accelerator()
+        #     model = accelerator.prepare(model)
+
+        return model, tokenizer  # type: ignore[return-value]
 
 
 # Add default model loader to the store
