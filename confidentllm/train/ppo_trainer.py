@@ -50,6 +50,7 @@ class PPORLTrainer(BaseModelTrainer):
         save_total_limit: int | None = None,
         load_best_model_at_end: bool = False,
         per_device_train_batch_size: int = 8,
+        gradient_accumulation_steps: int = 4,
         num_train_epochs: float = 3.0,
         normalise_rewards: bool = True,
         kl_coefficient: float = 0.05,
@@ -61,7 +62,7 @@ class PPORLTrainer(BaseModelTrainer):
         response_length: int = 256,
         max_input_length: int = 256,
         seed: int = 42,
-        learning_rate: float = 5e-5,
+        learning_rate: float = 3e-6,
         weight_decay: float = 0,
         adam_beta1: float = 0.9,
         adam_beta2: float = 0.999,
@@ -88,6 +89,8 @@ class PPORLTrainer(BaseModelTrainer):
             load_best_model_at_end (bool, optional): Load the best model at the end.
                 Default is False.
             per_device_train_batch_size (int, optional): The batch size for training.
+                Default is 8.
+            gradient_accumulation_steps (int, optional): The gradient accumulation steps.
                 Default is 4.
             num_train_epochs (float, optional): The number of training epochs.
                 Default is 3.0.
@@ -160,6 +163,7 @@ class PPORLTrainer(BaseModelTrainer):
             fp16=fp16,
         )
 
+        self.gradient_accumulation_steps = gradient_accumulation_steps
         self.normalise_rewards = normalise_rewards
         self.kl_coefficient = kl_coefficient
         self.ppo_clipping_range = ppo_clipping_range
@@ -194,6 +198,7 @@ class PPORLTrainer(BaseModelTrainer):
             temperature=self.temperature,
             response_length=self.response_length,
             per_device_train_batch_size=self.per_device_train_batch_size,
+            gradient_accumulation_steps=self.gradient_accumulation_steps,
             seed=self.seed,
             learning_rate=self.learning_rate,
             weight_decay=self.weight_decay,
@@ -216,6 +221,10 @@ class PPORLTrainer(BaseModelTrainer):
         """Set the reward model."""
         self.reward_model = model
 
+    def set_value_model(self, model: PreTrainedModel) -> None:
+        """Set the value model."""
+        self.value_model = model
+
     def _set_trainer(self) -> None:
         if self.model is None:
             raise ModelNotSetError(self.model)
@@ -223,6 +232,8 @@ class PPORLTrainer(BaseModelTrainer):
             raise ModelNotSetError(self.reward_model)
         if self.reference_model is None:
             raise ModelNotSetError(self.reference_model)
+        if self.value_model is None:
+            raise ModelNotSetError(self.value_model)
         if self.tokenizer is None:
             raise TokenizerNotSetError(self.tokenizer)
 
@@ -239,7 +250,7 @@ class PPORLTrainer(BaseModelTrainer):
             processing_class=self.tokenizer,
             config=self._get_trainer_config(),
             reward_model=self.reward_model,
-            value_model=self.reward_model,
+            value_model=self.value_model,
             train_dataset=self.train_dataset,
             eval_dataset=self.eval_dataset,
         )

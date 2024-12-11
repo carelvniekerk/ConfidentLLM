@@ -51,8 +51,8 @@ logger = get_logger()
         "_self_",
         {"model": "train_causal_lm"},
         {"model/lora": "causal_lm"},
-        {"reward_model": "sequence_cls"},
-        {"reward_model/lora": "no_lora"},
+        {"reward_model": "train_sequence_cls"},
+        {"reward_model/lora": "sequence_cls"},
         {"train_data": "multiarith"},
         {"eval_data": "multiarith"},
         {"trainer": "ppo"},
@@ -70,7 +70,7 @@ def run_training(
     log_system_info()
     set_seed(trainer.seed)
 
-    reward_model_instance, reward_tokenizer = reward_model.load()
+    value_model, reward_tokenizer = reward_model.load()
     policy_model, policy_tokenizer = model.load()
 
     if reward_tokenizer.__class__ != policy_tokenizer.__class__:
@@ -84,12 +84,20 @@ def run_training(
     for param in policy_reference_model.parameters():
         param.requires_grad = False
 
+    reward_model.lora.active = False
+    reward_model.model_mode = ModelMode.EVAL
+    reward_model_instance, _ = reward_model.load()
+    for param in reward_model_instance.parameters():
+        param.requires_grad = False
+
     trainer.set_model(policy_model)
     trainer.set_tokenizer(policy_tokenizer)
     trainer.set_reference_model(
         model=policy_reference_model,
     )
     trainer.set_reward_model(reward_model_instance)
+    trainer.set_value_model(value_model)
+    trainer.stop_token_id = policy_tokenizer.eos_token_id  # type: ignore[attr-defined]
 
     data_preperation_function = partial(
         prepare_rl_data,
