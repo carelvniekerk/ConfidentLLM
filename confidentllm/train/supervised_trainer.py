@@ -26,13 +26,42 @@
 from pathlib import Path
 
 from hydra_zen import store
+from torch import Tensor
+from transformers.modeling_outputs import CausalLMOutput
 from trl import SFTConfig, SFTTrainer
 
 from confidentllm.generation.types import ModelNotSetError, TokenizerNotSetError
 from confidentllm.hydra_tools import builds
-from confidentllm.train.types import BaseModelTrainer, IntervalStrategy, LoggingLevel
+from confidentllm.train.types import (
+    BaseModelTrainer,
+    IntervalStrategy,
+    LoggingLevel,
+    LossFunction,
+)
 
 __all__ = ["SupervisedFinetuningTrainer"]
+
+
+def uncertainty_aware_clm_loss(
+    outputs: CausalLMOutput,
+    labels: Tensor,
+    num_items_in_batch: int | None = None,
+) -> Tensor:
+    """Uncertainty-aware loss for causal language modeling.
+
+    Args:
+    ----
+        outputs (CausalLMOutput): The model outputs.
+        labels (Tensor): The labels.
+        num_items_in_batch (int, optional): The number of items in the batch.
+            Default is None.
+
+    Returns:
+    -------
+        Tensor: The loss.
+
+    """
+    raise NotImplementedError
 
 
 class SupervisedFinetuningTrainer(BaseModelTrainer):
@@ -61,6 +90,7 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
         max_grad_norm: float = 1.0,
         warmup_ratio: float = 0.0,
         metric_for_best_model: str | None = None,
+        loss_function: LossFunction = LossFunction.DEFAULT,
         label_smoothing_factor: float = 0.0,
         bf16: bool = False,
         fp16: bool = False,
@@ -103,6 +133,8 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
                 scheduler. Default is 0.0.
             metric_for_best_model (str, optional): The metric for the best model.
                 Default is None.
+            loss_function (LossFunction, optional): The loss function.
+                Default is LossFunction.DEFAULT.
             label_smoothing_factor (float, optional): The label smoothing factor.
                 Default is 0.0.
             bf16 (bool, optional): Use bfloat16 precision. Default is False.
@@ -132,6 +164,7 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
             max_grad_norm=max_grad_norm,
             warmup_ratio=warmup_ratio,
             metric_for_best_model=metric_for_best_model,
+            loss_function=loss_function,
             label_smoothing_factor=label_smoothing_factor,
             bf16=bf16,
             fp16=fp16,
@@ -192,6 +225,12 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
             args=self._get_trainer_config(),
             train_dataset=self.train_dataset,
             eval_dataset=self.eval_dataset,
+        )
+
+        self.trainer.compute_loss_func = (
+            uncertainty_aware_clm_loss
+            if self.loss_function == LossFunction.UA_CLM
+            else None
         )
 
 
