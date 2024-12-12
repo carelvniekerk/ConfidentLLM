@@ -25,8 +25,8 @@
 
 from pathlib import Path
 
+import torch
 from hydra_zen import store
-from torch import Tensor
 from transformers.modeling_outputs import CausalLMOutput
 from trl import SFTConfig, SFTTrainer
 
@@ -44,9 +44,9 @@ __all__ = ["SupervisedFinetuningTrainer"]
 
 def uncertainty_aware_clm_loss(
     outputs: CausalLMOutput,
-    labels: Tensor,
-    num_items_in_batch: int | None = None,
-) -> Tensor:
+    labels: torch.Tensor,
+    num_items_in_batch: int | None = None,  # noqa: ARG001
+) -> torch.Tensor:
     """Uncertainty-aware loss for causal language modeling.
 
     Args:
@@ -61,7 +61,61 @@ def uncertainty_aware_clm_loss(
         Tensor: The loss.
 
     """
-    raise NotImplementedError
+    greedy_predictions: torch.Tensor = torch.argmax(outputs.logits, dim=-1)
+    prediction_probabilities: torch.Tensor = torch.nn.functional.softmax(
+        input=outputs.logits,
+        dim=-1,
+    )
+    prediction_probabilities = torch.gather(
+        prediction_probabilities,
+        dim=-1,
+        index=labels.unsqueeze(dim=-1),
+    )
+
+    correct_predictions: tuple[torch.Tensor, ...] = torch.where(
+        condition=greedy_predictions == labels,
+    )
+    incorrect_predictions: tuple[torch.Tensor, ...] = torch.where(
+        condition=greedy_predictions != labels,
+    )
+
+    log_probabilities: torch.Tensor = torch.log(prediction_probabilities + 1e-8)
+    entropy: torch.Tensor = -torch.sum(
+        input=prediction_probabilities * log_probabilities,
+        dim=-1,
+    )
+
+    correct_prediction_probabilities: torch.Tensor = prediction_probabilities[
+        correct_predictions[0],
+        correct_predictions[1],
+    ]
+    correct_prediction_entropy: torch.Tensor = entropy[
+        correct_predictions[0],
+        correct_predictions[1],
+    ]
+    correct_prediction_loss_term: torch.Tensor = -torch.sum(
+        input=correct_prediction_probabilities
+        * correct_prediction_entropy.tanh().log(),
+        dim=-1,
+    )
+
+    incorrect_prediction_probabilities: torch.Tensor = prediction_probabilities[
+        incorrect_predictions[0],
+        incorrect_predictions[1],
+    ]
+    incorrect_prediction_entropy: torch.Tensor = entropy[
+        incorrect_predictions[0],
+        incorrect_predictions[1],
+    ]
+    incorrect_prediction_loss_term: torch.Tensor = -torch.sum(
+        input=incorrect_prediction_probabilities
+        * incorrect_prediction_entropy.tanh().log(),
+        dim=-1,
+    )
+
+    loss: torch.Tensor = correct_prediction_loss_term + incorrect_prediction_loss_term
+
+    return loss.mean()
 
 
 class SupervisedFinetuningTrainer(BaseModelTrainer):
