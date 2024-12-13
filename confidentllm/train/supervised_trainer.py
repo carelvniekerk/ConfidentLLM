@@ -46,6 +46,7 @@ def _uncertainty_aware_clm_loss(
     outputs: CausalLMOutput,
     labels: torch.Tensor,
     num_items_in_batch: int | None = None,  # noqa: ARG001
+    ignore_index: int = -100,
 ) -> torch.Tensor:
     """Uncertainty-aware loss for causal language modeling.
 
@@ -61,9 +62,13 @@ def _uncertainty_aware_clm_loss(
         Tensor: The loss.
 
     """
-    greedy_predictions: torch.Tensor = torch.argmax(outputs.logits, dim=-1)
+    logits: torch.Tensor = outputs.logits
+    logits = logits[labels[:, 0] != ignore_index]
+    labels = labels[labels[:, 0] != ignore_index]
+
+    greedy_predictions: torch.Tensor = torch.argmax(logits, dim=-1)
     predictive_distributions: torch.Tensor = torch.softmax(
-        input=outputs.logits,
+        input=logits,
         dim=-1,
     )
     label_probabilities: torch.Tensor = torch.gather(
