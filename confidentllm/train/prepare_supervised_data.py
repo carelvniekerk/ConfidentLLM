@@ -48,6 +48,9 @@ def prepare_supervised_data(
     data: dict[str, list[str]],
 ) -> dict[str, list[list[dict[str, str]]]]:
     """Tokenize the input strings and return the tokenized data."""
+    answer_key: str = "preferred_response"
+    if answer_key not in data:
+        answer_key = "answer"
     conversations: ChatConversation = ChatConversation(
         messages=[
             [
@@ -56,7 +59,7 @@ def prepare_supervised_data(
             ]
             for question, response in zip(
                 data["question"],
-                data["preferred_response"],
+                data[answer_key],
                 strict=True,
             )
         ],
