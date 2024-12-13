@@ -62,13 +62,12 @@ def _uncertainty_aware_clm_loss(
         Tensor: The loss.
 
     """
-    logits: torch.Tensor = outputs.logits
-    logits = logits[labels[:, 0] != ignore_index]
-    labels = labels[labels[:, 0] != ignore_index]
+    ignore_indices: torch.Tensor = labels == ignore_index
+    labels[ignore_indices] = 0
 
-    greedy_predictions: torch.Tensor = torch.argmax(logits, dim=-1)
+    greedy_predictions: torch.Tensor = torch.argmax(outputs.logits, dim=-1)
     predictive_distributions: torch.Tensor = torch.softmax(
-        input=logits,
+        input=outputs.logits,
         dim=-1,
     )
     label_probabilities: torch.Tensor = torch.gather(
@@ -93,12 +92,22 @@ def _uncertainty_aware_clm_loss(
     correct_prediction_loss_term: torch.Tensor = 1 - label_probabilities
     correct_prediction_loss_term *= (1 - entropy.tanh() + 1e-8).log()
     correct_prediction_loss_term[incorrect_predictions[0], incorrect_predictions[1]] = 0
+    correct_prediction_loss_term[ignore_indices] = 0
+    num_correct_predictions: torch.Tensor = correct_prediction_loss_term != 0
+    num_correct_predictions = num_correct_predictions.sum(dim=-1)
+    num_correct_predictions[num_correct_predictions == 0] = 1
     correct_prediction_loss_term = -correct_prediction_loss_term.sum(dim=-1)
+    correct_prediction_loss_term /= num_correct_predictions
 
     incorrect_prediction_loss_term: torch.Tensor = label_probabilities
     incorrect_prediction_loss_term *= (entropy.tanh() + 1e-8).log()
     incorrect_prediction_loss_term[correct_predictions[0], correct_predictions[1]] = 0
+    incorrect_prediction_loss_term[ignore_indices] = 0
+    num_incorrect_predictions: torch.Tensor = incorrect_prediction_loss_term != 0
+    num_incorrect_predictions = num_incorrect_predictions.sum(dim=-1)
+    num_incorrect_predictions[num_incorrect_predictions == 0] = 1
     incorrect_prediction_loss_term = -incorrect_prediction_loss_term.sum(dim=-1)
+    incorrect_prediction_loss_term /= num_incorrect_predictions
 
     loss: torch.Tensor = correct_prediction_loss_term + incorrect_prediction_loss_term
 
