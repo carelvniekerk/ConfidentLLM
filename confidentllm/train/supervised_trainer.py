@@ -56,6 +56,8 @@ def _uncertainty_aware_clm_loss(
         labels (Tensor): The labels.
         num_items_in_batch (int, optional): The number of items in the batch.
             Default is None.
+        ignore_index (int, optional): The index to ignore.
+            Default is -100.
 
     Returns:
     -------
@@ -70,11 +72,7 @@ def _uncertainty_aware_clm_loss(
         input=outputs.logits,
         dim=-1,
     )
-    label_probabilities: torch.Tensor = torch.gather(
-        input=predictive_distributions,
-        dim=-1,
-        index=labels.unsqueeze(dim=-1),
-    ).squeeze(dim=-1)
+    prediction_probabilities: torch.Tensor = predictive_distributions.max(dim=-1).values
 
     correct_predictions: tuple[torch.Tensor, ...] = torch.where(
         condition=greedy_predictions == labels,
@@ -89,7 +87,7 @@ def _uncertainty_aware_clm_loss(
         dim=-1,
     )
 
-    correct_prediction_loss_term: torch.Tensor = 1 - label_probabilities
+    correct_prediction_loss_term: torch.Tensor = 1 - prediction_probabilities
     correct_prediction_loss_term *= (1 - entropy.tanh() + 1e-8).log()
     correct_prediction_loss_term[incorrect_predictions[0], incorrect_predictions[1]] = 0
     correct_prediction_loss_term[ignore_indices] = 0
@@ -99,7 +97,7 @@ def _uncertainty_aware_clm_loss(
     correct_prediction_loss_term = -correct_prediction_loss_term.sum(dim=-1)
     correct_prediction_loss_term /= num_correct_predictions
 
-    incorrect_prediction_loss_term: torch.Tensor = label_probabilities
+    incorrect_prediction_loss_term: torch.Tensor = prediction_probabilities
     incorrect_prediction_loss_term *= (entropy.tanh() + 1e-8).log()
     incorrect_prediction_loss_term[correct_predictions[0], correct_predictions[1]] = 0
     incorrect_prediction_loss_term[ignore_indices] = 0

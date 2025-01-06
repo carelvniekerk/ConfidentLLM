@@ -1,9 +1,9 @@
 # Pyenv environment
 .python-version
 
-# Poetry virtual environment
+# UV virtual environment
 .venv
-poetry.lock
+uv.lock
 
 # Hydra generated dirs
 multirun
