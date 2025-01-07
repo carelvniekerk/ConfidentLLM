@@ -74,10 +74,10 @@ def _uncertainty_aware_clm_loss(
     )
     prediction_probabilities: torch.Tensor = predictive_distributions.max(dim=-1).values
 
-    correct_predictions: tuple[torch.Tensor, ...] = torch.where(
+    correct_predictions: tuple[torch.Tensor, ...] | list[torch.Tensor] = torch.where(
         condition=greedy_predictions == labels,
     )
-    incorrect_predictions: tuple[torch.Tensor, ...] = torch.where(
+    incorrect_predictions: tuple[torch.Tensor, ...] | list[torch.Tensor] = torch.where(
         condition=greedy_predictions != labels,
     )
 
@@ -130,13 +130,13 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
         gradient_accumulation_steps: int = 1,
         num_train_epochs: float = 3.0,
         seed: int = 42,
-        learning_rate: float = 5e-5,
-        weight_decay: float = 0,
+        learning_rate: float = 1e-4,
+        weight_decay: float = 0.001,
         adam_beta1: float = 0.9,
         adam_beta2: float = 0.999,
         adam_epsilon: float = 1e-8,
         max_grad_norm: float = 1.0,
-        warmup_ratio: float = 0.0,
+        warmup_ratio: float = 0.03,
         metric_for_best_model: str | None = None,
         loss_function: LossFunction = LossFunction.DEFAULT,
         label_smoothing_factor: float = 0.0,
