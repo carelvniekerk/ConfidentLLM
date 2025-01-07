@@ -9,9 +9,9 @@ hpc_jobs
 # VS Code settings
 .vscode
 
-# Poetry virtual environment
+# UV virtual environment
 .venv
-poetry.lock
+uv.lock
 
 # Python cache
 __pycache__

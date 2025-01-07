@@ -1,53 +1,47 @@
-[tool.poetry]
+[project]
 name = "confidentllm"
 version = "0.2.0"
 description = "Evaluate the confidence of various LLM models using different confidence methods and generation techniques."
-authors = ["Carel van Niekerk <cvanniekerk@hhu.de>"]
-license = "Apache2.0"
+authors = [{ name = "Carel van Niekerk", email = "cvanniekerk@hhu.de" }]
 readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "accelerate >= 0.34",
+    "colorlog >= 6.8",
+    "datasets >= 2.20",
+    "hydra-zen >= 0.13",
+    "matplotlib >= 3.9.1",
+    "numpy >= 2",
+    "pandas >= 2.2.2",
+    "pandas-stubs >= 2.2.2.240807",
+    "peft >= 0.13.2",
+    "pydantic >= 2.8.2",
+    "sentencepiece >= 0.2.0",
+    "torch >= 2.4.0",
+    "transformers < 4.47",
+    "trl >= 0.12.0",
+    "tqdm >= 4.66.0",
+    "types-tqdm >= 4.66.0.20240417",
+    "wandb >= 0.17",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-accelerate = ">=0.34"
-colorlog = "^6.8"
-datasets = "^2.20"
-hydra-zen = "^0.13"
-matplotlib = "^3.9.1"
-pandas = "^2.2.2"
-pandas-stubs = "^2.2.2.240807"
-peft = "^0.13.2"
-pydantic = "^2.8.2"
-sentencepiece = "^0.2.0"
-# Torch versioning:
-# Specific version for macOS with x86_64 architecture and latest version for other platforms
+[dependency-groups]
+dev = ["pytest >= 8", "pytest-cov >= 6"]
+
+[tool.uv]
+default-groups = []
+
+# Specify the torch version for x86_64 macOS
+[tool.uv.sources]
 torch = [
-    { version = "==2.2.2", markers = "platform_machine == 'x86_64' and platform_system == 'Darwin'" },
-    { version = "<2.4", markers = "platform_machine != 'x86_64' or platform_system != 'Darwin'" },
-    { version = "*", markers = "platform_machine != 'x86_64' or platform_system == 'Darwin'" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.2.0-cp312-none-macosx_10_9_x86_64.whl", marker = "sys_platform == 'darwin' and platform_machine == 'x86_64'" },
 ]
-# Numpy versioning:
-# Specific version for macOS with x86_64 architecture and latest version for other platforms
 numpy = [
-    { version = "<2", markers = "platform_machine == 'x86_64' and platform_system == 'Darwin'" },
-    { version = "*", markers = "platform_machine != 'x86_64' or platform_system != 'Darwin'" },
+    { url = "https://files.pythonhosted.org/packages/95/12/8f2020a8e8b8383ac0177dc9570aad031a3beb12e38847f7129bacd96228/numpy-1.26.4-cp312-cp312-macosx_10_9_x86_64.whl", marker = "sys_platform == 'darwin' and platform_machine == 'x86_64'" },
 ]
-transformers = "<4.47"
-trl = "^0.12.0"
-tqdm = "^4.66.0"
-types-tqdm = "^4.66.0.20240417"
-wandb = "^0.17"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8"
-pytest-cov = "^5.0"
-
-# Use HHU PyPI repository (Needed for HPC)
-[[tool.poetry.source]]
-name = "hhu"
-url = "http://pypi.repo.test.hhu.de/simple/"
 
 # Script entry points for various tasks (e.g. question answering)
-[tool.poetry.scripts]
+[project.scripts]
 download-and-sync = "confidentllm.scripts:download_and_sync"
 dpo-training = "confidentllm.scripts:dpo_training"
 mathematical-reasoning = "confidentllm.scripts:mathematical_reasoning"
@@ -57,6 +51,10 @@ reporting = "confidentllm.scripts:reporting"
 reward-model-training = "confidentllm.scripts:reward_model_training"
 supervised-finetuning = "confidentllm.scripts:supervised_finetuning"
 tests = "pytest:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 # Configuration for Pytest
 [tool.pytest.ini_options]
@@ -75,15 +73,12 @@ python_version = "3.12"
 [[tool.mypy.overrides]]
 module = [
     "datasets",
-    "hydra-zen",
+    "hydra_zen",
     "peft",
-    "peft.mapping",
-    "peft.peft_models",
-    "peft.utils.peft_types",
+    "peft.*",
     "torch",
     "transformers",
-    "transformers.generation",
-    "transformers.tokenization_utils_base",
+    "transformers.*",
     "trl",
 ]
 ignore_missing_imports = true
