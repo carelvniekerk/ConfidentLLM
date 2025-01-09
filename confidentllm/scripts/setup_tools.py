@@ -24,21 +24,22 @@
 """Runner for question answering using the ConfidentLLM package."""
 
 import logging
+import os
+import platform
 import random
 import socket
-import subprocess
 import sys
 from pathlib import Path
 
 import numpy as np
 import torch
 import transformers
-import wandb
 from git import Repo
 from hydra.conf import HydraConf, JobConf, RunDir, SweepDir
 from hydra_zen import store
 from omegaconf import DictConfig, OmegaConf
 
+import wandb
 from confidentllm.hydra_tools import resolve_generation_method, resolve_output_processor
 from confidentllm.logging import (
     create_logging_config,
@@ -50,11 +51,11 @@ from hydra_plugins.hpc_submission_launcher import (
 )
 
 __all__ = [
-    "setup_hydra_config_and_logging",
-    "init_wandb",
-    "set_seed",
     "get_logger",
+    "init_wandb",
     "log_system_info",
+    "set_seed",
+    "setup_hydra_config_and_logging",
 ]
 logger = logging.getLogger("__main__")
 
@@ -240,28 +241,37 @@ def _log_python_env_info() -> None:
     except Exception:  # noqa: BLE001 - We want to proceed no matter what the error is
         logger.info(msg="Unable to determine Python version/path")
 
-    # Check Poetry environment
     try:
-        result = subprocess.run(
-            args=[
-                "poetry",
-                "env",
-                "info",
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if result.returncode == 0:
-            env_info: str = result.stdout.strip()
-            logging.info(
-                msg=f"Poetry environment:\n{env_info}",  # noqa: G004 - low overhead
-            )
-        else:
-            logging.info(
-                msg="Not running in a Poetry environment",
-            )
-    except Exception:  # noqa: BLE001 - We want to proceed no matter what the error is
+        # Virtualenv Section
+        python_version = sys.version.split()[0]
+        implementation = platform.python_implementation()
+        executable = Path(sys.executable)
+        venv_path = executable.parent.parent if "VIRTUAL_ENV" in os.environ else None
+        valid_venv = bool(venv_path and (venv_path / "bin" / "python").exists())
+
+        logging.info("Virtualenv")
+        logging.info(f"Python:         {python_version}")  # noqa: G004
+        logging.info(f"Implementation: {implementation}")  # noqa: G004
         logging.info(
-            msg="Unable to determine Poetry environment",
+            f"Path:           {venv_path if venv_path else 'Not in a virtual environment'}"  # noqa: G004
         )
+        logging.info(f"Executable:     {executable}")  # noqa: G004
+        logging.info(f"Valid:          {valid_venv}")  # noqa: G004
+
+        # Base Section
+        base_path = Path(sys.base_prefix)
+        platform_name = platform.system().lower()
+        os_type = os.name
+        base_executable = base_path / "bin" / f"python{python_version[:3]}"
+        if not base_executable.exists():
+            base_executable = sys.base_exec_prefix
+
+        logging.info("\nBase")
+        logging.info(f"Platform:   {platform_name}")  # noqa: G004
+        logging.info(f"OS:         {os_type}")  # noqa: G004
+        logging.info(f"Python:     {python_version}")  # noqa: G004
+        logging.info(f"Path:       {base_path}")  # noqa: G004
+        logging.info(f"Executable: {base_executable}")  # noqa: G004
+
+    except Exception:
+        logging.exception("Error logging environment info.")

@@ -8,10 +8,10 @@
 
 ## Installation
 
-Install Python 3.12 and Poetry, then run:
+Install UV, then run:
 
 ```bash
-poetry install
+uv sync
 ```
 
 ## Usage
@@ -19,13 +19,13 @@ poetry install
 Run the following command to download models and data:
 
 ```bash
-poetry run download-and-sync model.pretrained_model_name_or_path=MODELNAME data=DATASETNAME data.split=DATASETSPLIT
+uv run download-and-sync model.pretrained_model_name_or_path=MODELNAME data=DATASETNAME data.split=DATASETSPLIT
 ```
 
 Run the following command to evaluate models in QA tasks:
 
 ```bash
-poetry run question-answering model.pretrained_model_name_or_path=MODELNAME data=DATASETNAME data.split=DATASETSPLIT generation_method/generator/decoding_strategy=GENERATIONMETHOD generation_method.generator.decoding_strategy.param=PARAM
+uv run question-answering model.pretrained_model_name_or_path=MODELNAME data=DATASETNAME data.split=DATASETSPLIT generation_method/generator/decoding_strategy=GENERATIONMETHOD generation_method.generator.decoding_strategy.param=PARAM
 ```
 
 ## Models
