@@ -26,6 +26,7 @@
 from pathlib import Path
 
 from hydra_zen import store
+from peft.tuners.lora.config import LoraConfig
 from transformers import PreTrainedModel
 from trl import PPOConfig, PPOTrainer
 
@@ -213,9 +214,14 @@ class PPORLTrainer(BaseModelTrainer):
         )
         return config
 
-    def set_reference_model(self, model: PreTrainedModel) -> None:
+    def set_reference_model(
+        self,
+        model: PreTrainedModel | None,
+        peft_config: LoraConfig | None = None,
+    ) -> None:
         """Set the model for reference."""
-        self.reference_model = model
+        self.reference_model: PreTrainedModel | None = model
+        self.peft_config: LoraConfig | None = peft_config
 
     def set_reward_model(self, model: PreTrainedModel) -> None:
         """Set the reward model."""
@@ -230,8 +236,6 @@ class PPORLTrainer(BaseModelTrainer):
             raise ModelNotSetError(self.model)
         if self.reward_model is None:
             raise ModelNotSetError(self.reward_model)
-        if self.reference_model is None:
-            raise ModelNotSetError(self.reference_model)
         if self.value_model is None:
             raise ModelNotSetError(self.value_model)
         if self.tokenizer is None:
@@ -245,10 +249,10 @@ class PPORLTrainer(BaseModelTrainer):
             self.eval_steps = 0
 
         self.trainer: PPOTrainer = PPOTrainer(
-            policy=self.model,
-            ref_policy=self.reference_model,
+            model=self.model,
+            ref_model=self.reference_model,
             processing_class=self.tokenizer,
-            config=self._get_trainer_config(),
+            args=self._get_trainer_config(),
             reward_model=self.reward_model,
             value_model=self.value_model,
             train_dataset=self.train_dataset,

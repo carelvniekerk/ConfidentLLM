@@ -28,6 +28,8 @@ from pprint import pformat
 
 from datasets import Dataset
 from hydra_zen import store, zen
+from peft.tuners.lora.config import LoraConfig
+from transformers import PreTrainedModel
 
 from confidentllm import data  # noqa: F401
 from confidentllm.models import ModelLoader
@@ -78,11 +80,17 @@ def run_training(
 
     # Disable Lora setup and set model mode to EVAL to load a reference model version of
     # the model. Further disable gradient computation for the reference model.
-    model.lora.active = False
-    model.model_mode = ModelMode.EVAL
-    policy_reference_model, _ = model.load()
-    for param in policy_reference_model.parameters():
-        param.requires_grad = False
+    if model.lora.active:
+        # peft_config: LoraConfig | None = model.lora._get_lora_config_object()  # noqa: SLF001
+        model.model_mode = ModelMode.EVAL
+        policy_reference_model: PreTrainedModel | None = None
+    else:
+        # peft_config = None
+        model.lora.active = False
+        model.model_mode = ModelMode.EVAL
+        policy_reference_model, _ = model.load()
+        for param in policy_reference_model.parameters():
+            param.requires_grad = False
 
     reward_model.lora.active = False
     reward_model.model_mode = ModelMode.EVAL
@@ -94,6 +102,7 @@ def run_training(
     trainer.set_tokenizer(policy_tokenizer)
     trainer.set_reference_model(
         model=policy_reference_model,
+        # peft_config=peft_config,
     )
     trainer.set_reward_model(reward_model_instance)
     trainer.set_value_model(value_model)
