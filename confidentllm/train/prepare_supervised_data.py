@@ -46,6 +46,8 @@ def _cleanup_response(response: str) -> str:
 
 def prepare_supervised_data(
     data: dict[str, list[str]],
+    tokenizer: PreTrainedTokenizer,
+    max_length: int = 256,
 ) -> dict[str, list[list[dict[str, str]]]]:
     """Tokenize the input strings and return the tokenized data."""
     answer_key: str = "preferred_response"
@@ -64,5 +66,9 @@ def prepare_supervised_data(
             )
         ],
     )
+
+    import pdb
+
+    pdb.set_trace()
 
     return {"messages": list(conversations)}
