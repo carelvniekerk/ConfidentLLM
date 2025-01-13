@@ -48,7 +48,7 @@ def prepare_supervised_data(
     data: dict[str, list[str]],
     tokenizer: PreTrainedTokenizer,
     max_length: int = 256,
-) -> dict[str, list[list[dict[str, str]]]]:
+) -> dict[str, torch.Tensor]:
     """Tokenize the input strings and return the tokenized data."""
     answer_key: str = "preferred_response"
     if answer_key not in data:
@@ -57,18 +57,37 @@ def prepare_supervised_data(
         messages=[
             [
                 ChatUserMessage(question),
-                ChatAssistantMessage(_cleanup_response(response)),
             ]
-            for question, response in zip(
-                data["question"],
-                data[answer_key],
-                strict=True,
-            )
+            for question in data["question"]
         ],
     )
 
-    import pdb
+    conversations_features: BatchEncoding = tokenizer.apply_chat_template(
+        conversation=list(conversations),
+        add_generation_prompt=True,
+        return_tensors=TensorType.PYTORCH,
+        return_dict=True,
+        padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
+        truncation=True,
+        max_length=max_length,
+    )
 
-    pdb.set_trace()
+    return_dict: dict[str, torch.Tensor] = {
+        "input_ids": conversations_features.input_ids,
+        "attention_mask": conversations_features.attention_mask,
+    }
 
-    return {"messages": list(conversations)}
+    tokenizer.padding_side = "right"
+    answer_features: BatchEncoding = tokenizer(
+        data[answer_key],
+        add_special_tokens=True,
+        return_tensors=TensorType.PYTORCH,
+        padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
+        truncation=True,
+        max_length=max_length,
+    )
+    tokenizer.padding_side = "left"
+
+    return_dict["labels"] = answer_features.input_ids
+
+    return return_dict

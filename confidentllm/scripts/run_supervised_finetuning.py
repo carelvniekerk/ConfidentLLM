@@ -70,17 +70,25 @@ def run_training(
     trainer.set_model(model_instance)
     trainer.set_tokenizer(tokenizer)
 
+    data_preparation_func = partial(
+        prepare_supervised_data,
+        tokenizer=tokenizer,
+        max_length=trainer.max_length,
+    )
+
     train_data = train_data.map(
-        function=prepare_supervised_data,
+        function=data_preparation_func,
         batched=True,
         batch_size=512,
         remove_columns=train_data.column_names,
+        load_from_cache_file=train_data.cached_version,  # type: ignore[attr-defined]
     )
     eval_data = eval_data.map(
-        function=prepare_supervised_data,
+        function=data_preparation_func,
         batched=True,
         batch_size=512,
         remove_columns=eval_data.column_names,
+        load_from_cache_file=eval_data.cached_version,  # type: ignore[attr-defined]
     )
 
     logger.info(f"Training data: {pformat(train_data.info)}")  # noqa: G004
