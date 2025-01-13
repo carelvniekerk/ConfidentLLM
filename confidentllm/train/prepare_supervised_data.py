@@ -38,6 +38,7 @@ __all__ = ["prepare_supervised_data"]
 
 def _cleanup_response(response: str) -> str:
     """Clean up the response string."""
+    response = response if response.endswith(".") else response + "."
     response = ".".join(response.split(".")[:-1])
     response = response.replace("[", "").replace("]", "").strip()
 
@@ -48,7 +49,7 @@ def prepare_supervised_data(
     data: dict[str, list[str]],
     tokenizer: PreTrainedTokenizer,
     max_length: int = 256,
-) -> dict[str, torch.Tensor]:
+) -> dict[str, list[str]]:
     """Tokenize the input strings and return the tokenized data."""
     answer_key: str = "preferred_response"
     if answer_key not in data:
@@ -57,37 +58,23 @@ def prepare_supervised_data(
         messages=[
             [
                 ChatUserMessage(question),
+                ChatAssistantMessage(_cleanup_response(answer)),
             ]
-            for question in data["question"]
+            for question, answer in zip(
+                data["question"],
+                data[answer_key],
+                strict=True,
+            )
         ],
     )
 
-    conversations_features: BatchEncoding = tokenizer.apply_chat_template(
+    conversation_strings: list[str] = tokenizer.apply_chat_template(
         conversation=list(conversations),
-        add_generation_prompt=True,
-        return_tensors=TensorType.PYTORCH,
-        return_dict=True,
+        add_generation_prompt=False,
         padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
         truncation=True,
         max_length=max_length,
+        tokenize=False,
     )
 
-    return_dict: dict[str, torch.Tensor] = {
-        "input_ids": conversations_features.input_ids,
-        "attention_mask": conversations_features.attention_mask,
-    }
-
-    tokenizer.padding_side = "right"
-    answer_features: BatchEncoding = tokenizer(
-        data[answer_key],
-        add_special_tokens=True,
-        return_tensors=TensorType.PYTORCH,
-        padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
-        truncation=True,
-        max_length=max_length,
-    )
-    tokenizer.padding_side = "left"
-
-    return_dict["labels"] = answer_features.input_ids
-
-    return return_dict
+    return {"text": conversation_strings}
