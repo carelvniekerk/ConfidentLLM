@@ -67,12 +67,11 @@ def _uncertainty_aware_clm_loss(
         Tensor: The loss.
 
     """
-    ignore_indices: torch.Tensor = labels == ignore_index
-    labels[ignore_indices] = 0
-
     # Shift labels and logits to align
     labels = labels[:, 1:]
     logits: torch.Tensor = outputs.logits[:, :-1, :]
+    ignore_indices: torch.Tensor = labels == ignore_index
+    labels[ignore_indices] = 0
 
     greedy_predictions: torch.Tensor = torch.argmax(logits, dim=-1)
     predictive_distributions: torch.Tensor = torch.softmax(
