@@ -23,10 +23,6 @@
 # limitations under the License.
 """Tokenization and data preparation for supervised finetuning."""
 
-import torch
-from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
-from transformers.tokenization_utils_base import PaddingStrategy
-
 from confidentllm.generation.types import (
     ChatAssistantMessage,
     ChatConversation,
@@ -47,9 +43,7 @@ def _cleanup_response(response: str) -> str:
 
 def prepare_supervised_data(
     data: dict[str, list[str]],
-    tokenizer: PreTrainedTokenizer,
-    max_length: int = 256,
-) -> dict[str, list[str]]:
+) -> dict[str, list[list[dict[str, str]]]]:
     """Tokenize the input strings and return the tokenized data."""
     answer_key: str = "preferred_response"
     if answer_key not in data:
@@ -68,13 +62,4 @@ def prepare_supervised_data(
         ],
     )
 
-    conversation_strings: list[str] = tokenizer.apply_chat_template(
-        conversation=list(conversations),
-        add_generation_prompt=False,
-        padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
-        truncation=True,
-        max_length=max_length,
-        tokenize=False,
-    )
-
-    return {"text": conversation_strings}
+    return {"messages": list(conversations)}

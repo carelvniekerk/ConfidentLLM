@@ -30,7 +30,10 @@ from hydra_zen import store
 from transformers.modeling_outputs import CausalLMOutput
 from trl import SFTConfig, SFTTrainer
 
-from confidentllm.generation.types import ModelNotSetError, TokenizerNotSetError
+from confidentllm.generation.types import (
+    ModelNotSetError,
+    TokenizerNotSetError,
+)
 from confidentllm.hydra_tools import builds
 from confidentllm.train.types import (
     BaseModelTrainer,
@@ -67,9 +70,13 @@ def _uncertainty_aware_clm_loss(
     ignore_indices: torch.Tensor = labels == ignore_index
     labels[ignore_indices] = 0
 
-    greedy_predictions: torch.Tensor = torch.argmax(outputs.logits, dim=-1)
+    # Shift labels and logits to align
+    labels = labels[:, 1:]
+    logits: torch.Tensor = outputs.logits[:, :-1, :]
+
+    greedy_predictions: torch.Tensor = torch.argmax(logits, dim=-1)
     predictive_distributions: torch.Tensor = torch.softmax(
-        input=outputs.logits,
+        input=logits,
         dim=-1,
     )
     prediction_probabilities: torch.Tensor = predictive_distributions.max(dim=-1).values
@@ -266,6 +273,8 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
         if self.eval_dataset is None:
             self.eval_strategy = IntervalStrategy.NO
             self.eval_steps = 0
+
+        self.tokenizer.padding_side = "right"
 
         self.trainer: SFTTrainer = SFTTrainer(
             model=self.model,
