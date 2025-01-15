@@ -23,7 +23,6 @@
 # limitations under the License.
 """Finetune the model supervisedly."""
 
-from functools import partial
 from pprint import pformat
 
 from datasets import Dataset
@@ -75,12 +74,14 @@ def run_training(
         batched=True,
         batch_size=512,
         remove_columns=train_data.column_names,
+        load_from_cache_file=train_data.cached_version,  # type: ignore[attr-defined]
     )
     eval_data = eval_data.map(
         function=prepare_supervised_data,
         batched=True,
         batch_size=512,
         remove_columns=eval_data.column_names,
+        load_from_cache_file=eval_data.cached_version,  # type: ignore[attr-defined]
     )
 
     logger.info(f"Training data: {pformat(train_data.info)}")  # noqa: G004

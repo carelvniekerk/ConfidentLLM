@@ -35,7 +35,12 @@ from transformers import (
     TrainingArguments,
 )
 
-__all__ = ["IntervalStrategy", "LoggingLevel", "BaseModelTrainer"]
+__all__ = [
+    "BaseModelTrainer",
+    "IntervalStrategy",
+    "LoggingLevel",
+    "LossFunction",
+]
 
 
 class IntervalStrategy(StrEnum):
@@ -54,6 +59,13 @@ class LoggingLevel(StrEnum):
     WARNING = auto()
     ERROR = auto()
     CRITICAL = auto()
+
+
+class LossFunction(StrEnum):
+    """Enum class to store the loss functions of the models."""
+
+    DEFAULT = auto()
+    UA_CLM = auto()
 
 
 class BaseModelTrainer(ABC):
@@ -82,6 +94,7 @@ class BaseModelTrainer(ABC):
         max_grad_norm: float = 1.0,
         warmup_ratio: float = 0.0,
         metric_for_best_model: str | None = None,
+        loss_function: LossFunction = LossFunction.DEFAULT,
         label_smoothing_factor: float = 0.0,
         bf16: bool = False,
         fp16: bool = False,
@@ -123,6 +136,8 @@ class BaseModelTrainer(ABC):
                 scheduler. Default is 0.0.
             metric_for_best_model (str, optional): The metric for the best model.
                 Default is None.
+            loss_function (LossFunction, optional): The loss function for the model.
+                Default is LossFunction.DEFAULT.
             label_smoothing_factor (float, optional): The label smoothing factor.
                 Default is 0.0.
             bf16 (bool, optional): Use bfloat16 precision. Default is False.
@@ -165,6 +180,7 @@ class BaseModelTrainer(ABC):
 
         # Loss and evaluation metrics
         self.metric_for_best_model = metric_for_best_model
+        self.loss_function = loss_function
         self.label_smoothing_factor = label_smoothing_factor
 
         # Set the mixed precision arguments

@@ -264,7 +264,7 @@ def _log_python_env_info() -> None:
         os_type = os.name
         base_executable = base_path / "bin" / f"python{python_version[:3]}"
         if not base_executable.exists():
-            base_executable = sys.base_exec_prefix
+            base_executable = Path(sys.base_exec_prefix)
 
         logging.info("\nBase")
         logging.info(f"Platform:   {platform_name}")  # noqa: G004

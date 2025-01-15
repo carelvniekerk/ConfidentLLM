@@ -25,14 +25,97 @@
 
 from pathlib import Path
 
+import torch
 from hydra_zen import store
+from transformers.modeling_outputs import CausalLMOutput
 from trl import SFTConfig, SFTTrainer
 
-from confidentllm.generation.types import ModelNotSetError, TokenizerNotSetError
+from confidentllm.generation.types import (
+    ModelNotSetError,
+    TokenizerNotSetError,
+)
 from confidentllm.hydra_tools import builds
-from confidentllm.train.types import BaseModelTrainer, IntervalStrategy, LoggingLevel
+from confidentllm.train.types import (
+    BaseModelTrainer,
+    IntervalStrategy,
+    LoggingLevel,
+    LossFunction,
+)
 
 __all__ = ["SupervisedFinetuningTrainer"]
+
+
+def _uncertainty_aware_clm_loss(
+    outputs: CausalLMOutput,
+    labels: torch.Tensor,
+    num_items_in_batch: int | None = None,  # noqa: ARG001
+    ignore_index: int = -100,
+) -> torch.Tensor:
+    """Uncertainty-aware loss for causal language modeling.
+
+    Args:
+    ----
+        outputs (CausalLMOutput): The model outputs.
+        labels (Tensor): The labels.
+        num_items_in_batch (int, optional): The number of items in the batch.
+            Default is None.
+        ignore_index (int, optional): The index to ignore.
+            Default is -100.
+
+    Returns:
+    -------
+        Tensor: The loss.
+
+    """
+    # Shift labels and logits to align
+    labels = labels[:, 1:]
+    logits: torch.Tensor = outputs.logits[:, :-1, :]
+    ignore_indices: torch.Tensor = labels == ignore_index
+    labels[ignore_indices] = 0
+
+    greedy_predictions: torch.Tensor = torch.argmax(logits, dim=-1)
+    predictive_distributions: torch.Tensor = torch.softmax(
+        input=logits,
+        dim=-1,
+    )
+    prediction_probabilities: torch.Tensor = predictive_distributions.max(dim=-1).values
+
+    correct_predictions: tuple[torch.Tensor, ...] | list[torch.Tensor] = torch.where(
+        condition=greedy_predictions == labels,
+    )
+    incorrect_predictions: tuple[torch.Tensor, ...] | list[torch.Tensor] = torch.where(
+        condition=greedy_predictions != labels,
+    )
+
+    log_probabilities: torch.Tensor = torch.log(input=predictive_distributions + 1e-8)
+    entropy: torch.Tensor = -torch.sum(
+        input=predictive_distributions * log_probabilities,
+        dim=-1,
+    )
+
+    correct_prediction_loss_term: torch.Tensor = 1 - prediction_probabilities
+    correct_prediction_loss_term *= (1 - entropy.tanh() + 1e-8).log()
+    correct_prediction_loss_term[incorrect_predictions[0], incorrect_predictions[1]] = 0
+    correct_prediction_loss_term[ignore_indices] = 0
+    num_correct_predictions: torch.Tensor = correct_prediction_loss_term != 0
+    num_correct_predictions = num_correct_predictions.sum(dim=-1)
+    num_correct_predictions[num_correct_predictions == 0] = 1
+    correct_prediction_loss_term = -correct_prediction_loss_term.sum(dim=-1)
+    correct_prediction_loss_term /= num_correct_predictions
+
+    incorrect_prediction_loss_term: torch.Tensor = prediction_probabilities
+    incorrect_prediction_loss_term *= (entropy.tanh() + 1e-8).log()
+    incorrect_prediction_loss_term[correct_predictions[0], correct_predictions[1]] = 0
+    incorrect_prediction_loss_term[ignore_indices] = 0
+    num_incorrect_predictions: torch.Tensor = incorrect_prediction_loss_term != 0
+    num_incorrect_predictions = num_incorrect_predictions.sum(dim=-1)
+    num_incorrect_predictions[num_incorrect_predictions == 0] = 1
+    incorrect_prediction_loss_term = -incorrect_prediction_loss_term.sum(dim=-1)
+    incorrect_prediction_loss_term /= num_incorrect_predictions
+
+    loss: torch.Tensor = correct_prediction_loss_term + incorrect_prediction_loss_term
+
+    return loss.mean()
 
 
 class SupervisedFinetuningTrainer(BaseModelTrainer):
@@ -53,14 +136,15 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
         gradient_accumulation_steps: int = 1,
         num_train_epochs: float = 3.0,
         seed: int = 42,
-        learning_rate: float = 5e-5,
-        weight_decay: float = 0,
+        learning_rate: float = 1e-4,
+        weight_decay: float = 0.001,
         adam_beta1: float = 0.9,
         adam_beta2: float = 0.999,
         adam_epsilon: float = 1e-8,
         max_grad_norm: float = 1.0,
-        warmup_ratio: float = 0.0,
+        warmup_ratio: float = 0.03,
         metric_for_best_model: str | None = None,
+        loss_function: LossFunction = LossFunction.DEFAULT,
         label_smoothing_factor: float = 0.0,
         bf16: bool = False,
         fp16: bool = False,
@@ -103,6 +187,8 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
                 scheduler. Default is 0.0.
             metric_for_best_model (str, optional): The metric for the best model.
                 Default is None.
+            loss_function (LossFunction, optional): The loss function.
+                Default is LossFunction.DEFAULT.
             label_smoothing_factor (float, optional): The label smoothing factor.
                 Default is 0.0.
             bf16 (bool, optional): Use bfloat16 precision. Default is False.
@@ -132,6 +218,7 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
             max_grad_norm=max_grad_norm,
             warmup_ratio=warmup_ratio,
             metric_for_best_model=metric_for_best_model,
+            loss_function=loss_function,
             label_smoothing_factor=label_smoothing_factor,
             bf16=bf16,
             fp16=fp16,
@@ -186,12 +273,20 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
             self.eval_strategy = IntervalStrategy.NO
             self.eval_steps = 0
 
+        self.tokenizer.padding_side = "right"
+
         self.trainer: SFTTrainer = SFTTrainer(
             model=self.model,
             processing_class=self.tokenizer,
             args=self._get_trainer_config(),
             train_dataset=self.train_dataset,
             eval_dataset=self.eval_dataset,
+        )
+
+        self.trainer.compute_loss_func = (
+            _uncertainty_aware_clm_loss
+            if self.loss_function == LossFunction.UA_CLM
+            else None
         )
 
 

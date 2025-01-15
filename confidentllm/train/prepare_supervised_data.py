@@ -23,10 +23,6 @@
 # limitations under the License.
 """Tokenization and data preparation for supervised finetuning."""
 
-import torch
-from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
-from transformers.tokenization_utils_base import PaddingStrategy
-
 from confidentllm.generation.types import (
     ChatAssistantMessage,
     ChatConversation,
@@ -38,6 +34,7 @@ __all__ = ["prepare_supervised_data"]
 
 def _cleanup_response(response: str) -> str:
     """Clean up the response string."""
+    response = response if response.endswith(".") else response + "."
     response = ".".join(response.split(".")[:-1])
     response = response.replace("[", "").replace("]", "").strip()
 
@@ -48,15 +45,18 @@ def prepare_supervised_data(
     data: dict[str, list[str]],
 ) -> dict[str, list[list[dict[str, str]]]]:
     """Tokenize the input strings and return the tokenized data."""
+    answer_key: str = "preferred_response"
+    if answer_key not in data:
+        answer_key = "answer"
     conversations: ChatConversation = ChatConversation(
         messages=[
             [
                 ChatUserMessage(question),
-                ChatAssistantMessage(_cleanup_response(response)),
+                ChatAssistantMessage(_cleanup_response(answer)),
             ]
-            for question, response in zip(
+            for question, answer in zip(
                 data["question"],
-                data["preferred_response"],
+                data[answer_key],
                 strict=True,
             )
         ],
