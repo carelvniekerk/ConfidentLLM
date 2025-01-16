@@ -100,10 +100,7 @@ def run_training(
 
     trainer.set_model(policy_model)
     trainer.set_tokenizer(policy_tokenizer)
-    trainer.set_reference_model(
-        model=policy_reference_model,
-        # peft_config=peft_config,
-    )
+    trainer.set_reference_model(policy_reference_model)
     trainer.set_reward_model(reward_model_instance)
     trainer.set_value_model(value_model)
     trainer.stop_token_id = policy_tokenizer.eos_token_id  # type: ignore[attr-defined]

@@ -217,11 +217,9 @@ class PPORLTrainer(BaseModelTrainer):
     def set_reference_model(
         self,
         model: PreTrainedModel | None,
-        peft_config: LoraConfig | None = None,
     ) -> None:
         """Set the model for reference."""
         self.reference_model: PreTrainedModel | None = model
-        self.peft_config: LoraConfig | None = peft_config
 
     def set_reward_model(self, model: PreTrainedModel) -> None:
         """Set the reward model."""
