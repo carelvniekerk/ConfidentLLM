@@ -23,10 +23,11 @@
 # limitations under the License.
 """Trainer for PPO RL Finetuning."""
 
+import logging
 from pathlib import Path
+from typing import Never
 
 from hydra_zen import store
-from peft.tuners.lora.config import LoraConfig
 from transformers import PreTrainedModel
 from trl import PPOConfig, PPOTrainer
 
@@ -35,6 +36,8 @@ from confidentllm.hydra_tools import builds
 from confidentllm.train.types import BaseModelTrainer, IntervalStrategy, LoggingLevel
 
 __all__ = ["PPORLTrainer"]
+
+MIN_NORMALISATION_BATCH_SIZE: int = 8
 
 
 class PPORLTrainer(BaseModelTrainer):
@@ -174,6 +177,17 @@ class PPORLTrainer(BaseModelTrainer):
         self.temperature = temperature
         self.response_length = response_length
         self.max_input_length = max_input_length
+
+        if (
+            self.normalise_rewards
+            and self.per_device_train_batch_size < MIN_NORMALISATION_BATCH_SIZE
+        ):
+            self.normalise_rewards = False
+            msg: str = (
+                "Normalising rewards requires a batch size of at least "
+                "{MIN_NORMALISATION_BATCH_SIZE}. Setting normalise_rewards to False."
+            )
+            logging.warning(msg)
 
     def _get_trainer_config(self) -> PPOConfig:
         config = PPOConfig(
