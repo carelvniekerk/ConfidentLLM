@@ -30,7 +30,7 @@ from torch import Tensor
 from confidentllm.generation.types import ConfidenceExtractionMethod
 from confidentllm.hydra_tools import builds
 
-__all__ = ["ProbabilityDisparityConfig"]
+__all__ = ["PredictiveProbabilityConfig"]
 
 
 class PredictiveProbability(ConfidenceExtractionMethod):
@@ -80,7 +80,7 @@ class ProbabilityDisparity(PredictiveProbability):
         return disparity
 
 
-class Entropy(ConfidenceExtractionMethod):
+class Entropy(PredictiveProbability):
     """Confidence extraction method based on entropy."""
 
     def __call__(
@@ -131,7 +131,7 @@ class PredictiveEntropy(PredictiveProbability):
         next_token_probs: Tensor = super().__call__(next_token_ids, scores)
 
         predictive_probability: Tensor = torch.exp(
-            torch.log(next_token_probs + 1e-8).sum(-1)
+            torch.log(next_token_probs + 1e-8).sum(-1),
         )
 
         predictive_entropy: Tensor = -torch.sum(

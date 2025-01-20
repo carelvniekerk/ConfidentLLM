@@ -29,7 +29,7 @@ from transformers import BatchEncoding, TensorType
 from transformers.generation import GenerateDecoderOnlyOutput
 
 from confidentllm.generation.confidence_extraction_methods import (
-    ProbabilityDisparityConfig,
+    PredictiveProbabilityConfig,
 )
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
@@ -138,7 +138,7 @@ class CoTDecodingCausalLMGenerationMethod(CausalLMGenerationMethod):
 
 CoTDecodingCausalLMGenerationConfig = builds(
     CoTDecodingCausalLMGenerationMethod,
-    confidence_extraction_method=ProbabilityDisparityConfig,
+    confidence_extraction_method=None,
     num_beams=5,
 )
 

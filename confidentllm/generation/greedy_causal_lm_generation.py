@@ -29,7 +29,7 @@ from transformers import BatchEncoding, TensorType
 from transformers.generation import GenerateDecoderOnlyOutput
 
 from confidentllm.generation.confidence_extraction_methods import (
-    ProbabilityDisparityConfig,
+    PredictiveProbabilityConfig,
 )
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
@@ -105,7 +105,7 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
 
 GreedyCausalLMGenerationConfig = builds(
     GreedyCausalLMGenerationMethod,
-    confidence_extraction_method=ProbabilityDisparityConfig,
+    confidence_extraction_method=None,
 )
 
 generation_method_store = store(group="generation_method")
