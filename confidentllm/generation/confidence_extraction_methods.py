@@ -80,8 +80,79 @@ class ProbabilityDisparity(PredictiveProbability):
         return disparity
 
 
+class Entropy(ConfidenceExtractionMethod):
+    """Confidence extraction method based on entropy."""
+
+    def __call__(
+        self,
+        next_token_ids: Tensor,  # noqa: ARG002
+        scores: Tensor,
+    ) -> Tensor:
+        """Extract confidence based on entropy."""
+        log_probability: Tensor = torch.log(scores + 1e-8)
+        entropy: Tensor = -torch.sum(scores * log_probability, dim=-1)
+
+        # Normalise the entropy
+        normalisation_factor: Tensor = torch.log(torch.tensor(scores.size(-1)))
+        entropy /= normalisation_factor
+
+        return entropy
+
+
+class MeanTokenEntropy(Entropy):
+    """Confidence extraction method based on mean token entropy."""
+
+    def __call__(
+        self,
+        next_token_ids: Tensor,
+        scores: Tensor,
+    ) -> Tensor:
+        """Extract confidence based on mean token entropy."""
+        entropy: Tensor = super().__call__(next_token_ids, scores)
+
+        mean_token_entropy: Tensor = torch.mean(entropy, dim=-1)
+        mean_token_entropy = mean_token_entropy.unsqueeze(-1).repeat(1, scores.size(-2))
+
+        return mean_token_entropy
+
+
+class PredictiveEntropy(PredictiveProbability):
+    """Confidence extraction method based on mean token entropy."""
+
+    def __call__(
+        self,
+        next_token_ids: Tensor,  # noqa: ARG002
+        scores: Tensor,
+    ) -> Tensor:
+        """Extract confidence based on mean token entropy."""
+        if scores.size(0) == 1:
+            raise ValueError("Predictive entropy requires num beams > 1.")  # noqa: EM101, TRY003
+
+        next_token_probs: Tensor = super().__call__(next_token_ids, scores)
+
+        predictive_probability: Tensor = torch.exp(
+            torch.log(next_token_probs + 1e-8).sum(-1)
+        )
+
+        predictive_entropy: Tensor = -torch.sum(
+            input=predictive_probability * torch.log(predictive_probability + 1e-8),
+            dim=-1,
+        )
+
+        normalising_factor: Tensor = torch.log(torch.tensor(scores.size(0)))
+        predictive_entropy /= normalising_factor
+
+        predictive_entropy = predictive_entropy.repeat(scores.size(0))
+        predictive_entropy = predictive_entropy.unsqueeze(-1).repeat(1, scores.size(-2))
+
+        return predictive_entropy
+
+
 PredictiveProbabilityConfig = builds(PredictiveProbability)
 ProbabilityDisparityConfig = builds(ProbabilityDisparity)
+EntropyConfig = builds(Entropy)
+MeanTokenEntropyConfig = builds(MeanTokenEntropy)
+PredictiveEntropyConfig = builds(PredictiveEntropy)
 
 generation_method_store = store(group="generation_method/confidence_extraction_method")
 generation_method_store(
@@ -91,4 +162,19 @@ generation_method_store(
 generation_method_store(
     ProbabilityDisparityConfig,
     name="probability_disparity",
+)
+
+generation_method_store(
+    EntropyConfig,
+    name="entropy",
+)
+
+generation_method_store(
+    MeanTokenEntropyConfig,
+    name="mean_token_entropy",
+)
+
+generation_method_store(
+    PredictiveEntropyConfig,
+    name="predictive_entropy",
 )
