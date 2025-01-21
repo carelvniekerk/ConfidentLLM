@@ -58,6 +58,7 @@ class MathematicalReasoningRunConfig:
 
     keep_all_generation_paths: bool = False
     seed: int = 20244202
+    debug: bool = False
 
 
 class MathematicalReasoningRunner:
@@ -230,7 +231,8 @@ def run_mathematical_reasoning(  # noqa: PLR0913
     run_config: MathematicalReasoningRunConfig,
 ) -> None:
     """Run the question answering process."""
-    init_wandb()
+    if not run_config.debug:
+        init_wandb()
     log_system_info()
     set_seed(run_config.seed)
 

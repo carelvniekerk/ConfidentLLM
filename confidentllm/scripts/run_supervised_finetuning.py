@@ -23,6 +23,7 @@
 # limitations under the License.
 """Finetune the model supervisedly."""
 
+from dataclasses import dataclass
 from pprint import pformat
 
 from datasets import Dataset
@@ -43,6 +44,13 @@ __all__ = ["main"]
 logger = get_logger()
 
 
+@dataclass
+class SFTTrainingRunConfig:
+    """Configuration class for the SFT training process."""
+
+    debug: bool = False
+
+
 @store(
     name="supervised_finetuning",
     hydra_defaults=[
@@ -52,6 +60,7 @@ logger = get_logger()
         {"train_data": "cot_preference"},
         {"eval_data": "cot_preference"},
         {"trainer": "supervised_finetuning"},
+        {"run_config": "default"},
     ],
 )
 def run_training(
@@ -59,9 +68,11 @@ def run_training(
     eval_data: Dataset,
     model: ModelLoader,
     trainer: SupervisedFinetuningTrainer,
+    run_config: SFTTrainingRunConfig,
 ) -> None:
     """Run the question answering process."""
-    init_wandb()
+    if not run_config.debug:
+        init_wandb()
     log_system_info()
     set_seed(trainer.seed)
 
@@ -95,6 +106,11 @@ def run_training(
 
 def main() -> None:
     """Run the question answering process."""
+    store(
+        SFTTrainingRunConfig,
+        name="default",
+        group="run_config",
+    )
     run_function = zen(run_training)
 
     config_keys = [

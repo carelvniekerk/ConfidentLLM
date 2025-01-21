@@ -23,6 +23,7 @@
 # limitations under the License.
 """Train a reward model."""
 
+from dataclasses import dataclass
 from functools import partial
 from pprint import pformat
 
@@ -44,6 +45,13 @@ __all__ = ["main"]
 logger = get_logger()
 
 
+@dataclass
+class RewardModelTrainingRunConfig:
+    """Configuration class for the Reward Model training process."""
+
+    debug: bool = False
+
+
 @store(
     name="reward_model_training",
     hydra_defaults=[
@@ -53,6 +61,7 @@ logger = get_logger()
         {"train_data": "cot_preference"},
         {"eval_data": "cot_preference"},
         {"trainer": "reward_model"},
+        {"run_config": "default"},
     ],
 )
 def run_training(
@@ -60,9 +69,11 @@ def run_training(
     eval_data: Dataset,
     reward_model: ModelLoader,
     trainer: RewardModelTrainer,
+    run_config: RewardModelTrainingRunConfig,
 ) -> None:
     """Run the question answering process."""
-    init_wandb()
+    if not run_config.debug:
+        init_wandb()
     log_system_info()
     set_seed(trainer.seed)
 
@@ -98,6 +109,11 @@ def run_training(
 
 def main() -> None:
     """Run the question answering process."""
+    store(
+        RewardModelTrainingRunConfig,
+        name="default",
+        group="run_config",
+    )
     run_function = zen(run_training)
 
     config_keys = [

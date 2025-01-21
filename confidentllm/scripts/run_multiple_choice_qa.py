@@ -58,6 +58,7 @@ class MultipleChoiceQARunConfig:
 
     keep_all_generation_paths: bool = False
     seed: int = 20244202
+    debug: bool = False
 
 
 class MultipleChoiceQARunner:
@@ -230,7 +231,8 @@ def run_multiple_choice_qa(  # noqa: PLR0913
     run_config: MultipleChoiceQARunConfig,
 ) -> None:
     """Run the question answering process."""
-    init_wandb()
+    if not run_config.debug:
+        init_wandb()
     log_system_info()
     set_seed(run_config.seed)
 

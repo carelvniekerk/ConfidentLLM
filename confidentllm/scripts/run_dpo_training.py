@@ -23,6 +23,7 @@
 # limitations under the License.
 """Finetune a model using DPO."""
 
+from dataclasses import dataclass
 from functools import partial
 from pprint import pformat
 
@@ -44,6 +45,13 @@ __all__ = ["main"]
 logger = get_logger()
 
 
+@dataclass
+class DPOTrainingRunConfig:
+    """Configuration class for the DPO training process."""
+
+    debug: bool = False
+
+
 @store(
     name="dpo_training",
     hydra_defaults=[
@@ -53,6 +61,7 @@ logger = get_logger()
         {"train_data": "cot_preference"},
         {"eval_data": "cot_preference"},
         {"trainer": "dpo"},
+        {"run_config": "default"},
     ],
 )
 def run_training(
@@ -60,9 +69,11 @@ def run_training(
     eval_data: Dataset,
     model: ModelLoader,
     trainer: DPOTrainer,
+    run_config: DPOTrainingRunConfig,
 ) -> None:
     """Run the question answering process."""
-    init_wandb()
+    if not run_config.debug:
+        init_wandb()
     log_system_info()
     set_seed(trainer.seed)
 
@@ -102,6 +113,11 @@ def run_training(
 
 def main() -> None:
     """Run the question answering process."""
+    store(
+        DPOTrainingRunConfig,
+        name="default",
+        group="run_config",
+    )
     run_function = zen(run_training)
 
     config_keys = [

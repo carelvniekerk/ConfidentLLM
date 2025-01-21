@@ -23,6 +23,7 @@
 # limitations under the License.
 """Train a reward model."""
 
+from dataclasses import dataclass
 from functools import partial
 from pprint import pformat
 
@@ -47,6 +48,13 @@ __all__ = ["main"]
 logger = get_logger()
 
 
+@dataclass
+class PPOTrainingRunConfig:
+    """Configuration class for the PPO training process."""
+
+    debug: bool = False
+
+
 @store(
     name="ppo_training",
     hydra_defaults=[
@@ -58,6 +66,7 @@ logger = get_logger()
         {"train_data": "multiarith"},
         {"eval_data": "multiarith"},
         {"trainer": "ppo"},
+        {"run_config": "default"},
     ],
 )
 def run_training(
@@ -66,9 +75,11 @@ def run_training(
     model: ModelLoader,
     reward_model: ModelLoader,
     trainer: PPORLTrainer,
+    run_config: PPOTrainingRunConfig,
 ) -> None:
     """Run the question answering process."""
-    init_wandb()
+    if not run_config.debug:
+        init_wandb()
     log_system_info()
     set_seed(trainer.seed)
 
@@ -136,6 +147,11 @@ def run_training(
 
 def main() -> None:
     """Run the question answering process."""
+    store(
+        PPOTrainingRunConfig,
+        name="default",
+        group="run_config",
+    )
     run_function = zen(run_training)
 
     config_keys = [
