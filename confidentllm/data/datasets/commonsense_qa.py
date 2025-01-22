@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ def _commonsense_qa_map(
 ) -> dict[str, list[str]]:
     question: list[str] = examples.get("question", [])  # type: ignore[assignment]
     question = [
-        f"{question_str}\n{_format_choices(choices["text"])}"  # type: ignore[arg-type, index]
+        f"{question_str}\n{_format_choices(choices['text'])}"  # type: ignore[arg-type, index]
         for question_str, choices in zip(
             question,
             examples["choices"],  # type: ignore[call-overload]
@@ -97,6 +97,7 @@ def load_commonsense_qa_data(
         transformation_batch_size: The batch size to use for the transformation.
         name: The name of the dataset.
         use_cache: Whether to use the cache.
+        kwargs: Additional keyword arguments
 
     Returns:
     -------

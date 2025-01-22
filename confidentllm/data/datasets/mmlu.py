@@ -170,6 +170,8 @@ def load_mmlu_data(
         split: The split of the dataset to load.
         transformation_batch_size: The batch size to use for the transformation.
         name: The name of the dataset.
+        use_cache: Whether to use the cache.
+        kwargs: Additional keyword arguments
 
     Returns:
     -------
