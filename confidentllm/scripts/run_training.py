@@ -21,16 +21,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Train a reward model."""
+"""Finetune a model using DPO."""
 
-from dataclasses import dataclass
-from functools import partial
 from pprint import pformat
 
 from datasets import Dataset
 from hydra_zen import store, zen
 
-from confidentllm.data import reward_model_preprocessing
 from confidentllm.models import ModelLoader
 from confidentllm.scripts.setup_tools import (
     get_logger,
@@ -39,63 +36,53 @@ from confidentllm.scripts.setup_tools import (
     set_seed,
     setup_hydra_config_and_logging,
 )
-from confidentllm.train import RewardModelTrainer
+from confidentllm.train.types import BaseModelTrainer
 
 __all__ = ["main"]
 logger = get_logger()
 
 
-@dataclass
-class RewardModelTrainingRunConfig:
-    """Configuration class for the Reward Model training process."""
-
-    debug: bool = False
-
-
 @store(
-    name="reward_model_training",
+    name="training",
     hydra_defaults=[
         "_self_",
-        {"reward_model": "train_sequence_cls"},
-        {"reward_model/lora": "sequence_cls"},
-        {"train_data": "cot_preference"},
-        {"eval_data": "cot_preference"},
-        {"trainer": "reward_model"},
-        {"run_config": "default"},
+        {"model": "train_causal_lm"},
+        {"model/lora": "causal_lm"},
+        {"train_data": "multiarith"},
+        {"eval_data": "multiarith"},
+        {"trainer": "supervised_finetuning"},
     ],
 )
 def run_training(
     train_data: Dataset,
     eval_data: Dataset,
-    reward_model: ModelLoader,
-    trainer: RewardModelTrainer,
-    run_config: RewardModelTrainingRunConfig,
+    model: ModelLoader,
+    trainer: BaseModelTrainer,
 ) -> None:
     """Run the question answering process."""
-    if not run_config.debug:
-        init_wandb()
+    init_wandb()
     log_system_info()
     set_seed(trainer.seed)
 
-    model, tokenizer = reward_model.load()
-    trainer.set_model(model)
+    model_instance, tokenizer = model.load()
+
+    trainer.set_model(model_instance)
     trainer.set_tokenizer(tokenizer)
 
-    data_preperation_function = partial(
-        reward_model_preprocessing,
-        tokenizer=tokenizer,
-        max_length=trainer.max_length,
-        include_preference_margin=trainer.use_preference_margin,
-    )
     train_data = train_data.map(
-        function=data_preperation_function,
+        function=trainer.preprocessing_function,
         batched=True,
-        batch_size=512,
+        batch_size=2048,
+        load_from_cache_file=train_data.cached_version,  # type: ignore[attr-defined]
+        remove_columns=train_data.column_names,
     )
+
     eval_data = eval_data.map(
-        function=data_preperation_function,
+        function=trainer.preprocessing_function,
         batched=True,
-        batch_size=512,
+        batch_size=2048,
+        load_from_cache_file=eval_data.cached_version,  # type: ignore[attr-defined]
+        remove_columns=eval_data.column_names,
     )
 
     logger.info(f"Training data: {pformat(train_data.info)}")  # noqa: G004
@@ -109,28 +96,24 @@ def run_training(
 
 def main() -> None:
     """Run the question answering process."""
-    store(
-        RewardModelTrainingRunConfig,
-        name="default",
-        group="run_config",
-    )
     run_function = zen(run_training)
 
     config_keys = [
+        "resolve_target_name:${trainer}",
         "train_data.name",
-        "reward_model.pretrained_model_name_or_path",
+        "model.pretrained_model_name_or_path",
         "trainer.seed",
     ]
 
     setup_hydra_config_and_logging(
-        job_name="reward_model_training",
+        job_name="training",
         add_hpc_launcher=True,
         config_keys=config_keys,
     )
 
     # Generate the CLI for run_extraction
     run_function.hydra_main(
-        config_name="reward_model_training",
+        config_name="training",
         version_base="1.3",
     )
 

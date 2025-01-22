@@ -39,8 +39,11 @@ from hydra.conf import HydraConf, JobConf, RunDir, SweepDir
 from hydra_zen import store
 from omegaconf import DictConfig, OmegaConf
 
-import wandb
-from confidentllm.hydra_tools import resolve_generation_method, resolve_output_processor
+from confidentllm.hydra_tools import (
+    resolve_generation_method,
+    resolve_output_processor,
+    resolve_target_name,
+)
 from confidentllm.logging import (
     create_logging_config,
     initialize_wandb,
@@ -63,6 +66,7 @@ register_hpc_submission_launcher_plugin()
 
 OmegaConf.register_new_resolver("resolve_generation_method", resolve_generation_method)
 OmegaConf.register_new_resolver("resolve_output_processor", resolve_output_processor)
+OmegaConf.register_new_resolver("resolve_target_name", resolve_target_name)
 
 
 def create_run_dir(

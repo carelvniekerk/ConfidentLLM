@@ -33,6 +33,7 @@ __all__ = [
     "builds",
     "resolve_generation_method",
     "resolve_output_processor",
+    "resolve_target_name",
 ]
 
 builds: FullBuilds = make_custom_builds_fn(populate_full_signature=True)
@@ -81,3 +82,8 @@ def resolve_generation_method(generation_method: dict[str, str | int | float]) -
         gm_str = gm_str / f"{param}_{val}"
 
     return str(gm_str)
+
+
+def resolve_target_name(method: dict[str, str | int | float]) -> str:
+    """Resolve the target name."""
+    return function_path_to_name(method.get("_target_", ""))  # type: ignore[assignment]

@@ -24,13 +24,15 @@
 """Trainer for PPO RL Finetuning."""
 
 import logging
+from functools import partial
 from pathlib import Path
-from typing import Never
+from typing import Callable
 
 from hydra_zen import store
 from transformers import PreTrainedModel
 from trl import PPOConfig, PPOTrainer
 
+from confidentllm.data import rl_preprocessing
 from confidentllm.generation.types import ModelNotSetError, TokenizerNotSetError
 from confidentllm.hydra_tools import builds
 from confidentllm.train.types import BaseModelTrainer, IntervalStrategy, LoggingLevel
@@ -228,6 +230,18 @@ class PPORLTrainer(BaseModelTrainer):
             fp16=self.fp16,
         )
         return config
+
+    @property
+    def preprocessing_function(self) -> Callable[[dict], dict]:
+        """Return the preprocessing function for the dataset."""
+        if self.tokenizer is None:
+            raise TokenizerNotSetError(self.tokenizer)
+
+        return partial(
+            rl_preprocessing,
+            tokenizer=self.tokenizer,
+            max_length=self.max_input_length,
+        )
 
     def set_reference_model(
         self,

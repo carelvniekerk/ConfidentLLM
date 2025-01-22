@@ -34,6 +34,7 @@ from confidentllm.data.datasets.multi_arith import load_multi_arith_data
 from confidentllm.data.datasets.openbook_qa import load_openbook_qa_data
 from confidentllm.data.datasets.union import load_union_data
 from confidentllm.hydra_tools import builds
+from confidentllm.data.types import DatasetSplit
 
 __all__: list[str] = []
 
@@ -47,13 +48,13 @@ OpenbookQAConfig = builds(load_openbook_qa_data)
 UnionConfig = builds(load_union_data)
 
 data_store = store(group="data")
-data_store(GSM8KConfig, name="gsm8k")
-data_store(MMLUConfig, name="mmlu")
-data_store(MultiArithConfig, name="multiarith")
-data_store(CommonsenseQAConfig, name="commonsense_qa")
-data_store(ARCConfig, name="arc")
-data_store(OpenbookQAConfig, name="openbook_qa")
-data_store(UnionConfig, name="union")
+data_store(GSM8KConfig(split=DatasetSplit.TEST), name="gsm8k")
+data_store(MMLUConfig(split=DatasetSplit.TEST), name="mmlu")
+data_store(MultiArithConfig(split=DatasetSplit.TEST), name="multiarith")
+data_store(CommonsenseQAConfig(split=DatasetSplit.VALIDATION), name="commonsense_qa")
+data_store(ARCConfig(split=DatasetSplit.TEST), name="arc")
+data_store(OpenbookQAConfig(split=DatasetSplit.TEST), name="openbook_qa")
+data_store(UnionConfig(split=DatasetSplit.TEST), name="union")
 
 cot_preference_train_data = COTPreferenceDataConfig(
     run_path="dialgroup-hhu/ConfidentLLM",
@@ -66,17 +67,19 @@ eval_data_store = store(group="eval_data")
 
 train_data_store(cot_preference_train_data, name="cot_preference")
 eval_data_store(cot_preference_train_data, name="cot_preference")
-train_data_store(GSM8KConfig, name="gsm8k")
-eval_data_store(GSM8KConfig, name="gsm8k")
-train_data_store(MMLUConfig, name="mmlu")
-eval_data_store(MMLUConfig, name="mmlu")
-train_data_store(MultiArithConfig, name="multiarith")
-eval_data_store(MultiArithConfig, name="multiarith")
-train_data_store(CommonsenseQAConfig, name="commonsense_qa")
-eval_data_store(CommonsenseQAConfig, name="commonsense_qa")
-train_data_store(ARCConfig, name="arc")
-eval_data_store(ARCConfig, name="arc")
-train_data_store(OpenbookQAConfig, name="openbook_qa")
-eval_data_store(OpenbookQAConfig, name="openbook_qa")
-train_data_store(UnionConfig, name="union")
-eval_data_store(UnionConfig, name="union")
+train_data_store(GSM8KConfig(split=DatasetSplit.TRAIN), name="gsm8k")
+eval_data_store(GSM8KConfig(split=DatasetSplit.VALIDATION), name="gsm8k")
+train_data_store(MMLUConfig(split=DatasetSplit.TRAIN), name="mmlu")
+eval_data_store(MMLUConfig(split=DatasetSplit.VALIDATION), name="mmlu")
+train_data_store(MultiArithConfig(split=DatasetSplit.TRAIN), name="multiarith")
+eval_data_store(MultiArithConfig(split=DatasetSplit.TEST), name="multiarith")
+train_data_store(CommonsenseQAConfig(split=DatasetSplit.TRAIN), name="commonsense_qa")
+eval_data_store(
+    CommonsenseQAConfig(split=DatasetSplit.VALIDATION), name="commonsense_qa"
+)
+train_data_store(ARCConfig(split=DatasetSplit.TRAIN), name="arc")
+eval_data_store(ARCConfig(split=DatasetSplit.VALIDATION), name="arc")
+train_data_store(OpenbookQAConfig(split=DatasetSplit.TRAIN), name="openbook_qa")
+eval_data_store(OpenbookQAConfig(split=DatasetSplit.VALIDATION), name="openbook_qa")
+train_data_store(UnionConfig(split=DatasetSplit.TRAIN), name="union")
+eval_data_store(UnionConfig(split=DatasetSplit.VALIDATION), name="union")

@@ -23,11 +23,14 @@
 # limitations under the License.
 """Trainer for the reward model."""
 
+from functools import partial
 from pathlib import Path
+from typing import Callable
 
 from hydra_zen import store
 from trl import RewardConfig, RewardTrainer
 
+from confidentllm.data import reward_model_preprocessing
 from confidentllm.generation.types import ModelNotSetError, TokenizerNotSetError
 from confidentllm.hydra_tools import builds
 from confidentllm.train.types import BaseModelTrainer, IntervalStrategy, LoggingLevel
@@ -182,6 +185,19 @@ class RewardModelTrainer(BaseModelTrainer):
             center_rewards_coefficient=self.center_rewards_coefficient,
         )
         return config
+
+    @property
+    def preprocessing_function(self) -> Callable[[dict], dict]:
+        """Preprocessing function for the reward model."""
+        if self.tokenizer is None:
+            raise TokenizerNotSetError(self.tokenizer)
+
+        return partial(
+            reward_model_preprocessing,
+            tokenizer=self.tokenizer,
+            max_length=self.max_length,
+            include_preference_margin=self.use_preference_margin,
+        )
 
     def _set_trainer(self) -> None:
         if self.model is None:

@@ -24,12 +24,14 @@
 """Trainer for supervised finetuning."""
 
 from pathlib import Path
+from typing import Callable
 
 import torch
 from hydra_zen import store
 from transformers.modeling_outputs import CausalLMOutput
 from trl import SFTConfig, SFTTrainer
 
+from confidentllm.data import sft_preprocessing
 from confidentllm.generation.types import (
     ModelNotSetError,
     TokenizerNotSetError,
@@ -260,6 +262,11 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
             max_seq_length=self.max_length,
         )
         return config
+
+    @property
+    def preprocessing_function(self) -> Callable[[dict], dict]:
+        """Preprocessing function for the dataset."""
+        return sft_preprocessing
 
     def _set_trainer(self) -> None:
         if self.model is None:

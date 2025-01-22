@@ -24,12 +24,15 @@
 """Trainer for DPO finetuning."""
 
 from enum import StrEnum, auto
+from functools import partial
 from pathlib import Path
+from typing import Callable
 
 from hydra_zen import store
 from trl import DPOConfig, FDivergenceType
 from trl import DPOTrainer as DPOBaseTrainer
 
+from confidentllm.data import dpo_preprocessing
 from confidentllm.generation.types import ModelNotSetError, TokenizerNotSetError
 from confidentllm.hydra_tools import builds
 from confidentllm.train.types import BaseModelTrainer, IntervalStrategy, LoggingLevel
@@ -270,6 +273,18 @@ class DPOTrainer(BaseModelTrainer):
             rpo_alpha=self.rpo_alpha,
         )
         return config
+
+    @property
+    def preprocessing_function(self) -> Callable[[dict], dict]:
+        """Data preprocessing function."""
+        if self.tokenizer is None:
+            raise TokenizerNotSetError(self.tokenizer)
+
+        return partial(
+            dpo_preprocessing,
+            tokenizer=self.tokenizer,
+            max_prompt_length=self.max_prompt_length,
+        )
 
     def _set_trainer(self) -> None:
         if self.model is None:

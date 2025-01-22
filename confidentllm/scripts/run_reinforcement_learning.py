@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -21,17 +21,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Train a reward model."""
+"""Run the reinforcement learning process."""
 
-from dataclasses import dataclass
-from functools import partial
 from pprint import pformat
 
 from datasets import Dataset
 from hydra_zen import store, zen
 from transformers import PreTrainedModel
 
-from confidentllm.data import rl_preprocessing
 from confidentllm.models import ModelLoader
 from confidentllm.models.model_name_and_type import ModelMode
 from confidentllm.scripts.setup_tools import (
@@ -41,21 +38,14 @@ from confidentllm.scripts.setup_tools import (
     set_seed,
     setup_hydra_config_and_logging,
 )
-from confidentllm.train import PPORLTrainer
+from confidentllm.train.types import BaseModelTrainer
 
 __all__ = ["main"]
 logger = get_logger()
 
 
-@dataclass
-class PPOTrainingRunConfig:
-    """Configuration class for the PPO training process."""
-
-    debug: bool = False
-
-
 @store(
-    name="ppo_training",
+    name="reinforcement_learning",
     hydra_defaults=[
         "_self_",
         {"model": "train_causal_lm"},
@@ -65,7 +55,6 @@ class PPOTrainingRunConfig:
         {"train_data": "multiarith"},
         {"eval_data": "multiarith"},
         {"trainer": "ppo"},
-        {"run_config": "default"},
     ],
 )
 def run_training(
@@ -73,12 +62,10 @@ def run_training(
     eval_data: Dataset,
     model: ModelLoader,
     reward_model: ModelLoader,
-    trainer: PPORLTrainer,
-    run_config: PPOTrainingRunConfig,
+    trainer: BaseModelTrainer,
 ) -> None:
     """Run the question answering process."""
-    if not run_config.debug:
-        init_wandb()
+    init_wandb()
     log_system_info()
     set_seed(trainer.seed)
 
@@ -110,25 +97,20 @@ def run_training(
 
     trainer.set_model(policy_model)
     trainer.set_tokenizer(policy_tokenizer)
-    trainer.set_reference_model(policy_reference_model)
-    trainer.set_reward_model(reward_model_instance)
-    trainer.set_value_model(value_model)
+    trainer.set_reference_model(policy_reference_model)  # type: ignore[attr-defined] # Defined for RL Trainers
+    trainer.set_reward_model(reward_model_instance)  # type: ignore[attr-defined]
+    trainer.set_value_model(value_model)  # type: ignore[attr-defined]
     trainer.stop_token_id = policy_tokenizer.eos_token_id  # type: ignore[attr-defined]
 
-    data_preperation_function = partial(
-        rl_preprocessing,
-        tokenizer=policy_tokenizer,
-        max_length=trainer.max_input_length,
-    )
     train_data = train_data.map(
-        function=data_preperation_function,
+        function=trainer.preprocessing_function,
         batched=True,
         batch_size=512,
         load_from_cache_file=eval_data.cached_version,  # type: ignore[attr-defined]
         remove_columns=train_data.column_names,
     )
     eval_data = eval_data.map(
-        function=data_preperation_function,
+        function=trainer.preprocessing_function,
         batched=True,
         batch_size=512,
         load_from_cache_file=eval_data.cached_version,  # type: ignore[attr-defined]
@@ -146,28 +128,24 @@ def run_training(
 
 def main() -> None:
     """Run the question answering process."""
-    store(
-        PPOTrainingRunConfig,
-        name="default",
-        group="run_config",
-    )
     run_function = zen(run_training)
 
     config_keys = [
+        "resolve_target_name:${trainer}",
         "train_data.name",
         "model.pretrained_model_name_or_path",
         "trainer.seed",
     ]
 
     setup_hydra_config_and_logging(
-        job_name="ppo_training",
+        job_name="reinforcement_learning",
         add_hpc_launcher=True,
         config_keys=config_keys,
     )
 
     # Generate the CLI for run_extraction
     run_function.hydra_main(
-        config_name="ppo_training",
+        config_name="reinforcement_learning",
         version_base="1.3",
     )
 

@@ -29,7 +29,7 @@ from pathlib import Path
 from typing import Protocol
 
 import torch
-from hydra_zen import store
+from hydra_zen import just, store
 from hydra_zen.third_party.pydantic import pydantic_parser
 from peft.auto import AutoPeftModelForCausalLM, AutoPeftModelForSequenceClassification
 from peft.mixed_model import PeftMixedModel

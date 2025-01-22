@@ -25,6 +25,7 @@
 
 from abc import ABC, abstractmethod
 from enum import StrEnum, auto
+from typing import Callable
 
 from datasets import Dataset
 from transformers import (
@@ -212,6 +213,12 @@ class BaseModelTrainer(ABC):
     @abstractmethod
     def _trainer_config(self) -> TrainingArguments:
         """Get the training arguments for the trainer."""
+        ...
+
+    @property
+    @abstractmethod
+    def preprocessing_function(self) -> Callable[[dict], dict]:
+        """Get the preprocessing function for the trainer."""
         ...
 
     @abstractmethod
