@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -23,60 +23,17 @@
 # limitations under the License.
 """Data module for ConfidentLLM."""
 
-from hydra_zen import store
-
-from confidentllm.data.arc import load_arc_data
-from confidentllm.data.commonsense_qa import load_commonsense_qa_data
-from confidentllm.data.cot_preference_data import load_cot_preference_data
-from confidentllm.data.gsm8k import load_gsm8k_data
-from confidentllm.data.mmlu import load_mmlu_data
-from confidentllm.data.multi_arith import load_multi_arith_data
-from confidentllm.data.openbook_qa import load_openbook_qa_data
-from confidentllm.data.union import load_union_data
-from confidentllm.hydra_tools import builds
-
-__all__: list[str] = []
-
-COTPreferenceDataConfig = builds(load_cot_preference_data)
-CommonsenseQAConfig = builds(load_commonsense_qa_data)
-GSM8KConfig = builds(load_gsm8k_data)
-MMLUConfig = builds(load_mmlu_data)
-MultiArithConfig = builds(load_multi_arith_data)
-ARCConfig = builds(load_arc_data)
-OpenbookQAConfig = builds(load_openbook_qa_data)
-UnionConfig = builds(load_union_data)
-
-data_store = store(group="data")
-data_store(GSM8KConfig, name="gsm8k")
-data_store(MMLUConfig, name="mmlu")
-data_store(MultiArithConfig, name="multiarith")
-data_store(CommonsenseQAConfig, name="commonsense_qa")
-data_store(ARCConfig, name="arc")
-data_store(OpenbookQAConfig, name="openbook_qa")
-data_store(UnionConfig, name="union")
-
-cot_preference_train_data = COTPreferenceDataConfig(
-    run_path="dialgroup-hhu/ConfidentLLM",
-    run_name="ancient-universe-243",
-    table_name="generation_path_data",
+from confidentllm.data import datasets  # noqa: F401
+from confidentllm.data.preprocessing import (
+    dpo_preprocessing,
+    reward_model_preprocessing,
+    rl_preprocessing,
+    sft_preprocessing,
 )
 
-train_data_store = store(group="train_data")
-eval_data_store = store(group="eval_data")
-
-train_data_store(cot_preference_train_data, name="cot_preference")
-eval_data_store(cot_preference_train_data, name="cot_preference")
-train_data_store(GSM8KConfig, name="gsm8k")
-eval_data_store(GSM8KConfig, name="gsm8k")
-train_data_store(MMLUConfig, name="mmlu")
-eval_data_store(MMLUConfig, name="mmlu")
-train_data_store(MultiArithConfig, name="multiarith")
-eval_data_store(MultiArithConfig, name="multiarith")
-train_data_store(CommonsenseQAConfig, name="commonsense_qa")
-eval_data_store(CommonsenseQAConfig, name="commonsense_qa")
-train_data_store(ARCConfig, name="arc")
-eval_data_store(ARCConfig, name="arc")
-train_data_store(OpenbookQAConfig, name="openbook_qa")
-eval_data_store(OpenbookQAConfig, name="openbook_qa")
-train_data_store(UnionConfig, name="union")
-eval_data_store(UnionConfig, name="union")
+__all__: list[str] = [
+    "dpo_preprocessing",
+    "reward_model_preprocessing",
+    "rl_preprocessing",
+    "sft_preprocessing",
+]

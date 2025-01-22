@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -14,20 +14,22 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     http: //www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Set up generation configuration for project."""
+"""Data cleaning tools for preprocessing data."""
 
-from confidentllm.generation import (  # noqa: F401 - Importing to add methods to the hydra store
-    beam_causal_lm_generation,
-    cot_causal_lm_generation,
-    greedy_causal_lm_generation,
-)
-from confidentllm.generation.types import CausalLMGenerationMethod
+__all__ = ["cleanup_response"]
 
-__all__ = ["CausalLMGenerationMethod"]
+
+def cleanup_response(response: str) -> str:
+    """Clean up the response string."""
+    response = response if response.endswith(".") else response + "."
+    response = ".".join(response.split(".")[:-1])
+    response = response.replace("[", "").replace("]", "").strip()
+
+    return response

@@ -25,13 +25,13 @@
 
 from datasets import Dataset, concatenate_datasets
 
-from confidentllm.data.arc import load_arc_data
-from confidentllm.data.commonsense_qa import load_commonsense_qa_data
-from confidentllm.data.cot_preference_data import load_cot_preference_data
-from confidentllm.data.gsm8k import load_gsm8k_data
-from confidentllm.data.mmlu import load_mmlu_data
-from confidentllm.data.multi_arith import load_multi_arith_data
-from confidentllm.data.openbook_qa import load_openbook_qa_data
+from confidentllm.data.datasets.arc import load_arc_data
+from confidentllm.data.datasets.commonsense_qa import load_commonsense_qa_data
+from confidentllm.data.datasets.cot_preference_data import load_cot_preference_data
+from confidentllm.data.datasets.gsm8k import load_gsm8k_data
+from confidentllm.data.datasets.mmlu import load_mmlu_data
+from confidentllm.data.datasets.multi_arith import load_multi_arith_data
+from confidentllm.data.datasets.openbook_qa import load_openbook_qa_data
 from confidentllm.data.types import DatasetSplit, LoadDatasetFunction
 
 __all__ = ["load_union_data"]

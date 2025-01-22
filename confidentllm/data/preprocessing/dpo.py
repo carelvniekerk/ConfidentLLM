@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -23,26 +23,19 @@
 # limitations under the License.
 """Tokenization and data preparation for dpo training."""
 
-from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
+from transformers import PreTrainedTokenizer, TensorType
 from transformers.tokenization_utils_base import PaddingStrategy
 
+from confidentllm.data.preprocessing.data_cleaning_tools import cleanup_response
 from confidentllm.generation.types import (
     ChatConversation,
     ChatUserMessage,
 )
 
-__all__ = ["prepare_dpo_data"]
+__all__ = ["dpo_preprocessing"]
 
 
-def _cleanup_response(response: str) -> str:
-    """Clean up the response string."""
-    response = ".".join(response.split(".")[:-1])
-    response = response.replace("[", "").replace("]", "").strip()
-
-    return response
-
-
-def prepare_dpo_data(
+def dpo_preprocessing(
     data: dict[str, list[str]],
     tokenizer: PreTrainedTokenizer,
     max_prompt_length: int,
@@ -52,27 +45,22 @@ def prepare_dpo_data(
         messages=[[ChatUserMessage(question)] for question in data["question"]],
     )
 
-    prompt_inputs: BatchEncoding = tokenizer.apply_chat_template(
+    prompts: list[str] = tokenizer.apply_chat_template(
         conversation=list(prompt_conversations),
         add_generation_prompt=True,
         return_tensors=TensorType.PYTORCH,
-        return_dict=True,
+        tokenize=False,
         padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
         truncation=True,
         max_length=max_prompt_length,
-    )  # type: ignore[assignment]
-    prompts: list[str] = tokenizer.batch_decode(
-        sequences=prompt_inputs.input_ids,
-        skip_special_tokens=True,
-        clean_up_tokenization_spaces=True,
     )
 
     preferred_responses: list[str] = [
-        _cleanup_response(response) for response in data["preferred_response"]
+        cleanup_response(response) for response in data["preferred_response"]
     ]
 
     rejected_responses: list[str] = [
-        _cleanup_response(response) for response in data["rejected_response"]
+        cleanup_response(response) for response in data["rejected_response"]
     ]
 
     output_data: dict[str, list[str]] = {

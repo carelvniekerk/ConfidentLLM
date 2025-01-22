@@ -39,8 +39,11 @@ from hydra.conf import HydraConf, JobConf, RunDir, SweepDir
 from hydra_zen import store
 from omegaconf import DictConfig, OmegaConf
 
-import wandb
-from confidentllm.hydra_tools import resolve_generation_method, resolve_output_processor
+from confidentllm.hydra_tools import (
+    resolve_generation_method,
+    resolve_output_processor,
+    resolve_target_name,
+)
 from confidentllm.logging import (
     create_logging_config,
     initialize_wandb,
@@ -63,6 +66,7 @@ register_hpc_submission_launcher_plugin()
 
 OmegaConf.register_new_resolver("resolve_generation_method", resolve_generation_method)
 OmegaConf.register_new_resolver("resolve_output_processor", resolve_output_processor)
+OmegaConf.register_new_resolver("resolve_target_name", resolve_target_name)
 
 
 def create_run_dir(
@@ -163,6 +167,16 @@ def setup_hydra_config_and_logging(
 
 def init_wandb() -> None:
     """Initialize Weights and Biases."""
+    hydra_config_path: Path = Path(".hydra") / "hydra.yaml"
+    hydra_config: DictConfig = OmegaConf.load(hydra_config_path)  # type: ignore  # noqa: PGH003
+
+    # When submitting HPC jobs, we don't want to initialize wandb
+    if (
+        hydra_config.hydra.mode.lower() == "multirun"
+        and "submission" in hydra_config.hydra.launcher.__target__
+    ):
+        return
+
     config_path: Path = Path(".hydra") / "config.yaml"
     config: DictConfig = OmegaConf.load(config_path)  # type: ignore  # noqa: PGH003
     initialize_wandb(config=config)
@@ -184,8 +198,6 @@ def get_logger() -> logging.Logger:
     transformers_logger: logging.Logger = transformers.logging.get_logger()
     transformers_logger.handlers = []
     transformers_logger.propagate = True
-
-    wandb.init()
 
     return logger
 

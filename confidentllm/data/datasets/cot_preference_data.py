@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -238,7 +238,7 @@ def _process_data(table: Table, ranking_threshold: float) -> Dataset:
     return Dataset.from_dict(preference_data)
 
 
-def load_cot_preference_data(
+def load_cot_preference_data(  # noqa: PLR0913
     run_path: str,
     run_name: str,
     table_name: str,

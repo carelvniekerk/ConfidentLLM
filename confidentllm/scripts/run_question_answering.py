@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -53,14 +53,15 @@ logger = logging.getLogger("__main__")
 
 
 @dataclass
-class MultipleChoiceQARunConfig:
+class QARunConfig:
     """Configuration class for the mathematical reasoning process."""
 
     keep_all_generation_paths: bool = False
     seed: int = 20244202
+    debug: bool = False
 
 
-class MultipleChoiceQARunner:
+class QARunner:
     """Class to run the mathematical reasoning process."""
 
     def __init__(
@@ -208,53 +209,57 @@ class MultipleChoiceQARunner:
 
 
 @store(
-    name="multiple_choice_qa",
+    name="question_answering",
     hydra_defaults=[
         "_self_",
         {"model": "causal_lm"},
         {"model/lora": "no_lora"},
         {"generation_method": "greedy_decoding"},
-        {"generation_method/confidence_extraction_method": "probability_disparity"},
+        {"generation_method/confidence_metric": "probability_disparity"},
         {"output_processor": "multiple_choice_answer_with_token_confidence"},
         {"data": "commonsense_qa"},
-        {"evaluator": "accuracy_and_calibration_for_string"},
+        {"evaluator": "accuracy_and_calibration"},
         {"run_config": "default"},
     ],
 )
-def run_multiple_choice_qa(  # noqa: PLR0913
+def run_qa(  # noqa: PLR0913
     data: Dataset,  # noqa: F811
     model: ModelLoader,
     generation_method: CausalLMGenerationMethod,
     output_processor: OutputProcessor,
     evaluator: Evaluator,
-    run_config: MultipleChoiceQARunConfig,
+    run_config: QARunConfig,
 ) -> None:
     """Run the question answering process."""
-    init_wandb()
+    if not run_config.debug:
+        init_wandb()
     log_system_info()
     set_seed(run_config.seed)
 
     logger.info(f"Data: {pformat(data.info)}")  # noqa: G004
 
-    runner = MultipleChoiceQARunner(
+    runner = QARunner(
         model=model,
         generation_method=generation_method,
         answer_processor=output_processor,
         evaluator=evaluator,
         keep_all_generation_paths=run_config.keep_all_generation_paths,
     )
-    runner.answer_processor.set_choices(data.choices)  # type: ignore[attr-defined] # All QA datasets should have the choices attribute
+
+    if hasattr(data, "choices"):
+        runner.answer_processor.set_choices(data.choices)  # type: ignore[attr-defined] # All QA datasets should have the choices attribute
+
     runner.run(data)
 
 
 def main() -> None:
     """Run the question answering process."""
     store(
-        MultipleChoiceQARunConfig,
+        QARunConfig,
         name="default",
         group="run_config",
     )
-    run_function = zen(run_multiple_choice_qa)
+    run_function = zen(run_qa)
 
     config_keys: list[str] = [
         "data.name",
@@ -266,14 +271,14 @@ def main() -> None:
     ]
 
     setup_hydra_config_and_logging(
-        job_name="multiple_choice_qa",
+        job_name="question_answering",
         config_keys=config_keys,
         add_hpc_launcher=True,
     )
 
     # Generate the CLI for run_extraction
     run_function.hydra_main(
-        config_name="multiple_choice_qa",
+        config_name="question_answering",
         version_base="1.3",
     )
 

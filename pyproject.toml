@@ -43,13 +43,10 @@ numpy = [
 # Script entry points for various tasks (e.g. question answering)
 [project.scripts]
 download-and-sync = "confidentllm.scripts:download_and_sync"
-dpo-training = "confidentllm.scripts:dpo_training"
-mathematical-reasoning = "confidentllm.scripts:mathematical_reasoning"
-multiple-choice-qa = "confidentllm.scripts:multiple_choice_qa"
-ppo-training = "confidentllm.scripts:ppo_training"
+question-answering = "confidentllm.scripts:question_answering"
+reinforcement-learning = "confidentllm.scripts:reinforcement_learning"
 reporting = "confidentllm.scripts:reporting"
-reward-model-training = "confidentllm.scripts:reward_model_training"
-supervised-finetuning = "confidentllm.scripts:supervised_finetuning"
+train = "confidentllm.scripts:train"
 tests = "pytest:main"
 
 [build-system]

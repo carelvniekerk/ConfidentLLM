@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -23,11 +23,10 @@
 # limitations under the License.
 """Set up generation configuration for project."""
 
-from confidentllm.generation import (  # noqa: F401 - Importing to add methods to the hydra store
-    beam_causal_lm_generation,
-    cot_causal_lm_generation,
-    greedy_causal_lm_generation,
+from confidentllm.confidence_metrics import (  # noqa: F401 - Importing to add methods to the hydra store
+    entropy,
+    probability,
 )
-from confidentllm.generation.types import CausalLMGenerationMethod
+from confidentllm.confidence_metrics.types import ConfidenceMetric
 
-__all__ = ["CausalLMGenerationMethod"]
+__all__ = ["ConfidenceMetric"]

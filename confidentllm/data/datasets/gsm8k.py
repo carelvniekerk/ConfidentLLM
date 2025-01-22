@@ -21,47 +21,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing functions for loading the MultiArith dataset."""
+"""Module containing functions for loading the GSM-8K dataset."""
+
+from functools import partial
 
 from datasets import Dataset, load_dataset
 
+from confidentllm.data.extract_answers import extract_answers
 from confidentllm.data.types import DatasetSplit
 
-__all__ = ["load_multi_arith_data"]
+__all__ = ["load_gsm8k_data"]
+
+GSM8K_ANSWER_PATTERN = r"\n#### (.+)"
 
 
-def multi_arith_key_mapping(data: dict[str, list[str]]) -> dict[str, list[str]]:
-    """Map the keys in the data dictionary to the correct keys.
-
-    Args:
-    ----
-        data: The data dictionary.
-
-    Returns:
-    -------
-        The data dictionary with the correct keys.
-
-    """
-    data["answer"] = data.pop("final_ans")
-
-    return data
-
-
-def load_multi_arith_data(
+def load_gsm8k_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
-    name: str = "MultiArith",  # noqa: ARG001 - Used for creating the experiments path
+    name: str = "GSM8K",  # noqa: ARG001,
     *,
     use_cache: bool = True,
     **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
-    """Load the MultiArith dataset.
+    """Load the GSM-8K dataset.
 
     Args:
     ----
         split: The split of the dataset to load.
         transformation_batch_size: The batch size to use for the transformation.
         name: The name of the dataset.
+        use_cache: Whether to use the cache.
+        kwargs: Additional keyword arguments
 
     Returns:
     -------
@@ -69,31 +59,31 @@ def load_multi_arith_data(
 
     """
     data: Dataset = load_dataset(
-        path="ChilleD/MultiArith",
-        name="default",
+        path="openai/gsm8k",
+        name="main",
         split=split,
     )  # type: ignore[reportAssignmentType]
 
     # Add metadata to the dataset
-    data._info.description = (  # noqa: SLF001 # Provide description for the dataset
-        "The Multi-Arith dataset contains elementary arithmetic problems with multiple"
-        " operations, such as addition, subtraction, multiplication, and division, "
-        "requiring sequential reasoning steps to solve."
+    data._info.description = (  # noqa: SLF001 # Adding description to dataset
+        "GSM8K (Grade School Math 8K) is a dataset of 8.5K high quality linguistically "
+        "diverse grade school math word problems. The dataset was created to support "
+        "the task of question answering on basic mathematical problems that require "
+        "multi-step reasoning."
     )
-    data._info.citation = (  # noqa: SLF001 # Provide citation for the dataset
-        '@inproceedings{roy-roth-2015-solving,\n  title = "Solving General Arithmetic '
-        'Word Problems",\n  author = "Roy, Subhro and Roth, Dan",\n   booktitle = '
-        '"Proceedings of the 2015 Conference on Empirical Methods in Natural Language '
-        'Processing",\n  year = 2015,\n  address = "Lisbon, Portugal",\n  publisher '
-        '= "Association for Computational Linguistics",\n  url = '
-        '"https://aclanthology.org/D15-1202",\n  doi = "10.18653/v1/D15-1202",\n  '
-        'pages = "1743--1752",\n  }'
+    data._info.citation = (  # noqa: SLF001 # Adding citation to dataset
+        "@article{cobbe2021gsm8k,\n  title={Training Verifiers to Solve Math Word "
+        "Problems},\n  author={Cobbe, Karl and Kosaraju, Vineet and Bavarian, "
+        "Mohammad and Chen, Mark and Jun, Heewoo and Kaiser, Lukasz and Plappert, "
+        "Matthias and Tworek, Jerry and Hilton, Jacob and Nakano, Reiichiro and "
+        "Hesse, Christopher and Schulman, John},\n  journal={arXiv preprint "
+        "arXiv:2110.14168},\n  year={2021}\n}"
     )
-    data._info.homepage = "https://huggingface.co/datasets/ChilleD/MultiArith"  # noqa: SLF001
-    data._info.license = "CC BY 4.0"  # noqa: SLF001
+    data._info.homepage = "https://huggingface.co/datasets/openai/gsm8k"  # noqa: SLF001
+    data._info.license = "MIT License"  # noqa: SLF001
 
     data = data.map(
-        multi_arith_key_mapping,
+        partial(extract_answers, pattern=GSM8K_ANSWER_PATTERN),
         batched=True,
         batch_size=transformation_batch_size,
         load_from_cache_file=use_cache,

@@ -27,24 +27,17 @@ import torch
 from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
 from transformers.tokenization_utils_base import PaddingStrategy
 
+from confidentllm.data.preprocessing.data_cleaning_tools import cleanup_response
 from confidentllm.generation.types import (
     ChatAssistantMessage,
     ChatConversation,
     ChatUserMessage,
 )
 
-__all__ = ["prepare_reward_model_data"]
+__all__ = ["reward_model_preprocessing"]
 
 
-def _cleanup_response(response: str) -> str:
-    """Clean up the response string."""
-    response = ".".join(response.split(".")[:-1])
-    response = response.replace("[", "").replace("]", "").strip()
-
-    return response
-
-
-def prepare_reward_model_data(
+def reward_model_preprocessing(
     data: dict[str, list[str]],
     tokenizer: PreTrainedTokenizer,
     max_length: int,
@@ -56,7 +49,7 @@ def prepare_reward_model_data(
         messages=[
             [
                 ChatUserMessage(question),
-                ChatAssistantMessage(_cleanup_response(response)),
+                ChatAssistantMessage(cleanup_response(response)),
             ]
             for question, response in zip(
                 data["question"],
@@ -70,7 +63,7 @@ def prepare_reward_model_data(
         messages=[
             [
                 ChatUserMessage(question),
-                ChatAssistantMessage(_cleanup_response(response)),
+                ChatAssistantMessage(cleanup_response(response)),
             ]
             for question, response in zip(
                 data["question"],

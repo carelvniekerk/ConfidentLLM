@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -21,24 +21,48 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing functions for loading the OpenBook QA dataset."""
+"""Module containing functions for loading the Commonsense QA dataset."""
 
-from enum import Enum, auto
+from enum import Enum, StrEnum, auto
 
 from datasets import Dataset, Features, Value, load_dataset
 
 from confidentllm.data.types import DatasetSplit
 
-__all__ = ["load_openbook_qa_data"]
+__all__ = ["load_arc_data"]
 
 
-class OpenBookQAAnswers(Enum):
-    """Open Book QA answers."""
+class ARCAnswers(Enum):
+    """ARC answers."""
 
     A = auto()
     B = auto()
     C = auto()
     D = auto()
+    E = auto()
+
+
+class ARCQuestionType(StrEnum):
+    """ARC question types."""
+
+    EASY = auto()
+    CHALLENGE = auto()
+
+
+def _get_arc_question_type(dataset_name: str) -> ARCQuestionType:
+    """Get the ARC question difficulty from the dataset name.
+
+    Args:
+    ----
+        dataset_name: The name of the dataset.
+
+    Returns:
+    -------
+        The ARC question difficulty.
+
+    """
+    task_name = dataset_name.split("_", 1)[-1].lower()
+    return ARCQuestionType(task_name)
 
 
 def _format_choices(choices: list[str]) -> str:
@@ -55,16 +79,16 @@ def _format_choices(choices: list[str]) -> str:
     """
     choices_str: str = "Select one of the following:"
     for i, choice in enumerate(choices):
-        choices_str += f"\n{OpenBookQAAnswers(value=i + 1).name}. {choice}"
+        choices_str += f"\n{ARCAnswers(value=i + 1).name}. {choice}"
     return choices_str
 
 
-def _openbook_qa_map(
+def _arc_map(
     examples: dict[str, list[str | dict[str, list[str]]]],
 ) -> dict[str, list[str]]:
-    question: list[str] = examples.get("question_stem", [])  # type: ignore[assignment]
+    question: list[str] = examples.get("question", [])  # type: ignore[assignment]
     question = [
-        f"{question_str}\n{_format_choices(choices["text"])}"  # type: ignore[arg-type, index]
+        f"{question_str}\n{_format_choices(choices['text'])}"  # type: ignore[arg-type, index]
         for question_str, choices in zip(
             question,
             examples["choices"],  # type: ignore[call-overload]
@@ -73,17 +97,21 @@ def _openbook_qa_map(
     ]
 
     answer: list[str] = [
-        OpenBookQAAnswers[raw_answer.upper()].name if raw_answer else "-1"  # type: ignore[union-attr]
+        ARCAnswers(int(raw_answer)).name  # type: ignore[arg-type]
+        if raw_answer.isdigit()  # type: ignore[union-attr]
+        else ARCAnswers[raw_answer.upper()].name  # type: ignore[union-attr]
+        if raw_answer
+        else "-1"
         for raw_answer in examples["answerKey"]
     ]
 
     return {"id": examples["id"], "question": question, "answer": answer}  # type: ignore[dict-item]
 
 
-def load_openbook_qa_data(
+def load_arc_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
-    name: str = "OpenBookQA",  # noqa: ARG001
+    name: str = "ARC_EASY",
     *,
     use_cache: bool = True,
     **kwargs: dict,  # noqa: ARG001
@@ -96,6 +124,7 @@ def load_openbook_qa_data(
         transformation_batch_size: The batch size to use for the transformation.
         name: The name of the dataset.
         use_cache: Whether to use the cache.
+        kwargs: Additional keyword arguments.
 
     Returns:
     -------
@@ -103,32 +132,34 @@ def load_openbook_qa_data(
 
     """
     data: Dataset = load_dataset(
-        path="allenai/openbookqa",
-        name="main",
+        path="allenai/ai2_arc",
+        name=f"ARC-{_get_arc_question_type(name).name.lower().title()}",
         split=split,
-    )  # type: ignore[assignment]
+    )  # type: ignore[reportAssignmentType]
 
     # Add metadata to the dataset
     data._info.description = (  # noqa: SLF001 # Adding description to dataset
-        "OpenBookQA aims to promote research in advanced question-answering, probing a "
-        "deeper understanding of both the topic (with salient facts summarized as an "
-        "open book, also provided with the dataset) and the language it is expressed in"
-        ". In particular, it contains questions that require multi-step reasoning, use "
-        "of additional common and commonsense knowledge, and rich text comprehension. "
-        "OpenBookQA is a new kind of question-answering dataset modeled after open "
-        "book exams for assessing human understanding of a subject."
+        "A new dataset of 7,787 genuine grade-school level, multiple-choice science "
+        "questions, assembled to encourage research in advanced question-answering. "
+        "The dataset is partitioned into a Challenge Set and an Easy Set, where the "
+        "former contains only questions answered incorrectly by both a retrieval-based "
+        "algorithm and a word co-occurrence algorithm. We are also including a corpus "
+        "of over 14 million science sentences relevant to the task, and an "
+        "implementation of three neural baseline models for this dataset. We pose ARC "
+        "as a challenge to the community."
     )
     data._info.citation = (  # noqa: SLF001 # Adding citation to dataset
-        "@inproceedings{OpenBookQA2018,\n\ttitle={Can a Suit of Armor Conduct "
-        "Electricity? A New Dataset for Open Book Question Answering},\n\tauthor={Todor"
-        " Mihaylov and Peter Clark and Tushar Khot and Ashish Sabharwal},\n\tbooktitle="
-        "{EMNLP},\n\tyear={2018}\n}"
+        "@article{allenai:arc,\n\tauthor= {Peter Clark  and Isaac Cowhey and Oren "
+        "Etzioni and Tushar Khot and Ashish Sabharwal and Carissa Schoenick and Oyvind "
+        "Tafjord},\n\ttitle= {Think you have Solved Question Answering? Try ARC, "
+        "the AI2 Reasoning Challenge},\n\tjournal= {arXiv:1803.05457v1},\n\tyear= "
+        "{2018},\n}"
     )
-    data._info.homepage = "https://huggingface.co/datasets/allenai/openbookqa"  # noqa: SLF001
+    data._info.homepage = "https://huggingface.co/datasets/allenai/ai2_arc?row=2"  # noqa: SLF001
     data._info.license = "MIT License"  # noqa: SLF001
 
     data = data.map(
-        function=_openbook_qa_map,
+        function=_arc_map,
         batched=True,
         batch_size=transformation_batch_size,
         load_from_cache_file=use_cache,
@@ -142,7 +173,7 @@ def load_openbook_qa_data(
         ),
     )
 
-    data.choices = [OpenBookQAAnswers(value=i + 1).name for i in range(4)]  # type: ignore[attr-defined]
+    data.choices = [ARCAnswers(value=i + 1).name for i in range(5)]  # type: ignore[attr-defined]
     data.cached_version = use_cache  # type: ignore[attr-defined]
 
     return data

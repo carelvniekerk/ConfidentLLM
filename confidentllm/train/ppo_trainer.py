@@ -24,13 +24,15 @@
 """Trainer for PPO RL Finetuning."""
 
 import logging
+from functools import partial
 from pathlib import Path
-from typing import Never
+from typing import Callable
 
 from hydra_zen import store
 from transformers import PreTrainedModel
 from trl import PPOConfig, PPOTrainer
 
+from confidentllm.data import rl_preprocessing
 from confidentllm.generation.types import ModelNotSetError, TokenizerNotSetError
 from confidentllm.hydra_tools import builds
 from confidentllm.train.types import BaseModelTrainer, IntervalStrategy, LoggingLevel
@@ -189,7 +191,8 @@ class PPORLTrainer(BaseModelTrainer):
             )
             logging.warning(msg)
 
-    def _get_trainer_config(self) -> PPOConfig:
+    @property
+    def _trainer_config(self) -> PPOConfig:
         config = PPOConfig(
             output_dir=str(Path.cwd()),
             eval_strategy=self.eval_strategy.value,
@@ -228,6 +231,18 @@ class PPORLTrainer(BaseModelTrainer):
         )
         return config
 
+    @property
+    def preprocessing_function(self) -> Callable[[dict], dict]:
+        """Return the preprocessing function for the dataset."""
+        if self.tokenizer is None:
+            raise TokenizerNotSetError(self.tokenizer)
+
+        return partial(
+            rl_preprocessing,
+            tokenizer=self.tokenizer,
+            max_length=self.max_input_length,
+        )
+
     def set_reference_model(
         self,
         model: PreTrainedModel | None,
@@ -264,7 +279,7 @@ class PPORLTrainer(BaseModelTrainer):
             model=self.model,
             ref_model=self.reference_model,
             processing_class=self.tokenizer,
-            args=self._get_trainer_config(),
+            args=self._trainer_config,
             reward_model=self.reward_model,
             value_model=self.value_model,
             train_dataset=self.train_dataset,

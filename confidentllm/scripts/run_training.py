@@ -21,14 +21,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Finetune the model supervisedly."""
+"""Finetune a model using DPO."""
 
 from pprint import pformat
 
 from datasets import Dataset
 from hydra_zen import store, zen
 
-from confidentllm import data  # noqa: F401
 from confidentllm.models import ModelLoader
 from confidentllm.scripts.setup_tools import (
     get_logger,
@@ -37,20 +36,20 @@ from confidentllm.scripts.setup_tools import (
     set_seed,
     setup_hydra_config_and_logging,
 )
-from confidentllm.train import SupervisedFinetuningTrainer, prepare_supervised_data
+from confidentllm.train.types import BaseModelTrainer
 
 __all__ = ["main"]
 logger = get_logger()
 
 
 @store(
-    name="supervised_finetuning",
+    name="training",
     hydra_defaults=[
         "_self_",
         {"model": "train_causal_lm"},
         {"model/lora": "causal_lm"},
-        {"train_data": "cot_preference"},
-        {"eval_data": "cot_preference"},
+        {"train_data": "multiarith"},
+        {"eval_data": "multiarith"},
         {"trainer": "supervised_finetuning"},
     ],
 )
@@ -58,7 +57,7 @@ def run_training(
     train_data: Dataset,
     eval_data: Dataset,
     model: ModelLoader,
-    trainer: SupervisedFinetuningTrainer,
+    trainer: BaseModelTrainer,
 ) -> None:
     """Run the question answering process."""
     init_wandb()
@@ -66,22 +65,24 @@ def run_training(
     set_seed(trainer.seed)
 
     model_instance, tokenizer = model.load()
+
     trainer.set_model(model_instance)
     trainer.set_tokenizer(tokenizer)
 
     train_data = train_data.map(
-        function=prepare_supervised_data,
+        function=trainer.preprocessing_function,
         batched=True,
-        batch_size=512,
-        remove_columns=train_data.column_names,
+        batch_size=2048,
         load_from_cache_file=train_data.cached_version,  # type: ignore[attr-defined]
+        remove_columns=train_data.column_names,
     )
+
     eval_data = eval_data.map(
-        function=prepare_supervised_data,
+        function=trainer.preprocessing_function,
         batched=True,
-        batch_size=512,
-        remove_columns=eval_data.column_names,
+        batch_size=2048,
         load_from_cache_file=eval_data.cached_version,  # type: ignore[attr-defined]
+        remove_columns=eval_data.column_names,
     )
 
     logger.info(f"Training data: {pformat(train_data.info)}")  # noqa: G004
@@ -98,20 +99,21 @@ def main() -> None:
     run_function = zen(run_training)
 
     config_keys = [
+        "resolve_target_name:${trainer}",
         "train_data.name",
         "model.pretrained_model_name_or_path",
         "trainer.seed",
     ]
 
     setup_hydra_config_and_logging(
-        job_name="supervised_finetuning",
+        job_name="training",
         add_hpc_launcher=True,
         config_keys=config_keys,
     )
 
     # Generate the CLI for run_extraction
     run_function.hydra_main(
-        config_name="supervised_finetuning",
+        config_name="training",
         version_base="1.3",
     )
 

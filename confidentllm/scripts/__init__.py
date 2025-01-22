@@ -24,23 +24,17 @@
 """Execcution scripts for different tasks."""
 
 from confidentllm.scripts.run_download_and_sync import main as download_and_sync
-from confidentllm.scripts.run_dpo_training import main as dpo_training
-from confidentllm.scripts.run_mathematical_reasoning import (
-    main as mathematical_reasoning,
+from confidentllm.scripts.run_question_answering import main as question_answering
+from confidentllm.scripts.run_reinforcement_learning import (
+    main as reinforcement_learning,
 )
-from confidentllm.scripts.run_multiple_choice_qa import main as multiple_choice_qa
-from confidentllm.scripts.run_ppo_training import main as ppo_training
 from confidentllm.scripts.run_reporting import main as reporting
-from confidentllm.scripts.run_reward_model_training import main as reward_model_training
-from confidentllm.scripts.run_supervised_finetuning import main as supervised_finetuning
+from confidentllm.scripts.run_training import main as train
 
 __all__ = [
     "download_and_sync",
-    "dpo_training",
-    "mathematical_reasoning",
-    "multiple_choice_qa",
-    "ppo_training",
+    "question_answering",
+    "reinforcement_learning",
     "reporting",
-    "reward_model_training",
-    "supervised_finetuning",
+    "train",
 ]

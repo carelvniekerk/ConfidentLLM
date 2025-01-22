@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -21,17 +21,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Train a reward model."""
+"""Run the reinforcement learning process."""
 
-from functools import partial
 from pprint import pformat
 
 from datasets import Dataset
 from hydra_zen import store, zen
-from peft.tuners.lora.config import LoraConfig
 from transformers import PreTrainedModel
 
-from confidentllm import data  # noqa: F401
 from confidentllm.models import ModelLoader
 from confidentllm.models.model_name_and_type import ModelMode
 from confidentllm.scripts.setup_tools import (
@@ -41,14 +38,14 @@ from confidentllm.scripts.setup_tools import (
     set_seed,
     setup_hydra_config_and_logging,
 )
-from confidentllm.train import PPORLTrainer, prepare_rl_data
+from confidentllm.train.types import BaseModelTrainer
 
 __all__ = ["main"]
 logger = get_logger()
 
 
 @store(
-    name="ppo_training",
+    name="reinforcement_learning",
     hydra_defaults=[
         "_self_",
         {"model": "train_causal_lm"},
@@ -65,7 +62,7 @@ def run_training(
     eval_data: Dataset,
     model: ModelLoader,
     reward_model: ModelLoader,
-    trainer: PPORLTrainer,
+    trainer: BaseModelTrainer,
 ) -> None:
     """Run the question answering process."""
     init_wandb()
@@ -100,25 +97,20 @@ def run_training(
 
     trainer.set_model(policy_model)
     trainer.set_tokenizer(policy_tokenizer)
-    trainer.set_reference_model(policy_reference_model)
-    trainer.set_reward_model(reward_model_instance)
-    trainer.set_value_model(value_model)
+    trainer.set_reference_model(policy_reference_model)  # type: ignore[attr-defined] # Defined for RL Trainers
+    trainer.set_reward_model(reward_model_instance)  # type: ignore[attr-defined]
+    trainer.set_value_model(value_model)  # type: ignore[attr-defined]
     trainer.stop_token_id = policy_tokenizer.eos_token_id  # type: ignore[attr-defined]
 
-    data_preperation_function = partial(
-        prepare_rl_data,
-        tokenizer=policy_tokenizer,
-        max_length=trainer.max_input_length,
-    )
     train_data = train_data.map(
-        function=data_preperation_function,
+        function=trainer.preprocessing_function,
         batched=True,
         batch_size=512,
         load_from_cache_file=eval_data.cached_version,  # type: ignore[attr-defined]
         remove_columns=train_data.column_names,
     )
     eval_data = eval_data.map(
-        function=data_preperation_function,
+        function=trainer.preprocessing_function,
         batched=True,
         batch_size=512,
         load_from_cache_file=eval_data.cached_version,  # type: ignore[attr-defined]
@@ -139,20 +131,21 @@ def main() -> None:
     run_function = zen(run_training)
 
     config_keys = [
+        "resolve_target_name:${trainer}",
         "train_data.name",
         "model.pretrained_model_name_or_path",
         "trainer.seed",
     ]
 
     setup_hydra_config_and_logging(
-        job_name="ppo_training",
+        job_name="reinforcement_learning",
         add_hpc_launcher=True,
         config_keys=config_keys,
     )
 
     # Generate the CLI for run_extraction
     run_function.hydra_main(
-        config_name="ppo_training",
+        config_name="reinforcement_learning",
         version_base="1.3",
     )
 
