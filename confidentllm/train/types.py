@@ -208,8 +208,9 @@ class BaseModelTrainer(ABC):
         """Set the evaluation dataset."""
         self.eval_dataset = eval_dataset
 
+    @property
     @abstractmethod
-    def _get_trainer_config(self) -> TrainingArguments:
+    def _trainer_config(self) -> TrainingArguments:
         """Get the training arguments for the trainer."""
         ...
 

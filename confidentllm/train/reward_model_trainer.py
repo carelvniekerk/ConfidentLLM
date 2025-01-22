@@ -147,7 +147,8 @@ class RewardModelTrainer(BaseModelTrainer):
         self.use_preference_margin = use_preference_margin
         self.center_rewards_coefficient = center_rewards_coefficient
 
-    def _get_trainer_config(self) -> RewardConfig:
+    @property
+    def _trainer_config(self) -> RewardConfig:
         config = RewardConfig(
             output_dir=str(Path.cwd()),
             eval_strategy=self.eval_strategy.value,
@@ -198,7 +199,7 @@ class RewardModelTrainer(BaseModelTrainer):
         self.trainer: RewardTrainer = RewardTrainer(
             model=self.model,
             processing_class=self.tokenizer,
-            args=self._get_trainer_config(),
+            args=self._trainer_config,
             train_dataset=self.train_dataset,
             eval_dataset=self.eval_dataset,
         )

@@ -37,7 +37,7 @@ from confidentllm.train.types import BaseModelTrainer, IntervalStrategy, Logging
 __all__ = ["DPOTrainer"]
 
 
-class LossType(StrEnum):
+class LossFunction(StrEnum):
     """Loss type for DPO Training."""
 
     SIGMOID = auto()  # sigmoid loss from the original
@@ -98,7 +98,7 @@ class DPOTrainer(BaseModelTrainer):
         max_length: int = 256,
         max_prompt_length: int = 128,
         loss_beta: float = 0.2,
-        loss_type: LossType = LossType.SIGMOID,
+        loss_function: LossFunction = LossFunction.SIGMOID,
         use_weighting: bool = False,
         divergence_alpha_coefficient: float = 1.0,
         update_ref_model: bool = False,
@@ -157,7 +157,7 @@ class DPOTrainer(BaseModelTrainer):
                 reference model. Higher β means less deviation from the reference model.
                 For the IPO loss (`loss_type="ipo"`), β is the regularization parameter
                 denoted by τ in the [paper](https://huggingface.co/papers/2310.12036).
-            loss_type (LossType, optional): The loss type for DPO training.
+            loss_function (LossFunction, optional): The loss type for DPO training.
             use_weighting (bool, optional): Whether or not to weight the loss as done in
                 the [WPO](https://huggingface.co/papers/2406.11827) paper.
                 Default is False.
@@ -216,7 +216,7 @@ class DPOTrainer(BaseModelTrainer):
         self.max_length = max_length
         self.max_prompt_length = max_prompt_length
         self.loss_beta = loss_beta
-        self.loss_type = loss_type
+        self.loss_function = loss_function
         self.use_weighting = use_weighting
         self.divergence_type = FDivergenceType.REVERSE_KL
         self.divergence_alpha_coefficient = divergence_alpha_coefficient
@@ -225,7 +225,8 @@ class DPOTrainer(BaseModelTrainer):
         self.ref_model_update_steps = ref_model_update_steps
         self.rpo_alpha = rpo_alpha
 
-    def _get_trainer_config(self) -> DPOConfig:
+    @property
+    def _trainer_config(self) -> DPOConfig:
         config = DPOConfig(
             output_dir=str(Path.cwd()),
             eval_strategy=self.eval_strategy.value,
@@ -259,7 +260,7 @@ class DPOTrainer(BaseModelTrainer):
             max_prompt_length=self.max_prompt_length,
             max_completion_length=self.max_length - self.max_prompt_length,
             beta=self.loss_beta,
-            loss_type=self.loss_type.value,  # type: ignore[arg-type]
+            loss_type=self.loss_function.value,  # type: ignore[arg-type]
             use_weighting=self.use_weighting,
             f_divergence_type=self.divergence_type,
             f_alpha_divergence_coef=self.divergence_alpha_coefficient,
@@ -286,7 +287,7 @@ class DPOTrainer(BaseModelTrainer):
         self.trainer: DPOBaseTrainer = DPOBaseTrainer(
             model=self.model,
             processing_class=self.tokenizer,
-            args=self._get_trainer_config(),
+            args=self._trainer_config,
             train_dataset=self.train_dataset,
             eval_dataset=self.eval_dataset,
         )

@@ -189,7 +189,8 @@ class PPORLTrainer(BaseModelTrainer):
             )
             logging.warning(msg)
 
-    def _get_trainer_config(self) -> PPOConfig:
+    @property
+    def _trainer_config(self) -> PPOConfig:
         config = PPOConfig(
             output_dir=str(Path.cwd()),
             eval_strategy=self.eval_strategy.value,
@@ -264,7 +265,7 @@ class PPORLTrainer(BaseModelTrainer):
             model=self.model,
             ref_model=self.reference_model,
             processing_class=self.tokenizer,
-            args=self._get_trainer_config(),
+            args=self._trainer_config,
             reward_model=self.reward_model,
             value_model=self.value_model,
             train_dataset=self.train_dataset,
