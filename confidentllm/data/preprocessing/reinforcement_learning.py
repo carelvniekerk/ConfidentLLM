@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -32,10 +32,10 @@ from confidentllm.generation.types import (
     ChatUserMessage,
 )
 
-__all__ = ["prepare_rl_data"]
+__all__ = ["rl_preprocessing"]
 
 
-def prepare_rl_data(
+def rl_preprocessing(
     data: dict[str, list[str]],
     tokenizer: PreTrainedTokenizer,
     max_length: int,

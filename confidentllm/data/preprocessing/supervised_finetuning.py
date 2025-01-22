@@ -23,25 +23,17 @@
 # limitations under the License.
 """Tokenization and data preparation for supervised finetuning."""
 
+from confidentllm.data.preprocessing.data_cleaning_tools import cleanup_response
 from confidentllm.generation.types import (
     ChatAssistantMessage,
     ChatConversation,
     ChatUserMessage,
 )
 
-__all__ = ["prepare_supervised_data"]
+__all__ = ["sft_preprocessing"]
 
 
-def _cleanup_response(response: str) -> str:
-    """Clean up the response string."""
-    response = response if response.endswith(".") else response + "."
-    response = ".".join(response.split(".")[:-1])
-    response = response.replace("[", "").replace("]", "").strip()
-
-    return response
-
-
-def prepare_supervised_data(
+def sft_preprocessing(
     data: dict[str, list[str]],
 ) -> dict[str, list[list[dict[str, str]]]]:
     """Tokenize the input strings and return the tokenized data."""
@@ -52,7 +44,7 @@ def prepare_supervised_data(
         messages=[
             [
                 ChatUserMessage(question),
-                ChatAssistantMessage(_cleanup_response(answer)),
+                ChatAssistantMessage(cleanup_response(answer)),
             ]
             for question, answer in zip(
                 data["question"],

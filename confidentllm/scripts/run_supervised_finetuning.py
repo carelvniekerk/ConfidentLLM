@@ -29,7 +29,7 @@ from pprint import pformat
 from datasets import Dataset
 from hydra_zen import store, zen
 
-from confidentllm import data  # noqa: F401
+from confidentllm.data import sft_preprocessing
 from confidentllm.models import ModelLoader
 from confidentllm.scripts.setup_tools import (
     get_logger,
@@ -38,7 +38,7 @@ from confidentllm.scripts.setup_tools import (
     set_seed,
     setup_hydra_config_and_logging,
 )
-from confidentllm.train import SupervisedFinetuningTrainer, prepare_supervised_data
+from confidentllm.train import SupervisedFinetuningTrainer
 
 __all__ = ["main"]
 logger = get_logger()
@@ -81,14 +81,14 @@ def run_training(
     trainer.set_tokenizer(tokenizer)
 
     train_data = train_data.map(
-        function=prepare_supervised_data,
+        function=sft_preprocessing,
         batched=True,
         batch_size=512,
         remove_columns=train_data.column_names,
         load_from_cache_file=train_data.cached_version,  # type: ignore[attr-defined]
     )
     eval_data = eval_data.map(
-        function=prepare_supervised_data,
+        function=sft_preprocessing,
         batched=True,
         batch_size=512,
         remove_columns=eval_data.column_names,

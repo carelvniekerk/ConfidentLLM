@@ -29,10 +29,9 @@ from pprint import pformat
 
 from datasets import Dataset
 from hydra_zen import store, zen
-from peft.tuners.lora.config import LoraConfig
 from transformers import PreTrainedModel
 
-from confidentllm import data  # noqa: F401
+from confidentllm.data import rl_preprocessing
 from confidentllm.models import ModelLoader
 from confidentllm.models.model_name_and_type import ModelMode
 from confidentllm.scripts.setup_tools import (
@@ -42,7 +41,7 @@ from confidentllm.scripts.setup_tools import (
     set_seed,
     setup_hydra_config_and_logging,
 )
-from confidentllm.train import PPORLTrainer, prepare_rl_data
+from confidentllm.train import PPORLTrainer
 
 __all__ = ["main"]
 logger = get_logger()
@@ -117,7 +116,7 @@ def run_training(
     trainer.stop_token_id = policy_tokenizer.eos_token_id  # type: ignore[attr-defined]
 
     data_preperation_function = partial(
-        prepare_rl_data,
+        rl_preprocessing,
         tokenizer=policy_tokenizer,
         max_length=trainer.max_input_length,
     )

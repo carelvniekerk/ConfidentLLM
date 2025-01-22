@@ -216,7 +216,7 @@ class DPOTrainer(BaseModelTrainer):
         self.max_length = max_length
         self.max_prompt_length = max_prompt_length
         self.loss_beta = loss_beta
-        self.loss_function = loss_function
+        self.loss_function = loss_function  # type: ignore[assignment] # DPO has its own selection of loss funtions
         self.use_weighting = use_weighting
         self.divergence_type = FDivergenceType.REVERSE_KL
         self.divergence_alpha_coefficient = divergence_alpha_coefficient

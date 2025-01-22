@@ -30,7 +30,7 @@ from pprint import pformat
 from datasets import Dataset
 from hydra_zen import store, zen
 
-from confidentllm import data  # noqa: F401
+from confidentllm.data import dpo_preprocessing
 from confidentllm.models import ModelLoader
 from confidentllm.scripts.setup_tools import (
     get_logger,
@@ -39,7 +39,7 @@ from confidentllm.scripts.setup_tools import (
     set_seed,
     setup_hydra_config_and_logging,
 )
-from confidentllm.train import DPOTrainer, prepare_dpo_data
+from confidentllm.train import DPOTrainer
 
 __all__ = ["main"]
 logger = get_logger()
@@ -82,7 +82,7 @@ def run_training(
     trainer.set_tokenizer(tokenizer)
 
     data_preperation_function = partial(
-        prepare_dpo_data,
+        dpo_preprocessing,
         tokenizer=tokenizer,
         max_prompt_length=trainer.max_prompt_length,
     )
