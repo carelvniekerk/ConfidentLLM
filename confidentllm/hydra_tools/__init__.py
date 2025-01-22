@@ -86,4 +86,4 @@ def resolve_generation_method(generation_method: dict[str, str | int | float]) -
 
 def resolve_target_name(method: dict[str, str | int | float]) -> str:
     """Resolve the target name."""
-    return function_path_to_name(method.get("_target_", ""))  # type: ignore[assignment]
+    return function_path_to_name(method.get("_target_", ""))  # type: ignore[arg-type]
