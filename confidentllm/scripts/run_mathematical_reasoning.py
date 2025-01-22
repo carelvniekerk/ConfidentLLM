@@ -215,7 +215,7 @@ class MathematicalReasoningRunner:
         {"model": "causal_lm"},
         {"model/lora": "no_lora"},
         {"generation_method": "greedy_decoding"},
-        {"generation_method/confidence_extraction_method": "probability_disparity"},
+        {"generation_method/confidence_metric": "probability_disparity"},
         {"output_processor": "numeric_answer_with_token_confidence"},
         {"data": "multiarith"},
         {"evaluator": "accuracy_and_calibration"},

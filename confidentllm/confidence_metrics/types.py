@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -21,13 +21,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Set up generation configuration for project."""
+"""Types for the generation module."""
 
-from confidentllm.generation import (  # noqa: F401 - Importing to add methods to the hydra store
-    beam_causal_lm_generation,
-    cot_causal_lm_generation,
-    greedy_causal_lm_generation,
-)
-from confidentllm.generation.types import CausalLMGenerationMethod
+from abc import ABC, abstractmethod
 
-__all__ = ["CausalLMGenerationMethod"]
+from torch import Tensor
+
+__all__ = ["ConfidenceMetric"]
+
+
+class ConfidenceMetric(ABC):
+    """Method for extracting confidence scores from the logits."""
+
+    @abstractmethod
+    def __call__(
+        self,
+        next_token_ids: Tensor,
+        scores: Tensor,
+    ) -> Tensor:
+        """Extract the confidence scores from the logits."""
+        ...  # pragma: no cover

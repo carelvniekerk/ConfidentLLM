@@ -28,9 +28,6 @@ from hydra_zen import store
 from transformers import BatchEncoding, TensorType
 from transformers.generation import GenerateDecoderOnlyOutput
 
-from confidentllm.generation.confidence_extraction_methods import (
-    PredictiveProbabilityConfig,
-)
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     ChatConversation,
@@ -92,7 +89,7 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
         ).unsqueeze(0)
         generation_scores = torch.softmax(generation_scores, dim=-1)
 
-        generation_scores = self.confidence_extraction_method(
+        generation_scores = self.confidence_metric(
             next_token_ids=generation_output.sequences,
             scores=generation_scores,
         )
@@ -105,7 +102,7 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
 
 GreedyCausalLMGenerationConfig = builds(
     GreedyCausalLMGenerationMethod,
-    confidence_extraction_method=None,
+    confidence_metric=None,
 )
 
 generation_method_store = store(group="generation_method")

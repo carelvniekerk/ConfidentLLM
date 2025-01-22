@@ -28,9 +28,6 @@ from hydra_zen import store
 from transformers import BatchEncoding, TensorType
 from transformers.generation import GenerateDecoderOnlyOutput
 
-from confidentllm.generation.confidence_extraction_methods import (
-    PredictiveProbabilityConfig,
-)
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     ChatConversation,
@@ -97,7 +94,7 @@ class BeamSearchCausalLMGenerationMethod(CausalLMGenerationMethod):
         ).transpose(0, 1)
         generation_scores = torch.softmax(generation_scores, dim=-1)
 
-        generation_scores = self.confidence_extraction_method(
+        generation_scores = self.confidence_metric(
             next_token_ids=generation_output.sequences,
             scores=generation_scores,
         )
@@ -110,7 +107,7 @@ class BeamSearchCausalLMGenerationMethod(CausalLMGenerationMethod):
 
 BeamSearchCausalLMGenerationConfig = builds(
     BeamSearchCausalLMGenerationMethod,
-    confidence_extraction_method=None,
+    confidence_metric=None,
     num_beams=5,
 )
 

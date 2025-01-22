@@ -30,14 +30,16 @@ from typing import Iterator
 from torch import Tensor
 from transformers import PreTrainedModel, PreTrainedTokenizer
 
+from confidentllm.confidence_metrics import ConfidenceMetric
+
 __all__ = [
-    "GenerationOutput",
-    "ChatUserMessage",
+    "CausalLMGenerationMethod",
     "ChatAssistantMessage",
     "ChatConversation",
+    "ChatUserMessage",
+    "GenerationOutput",
     "ModelNotSetError",
     "TokenizerNotSetError",
-    "CausalLMGenerationMethod",
 ]
 
 
@@ -99,26 +101,13 @@ class TokenizerNotSetError(Exception):
         super().__init__(self.message)
 
 
-class ConfidenceExtractionMethod(ABC):
-    """Method for extracting confidence scores from the logits."""
-
-    @abstractmethod
-    def __call__(
-        self,
-        next_token_ids: Tensor,
-        scores: Tensor,
-    ) -> Tensor:
-        """Extract the confidence scores from the logits."""
-        ...  # pragma: no cover
-
-
 class CausalLMGenerationMethod(ABC):
     """Protocol for the generation method."""
 
     def __init__(  # noqa: PLR0913
         self,
         *,
-        confidence_extraction_method: ConfidenceExtractionMethod,
+        confidence_metric: ConfidenceMetric,
         tokenizer: PreTrainedTokenizer | None = None,
         model: PreTrainedModel | None = None,
         max_length: int = 256,
@@ -130,7 +119,7 @@ class CausalLMGenerationMethod(ABC):
         self.tokenizer = tokenizer
         self.model = model
 
-        self.confidence_extraction_method = confidence_extraction_method
+        self.confidence_metric = confidence_metric
 
         self.sampling = sampling
         self.temperature = temperature
