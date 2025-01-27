@@ -216,7 +216,7 @@ class QARunner:
         {"model/lora": "no_lora"},
         {"generation_method": "greedy_decoding"},
         {"generation_method/confidence_metric": "probability_disparity"},
-        {"output_processor": "multiple_choice_answer_with_token_confidence"},
+        {"output_processor": "numeric_answer_with_token_confidence"},
         {"data": "commonsense_qa"},
         {"evaluator": "accuracy_and_calibration"},
         {"run_config": "default"},

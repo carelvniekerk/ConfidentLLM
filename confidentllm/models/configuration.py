@@ -29,7 +29,7 @@ from confidentllm.models.model_name_and_type import ModelName
 
 __all__ = ["get_chat_template", "get_pretrained_model_name_or_path"]
 
-PRETRAINED_MODEL_NAME_OR_PATH = {
+PRETRAINED_MODEL_NAME_OR_PATH: dict[ModelName, str] = {
     ModelName.GPT2: "gpt2",
     ModelName.GEMMA_2B: "google/gemma-1.1-2b",
     ModelName.GEMMA_2B_IT: "google/gemma-1.1-2b-it",
@@ -45,6 +45,7 @@ PRETRAINED_MODEL_NAME_OR_PATH = {
     ModelName.MISTRAL_7B_INSTRUCT: "mistralai/Mistral-7B-Instruct-v0.3",
     ModelName.MISTRAL_NEMO_12B: "mistralai/Mistral-Nemo-Base-2407",
     ModelName.MISTRAL_NEMO_12B_INSTRUCT: "mistralai/Mistral-Nemo-Instruct-2407",
+    ModelName.QWEN25_7B_INSTRUCT: "Qwen/Qwen2.5-7B-Instruct",
 }
 
 

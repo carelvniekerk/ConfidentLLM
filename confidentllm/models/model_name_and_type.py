@@ -62,6 +62,9 @@ class ModelName(StrEnum):
     MISTRAL_NEMO_12B = auto()
     MISTRAL_NEMO_12B_INSTRUCT = auto()
 
+    # QWEN Models
+    QWEN25_7B_INSTRUCT = auto()
+
 
 class ModelType(StrEnum):
     """Enum class to store the types of the models."""
