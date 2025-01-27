@@ -36,11 +36,12 @@ from transformers import (
     TrainingArguments,
 )
 
+from confidentllm.train.loss_functions import LossFunction
+
 __all__ = [
     "BaseModelTrainer",
     "IntervalStrategy",
     "LoggingLevel",
-    "LossFunction",
 ]
 
 
@@ -60,13 +61,6 @@ class LoggingLevel(StrEnum):
     WARNING = auto()
     ERROR = auto()
     CRITICAL = auto()
-
-
-class LossFunction(StrEnum):
-    """Enum class to store the loss functions of the models."""
-
-    DEFAULT = auto()
-    UA_CLM = auto()
 
 
 class BaseModelTrainer(ABC):

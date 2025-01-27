@@ -35,12 +35,11 @@ from confidentllm.generation.types import (
     TokenizerNotSetError,
 )
 from confidentllm.hydra_tools import builds
-from confidentllm.train.loss_functions import uncertainty_aware_clm_loss
+from confidentllm.train.loss_functions import LOSS_FUNCTIONS, LossFunction
 from confidentllm.train.types import (
     BaseModelTrainer,
     IntervalStrategy,
     LoggingLevel,
-    LossFunction,
 )
 
 __all__ = ["SupervisedFinetuningTrainer"]
@@ -217,11 +216,7 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
             eval_dataset=self.eval_dataset,
         )
 
-        self.trainer.compute_loss_func = (
-            uncertainty_aware_clm_loss
-            if self.loss_function == LossFunction.UA_CLM
-            else None
-        )
+        self.trainer.compute_loss_func = LOSS_FUNCTIONS.get(self.loss_function, None)
 
 
 SupervisedFinetuningTrainerConfig = builds(SupervisedFinetuningTrainer)
