@@ -57,6 +57,9 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
             msg = "Greedy generation only generates one sequence."
             raise RuntimeWarning(msg)
 
+        if self.zero_shot_prompt:
+            prompt = f"{prompt}\n\n{self.zero_shot_prompt}"
+
         conversation: ChatConversation = ChatConversation(
             messages=[[ChatUserMessage(content=prompt)]],
         )
