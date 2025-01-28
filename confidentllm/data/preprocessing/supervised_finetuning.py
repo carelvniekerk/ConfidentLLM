@@ -38,8 +38,9 @@ def sft_preprocessing(
 ) -> dict[str, list[list[dict[str, str]]]]:
     """Tokenize the input strings and return the tokenized data."""
     answer_key: str = "preferred_response"
-    if answer_key not in data:
-        answer_key = "answer"
+    answer_key = "long_format_answer" if answer_key not in data else answer_key
+    answer_key = "answer" if answer_key not in data else answer_key
+
     conversations: ChatConversation = ChatConversation(
         messages=[
             [

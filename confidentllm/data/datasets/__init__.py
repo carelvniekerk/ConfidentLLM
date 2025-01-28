@@ -33,8 +33,8 @@ from confidentllm.data.datasets.mmlu import load_mmlu_data
 from confidentllm.data.datasets.multi_arith import load_multi_arith_data
 from confidentllm.data.datasets.openbook_qa import load_openbook_qa_data
 from confidentllm.data.datasets.union import load_union_data
-from confidentllm.hydra_tools import builds
 from confidentllm.data.types import DatasetSplit
+from confidentllm.hydra_tools import builds
 
 __all__: list[str] = []
 
@@ -75,7 +75,8 @@ train_data_store(MultiArithConfig(split=DatasetSplit.TRAIN), name="multiarith")
 eval_data_store(MultiArithConfig(split=DatasetSplit.TEST), name="multiarith")
 train_data_store(CommonsenseQAConfig(split=DatasetSplit.TRAIN), name="commonsense_qa")
 eval_data_store(
-    CommonsenseQAConfig(split=DatasetSplit.VALIDATION), name="commonsense_qa"
+    CommonsenseQAConfig(split=DatasetSplit.VALIDATION),
+    name="commonsense_qa",
 )
 train_data_store(ARCConfig(split=DatasetSplit.TRAIN), name="arc")
 eval_data_store(ARCConfig(split=DatasetSplit.VALIDATION), name="arc")

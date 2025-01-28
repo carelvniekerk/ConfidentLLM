@@ -24,8 +24,13 @@
 """Module containing functions for extracting answers from input strings."""
 
 import re
+from enum import Enum
 
-__all__ = ["extract_answers"]
+__all__ = [
+    "create_long_format_answer",
+    "extract_answers",
+    "format_choices",
+]
 
 
 class AnswerNotFoundError(Exception):
@@ -78,3 +83,47 @@ def extract_answers(
     data["answer"] = answers
 
     return data
+
+
+def format_choices(choices: list[str], *, choices_enum: Enum) -> str:
+    """Format the choices for the CommonsenseQA dataset.
+
+    Args:
+    ----
+        choices: The choices to format.
+        choices_enum: The choices enum.
+
+    Returns:
+    -------
+        The formatted choices.
+
+    """
+    choices_str: str = "Select one of the following:"
+    for i, choice in enumerate(choices):
+        choices_str += f"\n{choices_enum(value=i + 1).name}. {choice}"  # type: ignore[operator]
+    return choices_str
+
+
+def create_long_format_answer(
+    choices: list[str],
+    answer: str,
+    *,
+    choices_enum: Enum,
+) -> str:
+    """Create the long format answer for the CommonsenseQA dataset.
+
+    Args:
+    ----
+        choices: The choices.
+        answer: The answer.
+        choices_enum: The choices enum.
+
+    Returns:
+    -------
+        The long format answer.
+
+    """
+    answer_str: str = choices[choices_enum[answer].value - 1]  # type: ignore[call-overload, index]
+    answer_str = f"{choices_enum[answer].name}. {answer_str}"  # type: ignore[index]
+
+    return answer_str
