@@ -24,9 +24,11 @@
 """Module containing functions for loading the Commonsense QA dataset."""
 
 from enum import Enum, StrEnum, auto
+from functools import partial
 
 from datasets import Dataset, Features, Value, load_dataset
 
+from confidentllm.data.extract_answers import create_long_format_answer, format_choices
 from confidentllm.data.types import DatasetSplit
 
 __all__ = ["load_arc_data"]
@@ -65,27 +67,10 @@ def _get_arc_question_type(dataset_name: str) -> ARCQuestionType:
     return ARCQuestionType(task_name)
 
 
-def _format_choices(choices: list[str]) -> str:
-    """Format the choices for the MMLU dataset.
-
-    Args:
-    ----
-        choices: The choices to format.
-
-    Returns:
-    -------
-        The formatted choices.
-
-    """
-    choices_str: str = "Select one of the following:"
-    for i, choice in enumerate(choices):
-        choices_str += f"\n{ARCAnswers(value=i + 1).name}. {choice}"
-    return choices_str
-
-
 def _arc_map(
     examples: dict[str, list[str | dict[str, list[str]]]],
 ) -> dict[str, list[str]]:
+    _format_choices = partial(format_choices, choices_enum=ARCAnswers)  # type: ignore[arg-type]
     question: list[str] = examples.get("question", [])  # type: ignore[assignment]
     question = [
         f"{question_str}\n{_format_choices(choices['text'])}"  # type: ignore[arg-type, index]
@@ -105,7 +90,25 @@ def _arc_map(
         for raw_answer in examples["answerKey"]
     ]
 
-    return {"id": examples["id"], "question": question, "answer": answer}  # type: ignore[dict-item]
+    long_format_answer: list[str] = [
+        create_long_format_answer(
+            choices=choices["text"],  # type: ignore[arg-type, index]
+            answer=raw_answer,  # type: ignore[arg-type]
+            choices_enum=ARCAnswers,  # type: ignore[arg-type]
+        )
+        for choices, raw_answer in zip(
+            examples["choices"],
+            examples["answerKey"],
+            strict=True,
+        )
+    ]
+
+    return {
+        "id": examples["id"],  # type: ignore[dict-item]
+        "question": question,
+        "answer": answer,
+        "long_format_answer": long_format_answer,
+    }
 
 
 def load_arc_data(
@@ -169,6 +172,7 @@ def load_arc_data(
                 "id": Value("string"),
                 "question": Value("string"),
                 "answer": Value("string"),
+                "long_format_answer": Value("string"),
             },
         ),
     )

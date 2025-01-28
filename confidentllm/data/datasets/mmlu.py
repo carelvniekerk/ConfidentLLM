@@ -24,9 +24,11 @@
 """Module containing functions for loading the MMLU dataset."""
 
 from enum import Enum, StrEnum, auto
+from functools import partial
 
 from datasets import Dataset, Features, Value, load_dataset
 
+from confidentllm.data.extract_answers import create_long_format_answer, format_choices
 from confidentllm.data.types import DatasetSplit
 
 __all__ = ["load_mmlu_data"]
@@ -122,26 +124,9 @@ def _get_mmlu_task(dataset_name: str) -> MMLUTask:
     return MMLUTask(task_name)
 
 
-def _format_choices(choices: list[str]) -> str:
-    """Format the choices for the MMLU dataset.
-
-    Args:
-    ----
-        choices: The choices to format.
-
-    Returns:
-    -------
-        The formatted choices.
-
-    """
-    choices_str: str = "Select one of the following:"
-    for i, choice in enumerate(choices):
-        choices_str += f"\n{MMLUAnswers(value=i + 1).name}. {choice}"
-    return choices_str
-
-
 def _mmlu_map(examples: dict[str, list[str | list[str]]]) -> dict[str, list[str]]:
     question: list[str] = examples.get("question", [])  # type: ignore[assignment]
+    _format_choices = partial(format_choices, choices_enum=MMLUAnswers)  # type: ignore[arg-type]
     question = [
         f"{question_str}\n{_format_choices(choices)}"  # type: ignore[arg-type]
         for question_str, choices in zip(question, examples["choices"], strict=True)
@@ -152,7 +137,24 @@ def _mmlu_map(examples: dict[str, list[str | list[str]]]) -> dict[str, list[str]
         for answer_index in examples["answer"]
     ]
 
-    return {"question": question, "answer": answer}
+    long_format_answer: list[str] = [
+        create_long_format_answer(
+            choices=choices,  # type: ignore[arg-type, index]
+            answer=MMLUAnswers(value=answer_index + 1).name,  # type: ignore[arg-type, operator]
+            choices_enum=MMLUAnswers,  # type: ignore[arg-type]
+        )
+        for choices, answer_index in zip(
+            examples["choices"],
+            examples["answer"],
+            strict=True,
+        )
+    ]
+
+    return {
+        "question": question,
+        "answer": answer,
+        "long_format_answer": long_format_answer,
+    }
 
 
 def load_mmlu_data(
@@ -214,6 +216,7 @@ def load_mmlu_data(
             {
                 "question": Value("string"),
                 "answer": Value("string"),
+                "long_format_answer": Value("string"),
             },
         ),
     )
