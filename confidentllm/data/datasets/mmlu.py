@@ -140,12 +140,12 @@ def _mmlu_map(examples: dict[str, list[str | list[str]]]) -> dict[str, list[str]
     long_format_answer: list[str] = [
         create_long_format_answer(
             choices=choices,  # type: ignore[arg-type, index]
-            answer=raw_answer,  # type: ignore[arg-type]
+            answer=MMLUAnswers(value=answer_index + 1).name,  # type: ignore[arg-type, operator]
             choices_enum=MMLUAnswers,  # type: ignore[arg-type]
         )
-        for choices, raw_answer in zip(
+        for choices, answer_index in zip(
             examples["choices"],
-            examples["answerKey"],
+            examples["answer"],
             strict=True,
         )
     ]
