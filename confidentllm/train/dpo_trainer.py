@@ -263,7 +263,7 @@ class DPOTrainer(BaseModelTrainer):
             max_prompt_length=self.max_prompt_length,
             max_completion_length=self.max_length - self.max_prompt_length,
             beta=self.loss_beta,
-            loss_type=self.loss_function.value,  # type: ignore[arg-type]
+            loss_type=self.loss_function.value.lower(),  # type: ignore[arg-type]
             use_weighting=self.use_weighting,
             f_divergence_type=self.divergence_type,
             f_alpha_divergence_coef=self.divergence_alpha_coefficient,
