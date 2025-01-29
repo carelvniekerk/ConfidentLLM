@@ -114,6 +114,7 @@ class CausalLMGenerationMethod(ABC):
         sampling: bool = False,
         temperature: float = 1.0,
         num_beams: int = 1,
+        zero_shot_prompt: str = "",
     ) -> None:
         """Initialize the generation method."""
         self.tokenizer = tokenizer
@@ -125,6 +126,8 @@ class CausalLMGenerationMethod(ABC):
         self.temperature = temperature
         self.num_beams = num_beams
         self.max_length = max_length
+
+        self.zero_shot_prompt = zero_shot_prompt
 
     def set_tokenizer(self, tokenizer: PreTrainedTokenizer) -> None:
         """Set the tokenizer for the generation method."""
