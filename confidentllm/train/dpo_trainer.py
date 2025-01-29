@@ -256,7 +256,7 @@ class DPOTrainer(BaseModelTrainer):
             lr_scheduler_type=self.lr_scheduler_type,
             warmup_ratio=self.warmup_ratio,
             metric_for_best_model=self.metric_for_best_model,
-            label_smoothing_factor=self.label_smoothing_factor,
+            label_smoothing=self.label_smoothing_factor,
             bf16=self.bf16,
             fp16=self.fp16,
             max_length=self.max_length,
