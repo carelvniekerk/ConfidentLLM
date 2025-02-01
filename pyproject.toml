@@ -61,9 +61,11 @@ python_version = "3.12"
 [[tool.mypy.overrides]]
 module = [
     "datasets",
+    "datasets.*",
     "hydra_zen",
     "peft",
     "peft.*",
+    "pyarrow.*",
     "torch",
     "transformers",
     "transformers.*",
