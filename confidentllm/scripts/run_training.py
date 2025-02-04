@@ -60,7 +60,7 @@ def run_training(
     trainer: BaseModelTrainer,
 ) -> None:
     """Run the question answering process."""
-    init_wandb()
+    init_wandb(task_name="Training")
     log_system_info()
     set_seed(trainer.seed)
 
