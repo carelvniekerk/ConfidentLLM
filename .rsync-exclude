@@ -1,17 +1,14 @@
-# Pyenv environment
-.python-version
-
 # Hydra generated dirs
 multirun
-outputs
 hpc_jobs
 
 # VS Code settings
 .vscode
 
-# UV virtual environment
+# UV environment
 .venv
 uv.lock
+.python-version
 
 # Python cache
 __pycache__
