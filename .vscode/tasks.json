@@ -3,7 +3,7 @@
     "tasks": [
         {
             "label": "Sync WANDB",
-            "command": "wandb sync --sync-all --project ConfidentLLM *",
+            "command": "wandb sync --sync-all *",
             "type": "shell",
             "options": {
                 "shell": {
@@ -28,7 +28,7 @@
         {
             "label": "Open WANDB",
             "type": "shell",
-            "command": "open 'https://wandb.ai/dialgroup-hhu/ConfidentLLM/table?nw=nwusercarelvniekerk'",
+            "command": "open 'https://wandb.ai/dialgroup-hhu/projects'",
             "presentation": {
                 "reveal": "never",
                 "panel": "shared",

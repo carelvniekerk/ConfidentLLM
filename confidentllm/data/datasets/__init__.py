@@ -57,7 +57,7 @@ data_store(OpenbookQAConfig(split=DatasetSplit.TEST), name="openbook_qa")
 data_store(UnionConfig(split=DatasetSplit.TEST), name="union")
 
 cot_preference_train_data = COTPreferenceDataConfig(
-    run_path="dialgroup-hhu/ConfidentLLM",
+    run_path="dialgroup-hhu/ConfidentLLM-QuestionAnswering",
     run_name="ancient-universe-243",
     table_name="generation_path_data",
 )

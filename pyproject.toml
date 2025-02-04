@@ -22,7 +22,7 @@ dependencies = [
     "trl >= 0.12.0",
     "tqdm >= 4.66.0",
     "types-tqdm >= 4.66.0.20240417",
-    "wandb > 0.17, < 0.18",
+    "wandb >= 0.17",
 ]
 
 [dependency-groups]
@@ -61,9 +61,11 @@ python_version = "3.12"
 [[tool.mypy.overrides]]
 module = [
     "datasets",
+    "datasets.*",
     "hydra_zen",
     "peft",
     "peft.*",
+    "pyarrow.*",
     "torch",
     "transformers",
     "transformers.*",

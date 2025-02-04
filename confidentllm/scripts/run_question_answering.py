@@ -27,11 +27,11 @@ import logging
 from dataclasses import dataclass
 from pprint import pformat
 
+import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
-import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
@@ -217,7 +217,7 @@ class QARunner:
         {"generation_method": "greedy_decoding"},
         {"generation_method/confidence_metric": "probability_disparity"},
         {"output_processor": "numeric_answer_with_token_confidence"},
-        {"data": "commonsense_qa"},
+        {"data": "multiarith"},
         {"evaluator": "accuracy_and_calibration"},
         {"run_config": "default"},
     ],
@@ -232,7 +232,7 @@ def run_qa(  # noqa: PLR0913
 ) -> None:
     """Run the question answering process."""
     if not run_config.debug:
-        init_wandb()
+        init_wandb(task_name="QuestionAnswering")
     log_system_info()
     set_seed(run_config.seed)
 

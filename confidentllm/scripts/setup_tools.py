@@ -165,8 +165,14 @@ def setup_hydra_config_and_logging(
     store.add_to_hydra_store()
 
 
-def init_wandb() -> None:
-    """Initialize Weights and Biases."""
+def init_wandb(task_name: str) -> None:
+    """Initialize Weights and Biases.
+
+    Args:
+    ----
+        task_name(str): The name of the task.
+
+    """
     hydra_config_path: Path = Path(".hydra") / "hydra.yaml"
     hydra_config: DictConfig = OmegaConf.load(hydra_config_path)  # type: ignore  # noqa: PGH003
 
@@ -179,7 +185,8 @@ def init_wandb() -> None:
 
     config_path: Path = Path(".hydra") / "config.yaml"
     config: DictConfig = OmegaConf.load(config_path)  # type: ignore  # noqa: PGH003
-    initialize_wandb(config=config)
+    project_name: str = f"ConfidentLLM-{task_name}"
+    initialize_wandb(config=config, project_name=project_name)
 
 
 def set_seed(seed: int) -> None:

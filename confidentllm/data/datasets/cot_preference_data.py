@@ -28,8 +28,21 @@ from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 import torch
-from datasets import Dataset
-from numpy import exp
+from datasets import Dataset, DatasetInfo, Features, Value
+from datasets.table import InMemoryTable
+from numpy import dtype, exp, ndarray
+from numpy._core.multiarray import _reconstruct
+from numpy.dtypes import Int64DType
+from pyarrow.lib import (
+    _reconstruct_record_batch,
+    _reconstruct_table,
+    _restore_array,
+    chunked_array,
+    field,
+    py_buffer,
+    schema,
+    type_for_alias,
+)
 
 import wandb
 from wandb.apis.public.runs import Run, Runs
@@ -38,6 +51,31 @@ if TYPE_CHECKING:
     from wandb.apis.public.files import File, Files
 
 __all__ = ["load_cot_preference_data"]
+
+# Add classes and methods to the safe globals for torch serialization.
+# Add the Dataset, DatasetInfo, Features, InMemoryTable, and Value classes from
+# huggingface datasets.
+torch.serialization.add_safe_globals(
+    safe_globals=[Dataset, DatasetInfo, Features, InMemoryTable, Value],
+)
+# Add the _reconstruct, dtype, Int64DType, and ndarray classes from numpy.
+torch.serialization.add_safe_globals(
+    safe_globals=[_reconstruct, dtype, Int64DType, ndarray],
+)
+# Add the _restore_array, _reconstruct_record_batch, field, py_buffer, schema, and
+# type_for_alias functions from pyarrow.
+torch.serialization.add_safe_globals(
+    safe_globals=[
+        _restore_array,
+        _reconstruct_record_batch,
+        _reconstruct_table,
+        chunked_array,
+        field,
+        py_buffer,
+        schema,
+        type_for_alias,
+    ],
+)
 
 
 class Table(TypedDict):
