@@ -37,6 +37,7 @@ PRETRAINED_MODEL_NAME_OR_PATH: dict[ModelName, str] = {
     ModelName.GEMMA2_9B: "google/gemma-2-9b",
     ModelName.PHI2: "microsoft/phi-2",
     ModelName.PHI3_MINI_INSTRUCT: "microsoft/Phi-3-mini-128k-instruct",
+    ModelName.PHI4: "microsoft/phi-4",
     ModelName.LLAMA2_7B: "meta-llama/Llama-2-7b-hf",
     ModelName.LLAMA2_7B_CHAT: "meta-llama/Llama-2-7b-chat-hf",
     ModelName.LLAMA3_8B_INSTRUCT: "meta-llama/Meta-Llama-3.1-8B-Instruct",
@@ -46,6 +47,7 @@ PRETRAINED_MODEL_NAME_OR_PATH: dict[ModelName, str] = {
     ModelName.MISTRAL_NEMO_12B: "mistralai/Mistral-Nemo-Base-2407",
     ModelName.MISTRAL_NEMO_12B_INSTRUCT: "mistralai/Mistral-Nemo-Instruct-2407",
     ModelName.QWEN25_7B_INSTRUCT: "Qwen/Qwen2.5-7B-Instruct",
+    ModelName.DEEPSEEK_R1_DISTILL_QWEN_7B: "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
 }
 
 

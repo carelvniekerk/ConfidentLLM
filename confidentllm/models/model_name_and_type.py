@@ -49,6 +49,7 @@ class ModelName(StrEnum):
     # Microsoft PHI Models
     PHI2 = auto()
     PHI3_MINI_INSTRUCT = auto()
+    PHI4 = auto()
 
     # Meta-Llama Models
     LLAMA2_7B = auto()
@@ -64,6 +65,9 @@ class ModelName(StrEnum):
 
     # QWEN Models
     QWEN25_7B_INSTRUCT = auto()
+
+    # Deepseek Models
+    DEEPSEEK_R1_DISTILL_QWEN_7B = auto()
 
 
 class ModelType(StrEnum):
