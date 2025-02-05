@@ -38,7 +38,7 @@ class ModelName(StrEnum):
     """Enum class to store the names of the models."""
 
     # Default small GPT2 model for testing
-    GPT2 = auto()
+    GPT2_124M = auto()
 
     # Google GEMMA Models
     GEMMA_2B = auto()
@@ -47,9 +47,9 @@ class ModelName(StrEnum):
     GEMMA2_9B = auto()
 
     # Microsoft PHI Models
-    PHI2 = auto()
-    PHI3_MINI_INSTRUCT = auto()
-    PHI4 = auto()
+    PHI2_3B = auto()
+    PHI3_MINI_INSTRUCT_4B = auto()
+    PHI4_14B = auto()
 
     # Meta-Llama Models
     LLAMA2_7B = auto()

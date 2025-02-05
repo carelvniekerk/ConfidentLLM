@@ -30,14 +30,14 @@ from confidentllm.models.model_name_and_type import ModelName
 __all__ = ["get_chat_template", "get_pretrained_model_name_or_path"]
 
 PRETRAINED_MODEL_NAME_OR_PATH: dict[ModelName, str] = {
-    ModelName.GPT2: "gpt2",
+    ModelName.GPT2_124M: "gpt2",
     ModelName.GEMMA_2B: "google/gemma-1.1-2b",
     ModelName.GEMMA_2B_IT: "google/gemma-1.1-2b-it",
     ModelName.GEMMA2_9B_IT: "google/gemma-2-9b-it",
     ModelName.GEMMA2_9B: "google/gemma-2-9b",
-    ModelName.PHI2: "microsoft/phi-2",
-    ModelName.PHI3_MINI_INSTRUCT: "microsoft/Phi-3-mini-128k-instruct",
-    ModelName.PHI4: "microsoft/phi-4",
+    ModelName.PHI2_3B: "microsoft/phi-2",
+    ModelName.PHI3_MINI_INSTRUCT_4B: "microsoft/Phi-3-mini-128k-instruct",
+    ModelName.PHI4_14B: "microsoft/phi-4",
     ModelName.LLAMA2_7B: "meta-llama/Llama-2-7b-hf",
     ModelName.LLAMA2_7B_CHAT: "meta-llama/Llama-2-7b-chat-hf",
     ModelName.LLAMA3_8B_INSTRUCT: "meta-llama/Meta-Llama-3.1-8B-Instruct",
