@@ -25,9 +25,8 @@
 
 from pathlib import Path
 
-from omegaconf import DictConfig, OmegaConf
-
 import wandb
+from omegaconf import DictConfig, OmegaConf
 
 __all__ = ["initialize_wandb"]
 
@@ -78,7 +77,7 @@ def initialize_wandb(
         dir=str(wandb_path),
         settings=wandb.Settings(
             start_method="thread",  # Note: https://docs.wandb.ai/guides/integrations/hydra#troubleshooting-multiprocessing
-            x_service_wait=300,
+            _service_wait=300,
             init_timeout=300,
         ),
     )
