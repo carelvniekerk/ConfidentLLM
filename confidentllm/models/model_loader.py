@@ -243,27 +243,27 @@ class ModelLoader:
 # Add default model loader to the store
 ModelLoaderConfig = builds(ModelLoader, zen_wrappers=[pydantic_parser])
 CausalLMModelConfig = ModelLoaderConfig(
-    pretrained_model_name_or_path=ModelName.GPT2,
+    pretrained_model_name_or_path=ModelName.GPT2_124M,
     model_type=ModelType.CAUSAL_LM,
     lora=NoLoRAConfig,  # type: ignore[arg-type]
 )
 
 TrainCausalLMModelConfig = ModelLoaderConfig(
-    pretrained_model_name_or_path=ModelName.GPT2,
+    pretrained_model_name_or_path=ModelName.GPT2_124M,
     model_type=ModelType.CAUSAL_LM,
     model_mode=ModelMode.TRAIN,
     lora=NoLoRAConfig,  # type: ignore[arg-type]
 )
 
 TrainSequenceCLSModelConfig = ModelLoaderConfig(
-    pretrained_model_name_or_path=ModelName.GPT2,
+    pretrained_model_name_or_path=ModelName.GPT2_124M,
     model_type=ModelType.SEQUENCE_CLS,
     model_mode=ModelMode.TRAIN,
     lora=NoLoRAConfig,  # type: ignore[arg-type]
 )
 
 SequenceCLSModelConfig = ModelLoaderConfig(
-    pretrained_model_name_or_path=ModelName.GPT2,
+    pretrained_model_name_or_path=ModelName.GPT2_124M,
     model_type=ModelType.SEQUENCE_CLS,
     model_mode=ModelMode.EVAL,
     lora=NoLoRAConfig,  # type: ignore[arg-type]

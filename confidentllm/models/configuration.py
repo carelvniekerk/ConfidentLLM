@@ -57,7 +57,7 @@ def get_pretrained_model_name_or_path(name: ModelName | Path) -> str | Path:
 
 
 CHAT_TEMPLATES: dict[ModelName, str] = {
-    ModelName.GPT2: (
+    ModelName.GPT2_124M: (
         "{{ bos_token }}"
         "{% if messages[0]['role'] == 'system' %}"
         "{{ raise_exception('System role not supported') }}{% endif %}"
@@ -70,7 +70,7 @@ CHAT_TEMPLATES: dict[ModelName, str] = {
         "{% set role = message['role'] %}{% endif %}{% endfor %}"
         "{% if add_generation_prompt %}{{ '\nOutput:' }}{% endif %}"
     ),
-    ModelName.PHI2: (
+    ModelName.PHI2_3B: (
         "{{ bos_token }}"
         "{% if messages[0]['role'] == 'system' %}"
         "{{ raise_exception('System role not supported') }}{% endif %}"
