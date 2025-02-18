@@ -159,7 +159,8 @@ class ModelLoader:
 
         self.model_loader: ModelLoaderFunction = partial(
             self.model_class.from_pretrained,
-            device_map=self.device,
+            # device_map=self.device,
+            device_map="auto",
             torch_dtype=self.data_type,
         )  # type: ignore[assignment] # Paths can also be passed to from_pretrained
 
