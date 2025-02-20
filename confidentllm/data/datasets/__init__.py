@@ -29,6 +29,7 @@ from confidentllm.data.datasets.arc import load_arc_data
 from confidentllm.data.datasets.commonsense_qa import load_commonsense_qa_data
 from confidentllm.data.datasets.cot_preference_data import load_cot_preference_data
 from confidentllm.data.datasets.gsm8k import load_gsm8k_data
+from confidentllm.data.datasets.hh_rlhf import load_hh_rlhf_data
 from confidentllm.data.datasets.mmlu import load_mmlu_data
 from confidentllm.data.datasets.multi_arith import load_multi_arith_data
 from confidentllm.data.datasets.openbook_qa import load_openbook_qa_data
@@ -41,6 +42,7 @@ __all__: list[str] = []
 COTPreferenceDataConfig = builds(load_cot_preference_data)
 CommonsenseQAConfig = builds(load_commonsense_qa_data)
 GSM8KConfig = builds(load_gsm8k_data)
+HHRLHFConfig = builds(load_hh_rlhf_data)
 MMLUConfig = builds(load_mmlu_data)
 MultiArithConfig = builds(load_multi_arith_data)
 ARCConfig = builds(load_arc_data)
@@ -55,6 +57,7 @@ data_store(CommonsenseQAConfig(split=DatasetSplit.VALIDATION), name="commonsense
 data_store(ARCConfig(split=DatasetSplit.TEST), name="arc")
 data_store(OpenbookQAConfig(split=DatasetSplit.TEST), name="openbook_qa")
 data_store(UnionConfig(split=DatasetSplit.TEST), name="union")
+data_store(HHRLHFConfig(split=DatasetSplit.TEST), name="hh_rlhf")
 
 cot_preference_train_data = COTPreferenceDataConfig(
     run_path="dialgroup-hhu/ConfidentLLM-QuestionAnswering",
@@ -84,3 +87,5 @@ train_data_store(OpenbookQAConfig(split=DatasetSplit.TRAIN), name="openbook_qa")
 eval_data_store(OpenbookQAConfig(split=DatasetSplit.VALIDATION), name="openbook_qa")
 train_data_store(UnionConfig(split=DatasetSplit.TRAIN), name="union")
 eval_data_store(UnionConfig(split=DatasetSplit.VALIDATION), name="union")
+train_data_store(HHRLHFConfig(split=DatasetSplit.TRAIN), name="hh_rlhf")
+eval_data_store(HHRLHFConfig(split=DatasetSplit.TEST), name="hh_rlhf")

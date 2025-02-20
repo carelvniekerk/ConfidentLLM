@@ -1,0 +1,108 @@
+# coding=utf-8
+# --------------------------------------------------------------------------------
+# Project: ConfidentLLM
+# Author: Carel van Niekerk
+# Year: 2025
+# Group: Dialogue Systems and Machine Learning Group
+# Institution: Heinrich Heine University Düsseldorf
+# --------------------------------------------------------------------------------
+#
+# This code was generated with the help of AI writing assistants
+# including GitHub Copilot, ChatGPT, Bing Chat.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http: //www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""HH-RLHF dataset loading functions."""
+
+from datasets import Dataset, Features, Value, load_dataset
+
+from confidentllm.data.types import DatasetSplit
+
+__all__ = ["load_hh_rlhf_data"]
+
+
+def _map_feature_keys(examples: dict[str, list[str]]) -> dict[str, list[str]]:
+    """Map the feature keys in the HH-RLHF to the standard keys."""
+    return {
+        "preferred_response": examples["chosen"],
+        "rejected_response": examples["rejected"],
+    }
+
+
+def load_hh_rlhf_data(
+    split: DatasetSplit = DatasetSplit.TRAIN,
+    transformation_batch_size: int = 2048,
+    name: str = "HH-RLHF",  # noqa: ARG001
+    *,
+    use_cache: bool = True,
+    **kwargs: dict,  # noqa: ARG001
+) -> Dataset:
+    """Load the HH-RLHF dataset from Anthropic.
+
+    Args:
+    ----
+        split: The dataset split to load.
+        transformation_batch_size: The batch size for the transformation.
+        name: The name of the dataset.
+        use_cache: Whether to use the cache.
+        kwargs: Additional keyword arguments.
+
+    Returns:
+    -------
+        The HH-RLHF dataset.
+
+    """
+    data: Dataset = load_dataset(path="Anthropic/hh-rlhf", split=split.value)  # type: ignore[return-type]
+    data = data.map(
+        function=_map_feature_keys,
+        batched=True,
+        batch_size=transformation_batch_size,
+        load_from_cache_file=use_cache,
+        remove_columns=data.column_names,
+        features=Features(
+            {
+                "preferred_response": Value("string"),
+                "rejected_response": Value("string"),
+            },
+        ),
+    )
+
+    # Add metadata to the dataset
+    data._info.description = (  # noqa: SLF001 # Adding description to dataset
+        "The Anthropic HH RLHF dataset consists of two main components: human "
+        "preference data on helpfulness and harmlessness, and red teaming dialogue "
+        "data. The preference data, sourced from Training a Helpful and Harmless "
+        "Assistant with Reinforcement Learning from Human Feedback, pairs chosen and "
+        "rejected responses to train reward models for RLHF but is explicitly not"
+        "intended for supervised fine-tuning of dialogue agents due to potential "
+        "risks. The red teaming data, from Red Teaming Language Models to Reduce Harms,"
+        " contains transcripts of adversarial interactions where human testers attempt "
+        "to elicit harmful behavior from AI assistants, annotated with success ratings "
+        "and harmlessness scores. This dataset aims to aid research in reducing AI harm"
+        ", though it includes sensitive content that may be distressing."
+    )
+    data._info.citation = (  # noqa: SLF001 # Adding citation to dataset
+        "@misc{bai2022traininghelpfulharmlessassistant,\n\ttitle={Training a Helpful "
+        "and Harmless Assistant with Reinforcement Learning from Human Feedback}, \n\t"
+        "author={Yuntao Bai and Andy Jones and Kamal Ndousse and Amanda Askell and Anna"
+        " Chen and Nova DasSarma and Dawn Drain and Stanislav Fort and Deep Ganguli and"
+        " Tom Henighan and Nicholas Joseph and Saurav Kadavath and Jackson Kernion and "
+        "Tom Conerly and Sheer El-Showk and Nelson Elhage and Zac Hatfield-Dodds and "
+        "Danny Hernandez and Tristan Hume and Scott Johnston and Shauna Kravec and "
+        "Liane Lovitt and Neel Nanda and Catherine Olsson and Dario Amodei and Tom "
+        "Brown and Jack Clark and Sam McCandlish and Chris Olah and Ben Mann and "
+        "Jared Kaplan},\n\tyear={2022},\n\turl={https://arxiv.org/abs/2204.05862},\n}"
+    )
+    data._info.homepage = "https://github.com/anthropics/hh-rlhf?tab=readme-ov-file"  # noqa: SLF001
+    data._info.license = "MIT License"  # noqa: SLF001
+
+    return data
