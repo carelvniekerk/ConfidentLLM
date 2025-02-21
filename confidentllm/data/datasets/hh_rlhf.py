@@ -23,27 +23,61 @@
 # limitations under the License.
 """HH-RLHF dataset loading functions."""
 
-from datasets import Dataset, Features, Value, load_dataset
+import re
+
+from datasets import Dataset, Features, Sequence, Value, load_dataset
 
 from confidentllm.data.types import DatasetSplit
 
 __all__ = ["load_hh_rlhf_data"]
 
 
-def _map_feature_keys(examples: dict[str, list[str]]) -> dict[str, list[str]]:
+def _extract_utterances(
+    text: str,
+    pattern: str = r"(Human|Assistant): (.*?)(?=\s*(?:Human|Assistant):|$)",
+) -> list[str]:
+    # Remove escape characters
+    text = text.replace('"', "").replace("\n", "\n")
+    text = re.sub(r"\n\n+", " ", text)
+
+    # Use regex to capture all user and assistant utterances
+    regex_matches: list[tuple[str, str]] = re.findall(
+        pattern=pattern,
+        string=text,
+        flags=re.DOTALL,
+    )
+    # Format as a list of alternating turns
+    utterances: list[str] = [utterance.strip() for speaker, utterance in regex_matches]
+
+    return utterances
+
+
+def _map_hh_rlhf_data(examples: dict[str, list[str]]) -> dict[str, list[list[str]]]:
     """Map the feature keys in the HH-RLHF to the standard keys."""
-    return {
+    mapped_examples: dict[str, list[str]] = {
         "preferred_response": examples["chosen"],
         "rejected_response": examples["rejected"],
     }
 
+    extracted_examples: dict[str, list[list[str]]] = {}
+    extracted_examples["preferred_response"] = [
+        _extract_utterances(response)
+        for response in mapped_examples["preferred_response"]
+    ]
+    extracted_examples["rejected_response"] = [
+        _extract_utterances(response)
+        for response in mapped_examples["rejected_response"]
+    ]
+
+    return extracted_examples
+
 
 def load_hh_rlhf_data(
-    split: DatasetSplit = DatasetSplit.TRAIN,
+    split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 2048,
     name: str = "HH-RLHF",  # noqa: ARG001
     *,
-    use_cache: bool = True,
+    use_cache: bool = False,
     **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
     """Load the HH-RLHF dataset from Anthropic.
@@ -63,15 +97,15 @@ def load_hh_rlhf_data(
     """
     data: Dataset = load_dataset(path="Anthropic/hh-rlhf", split=split.value)  # type: ignore[return-type]
     data = data.map(
-        function=_map_feature_keys,
+        function=_map_hh_rlhf_data,
         batched=True,
         batch_size=transformation_batch_size,
         load_from_cache_file=use_cache,
         remove_columns=data.column_names,
         features=Features(
             {
-                "preferred_response": Value("string"),
-                "rejected_response": Value("string"),
+                "preferred_response": Sequence(Value("string")),
+                "rejected_response": Sequence(Value("string")),
             },
         ),
     )
