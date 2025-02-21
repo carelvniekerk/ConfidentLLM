@@ -24,12 +24,20 @@
 """HH-RLHF dataset loading functions."""
 
 import re
+from enum import StrEnum
 
 from datasets import Dataset, Features, Sequence, Value, load_dataset
 
 from confidentllm.data.types import DatasetSplit
 
 __all__ = ["load_hh_rlhf_data"]
+
+
+class HHRLHFTask(StrEnum):
+    """The HH-RLHF dataset tasks."""
+
+    HELPFUL = "helpful-base"
+    HARMLESS = "harmless-base"
 
 
 def _extract_utterances(
@@ -73,11 +81,11 @@ def _map_hh_rlhf_data(examples: dict[str, list[str]]) -> dict[str, list[list[str
 
 
 def load_hh_rlhf_data(
-    split: DatasetSplit = DatasetSplit.TEST,
+    split: DatasetSplit = DatasetSplit.TRAIN,
     transformation_batch_size: int = 2048,
-    name: str = "HH-RLHF",  # noqa: ARG001
+    name: str = "helpful-RLHF",
     *,
-    use_cache: bool = False,
+    use_cache: bool = True,
     **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
     """Load the HH-RLHF dataset from Anthropic.
@@ -95,7 +103,19 @@ def load_hh_rlhf_data(
         The HH-RLHF dataset.
 
     """
-    data: Dataset = load_dataset(path="Anthropic/hh-rlhf", split=split.value)  # type: ignore[return-type]
+    task_name: str = name.split("-")[0].upper()
+    if task_name not in HHRLHFTask.__members__:
+        raise ValueError(  # noqa: TRY003
+            f"Invalid task name '{task_name}'. "  # noqa: EM102
+            f"Valid task names are: {', '.join(HHRLHFTask.__members__)}",
+        )
+    task: HHRLHFTask = HHRLHFTask[task_name]
+
+    data: Dataset = load_dataset(
+        path="Anthropic/hh-rlhf",
+        data_dir=task.value,
+        split=split.value,
+    )  # type: ignore[return-type]
     data = data.map(
         function=_map_hh_rlhf_data,
         batched=True,
