@@ -105,4 +105,6 @@ def load_hh_rlhf_data(
     data._info.homepage = "https://github.com/anthropics/hh-rlhf?tab=readme-ov-file"  # noqa: SLF001
     data._info.license = "MIT License"  # noqa: SLF001
 
+    data.cached_version = use_cache  # type: ignore[attr-defined]
+
     return data
