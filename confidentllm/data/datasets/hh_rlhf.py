@@ -55,7 +55,7 @@ def _extract_utterances(
         flags=re.DOTALL,
     )
     # Format as a list of alternating turns
-    utterances: list[str] = [utterance.strip() for speaker, utterance in regex_matches]
+    utterances: list[str] = [utterance.strip() for _, utterance in regex_matches]
 
     return utterances
 
