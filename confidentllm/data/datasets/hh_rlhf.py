@@ -26,7 +26,7 @@
 import re
 from enum import StrEnum
 
-from datasets import Dataset, Features, Sequence, Value, load_dataset
+from datasets import Dataset, DownloadMode, Features, Sequence, Value, load_dataset
 
 from confidentllm.data.types import DatasetSplit
 
@@ -115,6 +115,7 @@ def load_hh_rlhf_data(
         path="Anthropic/hh-rlhf",
         data_dir=task.value,
         split=split.value,
+        download_mode=DownloadMode.REUSE_DATASET_IF_EXISTS,
     )  # type: ignore[return-type]
     data = data.map(
         function=_map_hh_rlhf_data,
