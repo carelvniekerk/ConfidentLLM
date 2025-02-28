@@ -23,6 +23,8 @@
 # limitations under the License.
 """Tokenization and data preparation for training a reward model."""
 
+from itertools import cycle
+
 import torch
 from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
 from transformers.tokenization_utils_base import PaddingStrategy
@@ -37,6 +39,39 @@ from confidentllm.generation.types import (
 __all__ = ["reward_model_preprocessing"]
 
 
+def _create_conversation(
+    responses: list[str] | list[list[str]],
+    questions: list[str] | None = None,
+) -> ChatConversation:
+    """Create a ChatConversation from a list of questions and responses."""
+    if questions is not None:
+        conversation: ChatConversation = ChatConversation(
+            messages=[
+                [
+                    ChatUserMessage(question),
+                    ChatAssistantMessage(cleanup_response(response)),  # type: ignore[arg-type]
+                ]
+                for question, response in zip(questions, responses, strict=True)
+            ],
+        )
+    else:
+        conversation = ChatConversation(
+            messages=[
+                [
+                    message_cls(utterance)  # type: ignore[misc]
+                    for message_cls, utterance in zip(
+                        cycle([ChatUserMessage, ChatAssistantMessage]),
+                        utterances,
+                        strict=False,
+                    )
+                ]
+                for utterances in responses
+            ],
+        )
+
+    return conversation
+
+
 def reward_model_preprocessing(
     data: dict[str, list[str]],
     tokenizer: PreTrainedTokenizer,
@@ -45,32 +80,14 @@ def reward_model_preprocessing(
     include_preference_margin: bool = True,
 ) -> dict[str, torch.Tensor]:
     """Tokenize the input strings and return the tokenized data."""
-    preferred_conversations: ChatConversation = ChatConversation(
-        messages=[
-            [
-                ChatUserMessage(question),
-                ChatAssistantMessage(cleanup_response(response)),
-            ]
-            for question, response in zip(
-                data["question"],
-                data["preferred_response"],
-                strict=True,
-            )
-        ],
+    preferred_conversations: ChatConversation = _create_conversation(
+        responses=data["preferred_response"],
+        questions=data.get("question"),
     )
 
-    rejected_conversations: ChatConversation = ChatConversation(
-        messages=[
-            [
-                ChatUserMessage(question),
-                ChatAssistantMessage(cleanup_response(response)),
-            ]
-            for question, response in zip(
-                data["question"],
-                data["rejected_response"],
-                strict=True,
-            )
-        ],
+    rejected_conversations: ChatConversation = _create_conversation(
+        responses=data["rejected_response"],
+        questions=data.get("question"),
     )
 
     preferred_inputs: BatchEncoding = tokenizer.apply_chat_template(

@@ -23,25 +23,83 @@
 # limitations under the License.
 """HH-RLHF dataset loading functions."""
 
-from datasets import Dataset, Features, Value, load_dataset
+import re
+from enum import StrEnum
+from pathlib import Path
+
+from datasets import (
+    Dataset,
+    Features,
+    Sequence,
+    Value,
+    load_dataset,
+)
 
 from confidentllm.data.types import DatasetSplit
 
 __all__ = ["load_hh_rlhf_data"]
 
 
-def _map_feature_keys(examples: dict[str, list[str]]) -> dict[str, list[str]]:
+class HHRLHFTask(StrEnum):
+    """The HH-RLHF dataset tasks."""
+
+    HELPFUL = "helpful-base"
+    HARMLESS = "harmless-base"
+
+
+def _extract_utterances(
+    text: str,
+    pattern: str = r"(Human|Assistant): (.*?)(?=\s*(?:Human|Assistant):|$)",
+) -> list[str]:
+    # Remove escape characters
+    text = text.replace('"', "").replace("\n", "\n")
+    text = re.sub(r"\n\n+", " ", text)
+
+    # Use regex to capture all user and assistant utterances
+    regex_matches: list[tuple[str, str]] = re.findall(
+        pattern=pattern,
+        string=text,
+        flags=re.DOTALL,
+    )
+    # Format as a list of alternating turns
+    utterances: list[str] = [utterance.strip() for _, utterance in regex_matches]
+
+    return utterances
+
+
+def _find_project_root() -> Path:
+    """Find the root of the project."""
+    directory: Path = Path.cwd()
+    while not (directory / "pyproject.toml").exists():
+        directory = directory.parent
+
+    return directory / ".data_cache"
+
+
+def _map_hh_rlhf_data(examples: dict[str, list[str]]) -> dict[str, list[list[str]]]:
     """Map the feature keys in the HH-RLHF to the standard keys."""
-    return {
+    mapped_examples: dict[str, list[str]] = {
         "preferred_response": examples["chosen"],
         "rejected_response": examples["rejected"],
     }
+
+    extracted_examples: dict[str, list[list[str]]] = {}
+    extracted_examples["preferred_response"] = [
+        _extract_utterances(response)
+        for response in mapped_examples["preferred_response"]
+    ]
+    extracted_examples["rejected_response"] = [
+        _extract_utterances(response)
+        for response in mapped_examples["rejected_response"]
+    ]
+
+    return extracted_examples
 
 
 def load_hh_rlhf_data(
     split: DatasetSplit = DatasetSplit.TRAIN,
     transformation_batch_size: int = 2048,
-    name: str = "HH-RLHF",  # noqa: ARG001
+    name: str = "helpful-RLHF",
     *,
     use_cache: bool = True,
     **kwargs: dict,  # noqa: ARG001
@@ -61,17 +119,37 @@ def load_hh_rlhf_data(
         The HH-RLHF dataset.
 
     """
-    data: Dataset = load_dataset(path="Anthropic/hh-rlhf", split=split.value)  # type: ignore[return-type]
+    task_name: str = name.split("-")[0].upper()
+    if task_name not in HHRLHFTask.__members__:
+        raise ValueError(  # noqa: TRY003
+            f"Invalid task name '{task_name}'. "  # noqa: EM102
+            f"Valid task names are: {', '.join(HHRLHFTask.__members__)}",
+        )
+    task: HHRLHFTask = HHRLHFTask[task_name]
+
+    cache_path: Path = (
+        _find_project_root() / "hh_rlhf" / task.value / split.value.lower()
+    )
+    if use_cache and cache_path.exists():
+        data: Dataset = Dataset.load_from_disk(cache_path)
+        data.cached_version = use_cache  # type: ignore[attr-defined]
+        return data
+
+    data = load_dataset(
+        path="Anthropic/hh-rlhf",
+        data_dir=task.value,
+        split=split.value,
+    )  # type: ignore[return-type]
     data = data.map(
-        function=_map_feature_keys,
+        function=_map_hh_rlhf_data,
         batched=True,
         batch_size=transformation_batch_size,
         load_from_cache_file=use_cache,
         remove_columns=data.column_names,
         features=Features(
             {
-                "preferred_response": Value("string"),
-                "rejected_response": Value("string"),
+                "preferred_response": Sequence(Value("string")),
+                "rejected_response": Sequence(Value("string")),
             },
         ),
     )
@@ -106,5 +184,8 @@ def load_hh_rlhf_data(
     data._info.license = "MIT License"  # noqa: SLF001
 
     data.cached_version = use_cache  # type: ignore[attr-defined]
+
+    cache_path.mkdir(parents=True, exist_ok=True)
+    data.save_to_disk(cache_path)
 
     return data

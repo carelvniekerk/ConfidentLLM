@@ -87,5 +87,11 @@ train_data_store(OpenbookQAConfig(split=DatasetSplit.TRAIN), name="openbook_qa")
 eval_data_store(OpenbookQAConfig(split=DatasetSplit.VALIDATION), name="openbook_qa")
 train_data_store(UnionConfig(split=DatasetSplit.TRAIN), name="union")
 eval_data_store(UnionConfig(split=DatasetSplit.VALIDATION), name="union")
-train_data_store(HHRLHFConfig(split=DatasetSplit.TRAIN), name="hh_rlhf")
-eval_data_store(HHRLHFConfig(split=DatasetSplit.TEST), name="hh_rlhf")
+train_data_store(
+    HHRLHFConfig(split=DatasetSplit.TRAIN, name="helpful-rlhf"),
+    name="hh_rlhf",
+)
+eval_data_store(
+    HHRLHFConfig(split=DatasetSplit.TEST, name="helpful-rlhf"),
+    name="hh_rlhf",
+)
