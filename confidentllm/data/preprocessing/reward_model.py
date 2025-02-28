@@ -24,52 +24,18 @@
 """Tokenization and data preparation for training a reward model."""
 
 from itertools import cycle
+from typing import TYPE_CHECKING
 
 import torch
 from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
 from transformers.tokenization_utils_base import PaddingStrategy
 
-from confidentllm.data.preprocessing.data_cleaning_tools import cleanup_response
-from confidentllm.generation.types import (
-    ChatAssistantMessage,
-    ChatConversation,
-    ChatUserMessage,
-)
+from confidentllm.data.preprocessing.data_cleaning_tools import create_conversation
+
+if TYPE_CHECKING:
+    from confidentllm.generation.types import ChatConversation
 
 __all__ = ["reward_model_preprocessing"]
-
-
-def _create_conversation(
-    responses: list[str] | list[list[str]],
-    questions: list[str] | None = None,
-) -> ChatConversation:
-    """Create a ChatConversation from a list of questions and responses."""
-    if questions is not None:
-        conversation: ChatConversation = ChatConversation(
-            messages=[
-                [
-                    ChatUserMessage(question),
-                    ChatAssistantMessage(cleanup_response(response)),  # type: ignore[arg-type]
-                ]
-                for question, response in zip(questions, responses, strict=True)
-            ],
-        )
-    else:
-        conversation = ChatConversation(
-            messages=[
-                [
-                    message_cls(utterance)  # type: ignore[misc]
-                    for message_cls, utterance in zip(
-                        cycle([ChatUserMessage, ChatAssistantMessage]),
-                        utterances,
-                        strict=False,
-                    )
-                ]
-                for utterances in responses
-            ],
-        )
-
-    return conversation
 
 
 def reward_model_preprocessing(
@@ -80,12 +46,12 @@ def reward_model_preprocessing(
     include_preference_margin: bool = True,
 ) -> dict[str, torch.Tensor]:
     """Tokenize the input strings and return the tokenized data."""
-    preferred_conversations: ChatConversation = _create_conversation(
+    preferred_conversations: ChatConversation = create_conversation(
         responses=data["preferred_response"],
         questions=data.get("question"),
     )
 
-    rejected_conversations: ChatConversation = _create_conversation(
+    rejected_conversations: ChatConversation = create_conversation(
         responses=data["rejected_response"],
         questions=data.get("question"),
     )

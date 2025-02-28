@@ -23,7 +23,15 @@
 # limitations under the License.
 """Data cleaning tools for preprocessing data."""
 
-__all__ = ["cleanup_response"]
+from itertools import cycle
+
+from confidentllm.generation.types import (
+    ChatAssistantMessage,
+    ChatConversation,
+    ChatUserMessage,
+)
+
+__all__ = ["cleanup_response", "create_conversation"]
 
 
 def cleanup_response(response: str) -> str:
@@ -33,3 +41,36 @@ def cleanup_response(response: str) -> str:
     response = response.replace("[", "").replace("]", "").strip()
 
     return response
+
+
+def create_conversation(
+    responses: list[str] | list[list[str]],
+    questions: list[str] | None = None,
+) -> ChatConversation:
+    """Create a ChatConversation from a list of questions and responses."""
+    if questions is not None:
+        conversation: ChatConversation = ChatConversation(
+            messages=[
+                [
+                    ChatUserMessage(question),
+                    ChatAssistantMessage(cleanup_response(response)),  # type: ignore[arg-type]
+                ]
+                for question, response in zip(questions, responses, strict=True)
+            ],
+        )
+    else:
+        conversation = ChatConversation(
+            messages=[
+                [
+                    message_cls(utterance)  # type: ignore[misc]
+                    for message_cls, utterance in zip(
+                        cycle([ChatUserMessage, ChatAssistantMessage]),
+                        utterances,
+                        strict=False,
+                    )
+                ]
+                for utterances in responses
+            ],
+        )
+
+    return conversation
