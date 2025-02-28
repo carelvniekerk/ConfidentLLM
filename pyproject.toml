@@ -1,6 +1,6 @@
 [project]
 name = "confidentllm"
-version = "0.3.0"
+version = "0.4.0"
 description = "Evaluate the confidence of various LLM models using different confidence methods and generation techniques."
 authors = [{ name = "Carel van Niekerk", email = "cvanniekerk@hhu.de" }]
 readme = "README.md"
