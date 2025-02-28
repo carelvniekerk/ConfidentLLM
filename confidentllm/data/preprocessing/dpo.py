@@ -26,11 +26,8 @@
 from transformers import PreTrainedTokenizer, TensorType
 from transformers.tokenization_utils_base import PaddingStrategy
 
-from confidentllm.data.preprocessing.data_cleaning_tools import cleanup_response
-from confidentllm.generation.types import (
-    ChatConversation,
-    ChatUserMessage,
-)
+from confidentllm.data.preprocessing.data_cleaning_tools import create_conversation
+from confidentllm.generation.types import ChatConversation
 
 __all__ = ["dpo_preprocessing"]
 
@@ -41,8 +38,15 @@ def dpo_preprocessing(
     max_prompt_length: int,
 ) -> dict[str, list[str]]:
     """Tokenize the input strings and return the tokenized data."""
+    preferred_conversations: ChatConversation = create_conversation(
+        responses=data["preferred_response"],
+        questions=data.get("question"),
+    )
+
     prompt_conversations: ChatConversation = ChatConversation(
-        messages=[[ChatUserMessage(question)] for question in data["question"]],
+        messages=[
+            conversation[:-1] for conversation in preferred_conversations.messages
+        ],
     )
 
     prompts: list[str] = tokenizer.apply_chat_template(
@@ -56,11 +60,15 @@ def dpo_preprocessing(
     )
 
     preferred_responses: list[str] = [
-        cleanup_response(response) for response in data["preferred_response"]
+        conversation[-1].content for conversation in preferred_conversations.messages
     ]
 
+    rejected_conversations: ChatConversation = create_conversation(
+        responses=data["rejected_response"],
+        questions=data.get("question"),
+    )
     rejected_responses: list[str] = [
-        cleanup_response(response) for response in data["rejected_response"]
+        conversation[-1].content for conversation in rejected_conversations.messages
     ]
 
     output_data: dict[str, list[str]] = {

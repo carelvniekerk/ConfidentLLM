@@ -23,15 +23,12 @@
 # limitations under the License.
 """Tokenization and data preparation for supervised finetuning."""
 
-from confidentllm.data.preprocessing.data_cleaning_tools import (
-    cleanup_response,
-    create_conversation,
-)
-from confidentllm.generation.types import (
-    ChatAssistantMessage,
-    ChatConversation,
-    ChatUserMessage,
-)
+from typing import TYPE_CHECKING
+
+from confidentllm.data.preprocessing.data_cleaning_tools import create_conversation
+
+if TYPE_CHECKING:
+    from confidentllm.generation.types import ChatConversation
 
 __all__ = ["sft_preprocessing"]
 
