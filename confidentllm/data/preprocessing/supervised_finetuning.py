@@ -23,7 +23,10 @@
 # limitations under the License.
 """Tokenization and data preparation for supervised finetuning."""
 
-from confidentllm.data.preprocessing.data_cleaning_tools import cleanup_response
+from confidentllm.data.preprocessing.data_cleaning_tools import (
+    cleanup_response,
+    create_conversation,
+)
 from confidentllm.generation.types import (
     ChatAssistantMessage,
     ChatConversation,
@@ -41,18 +44,9 @@ def sft_preprocessing(
     answer_key = "long_format_answer" if answer_key not in data else answer_key
     answer_key = "answer" if answer_key not in data else answer_key
 
-    conversations: ChatConversation = ChatConversation(
-        messages=[
-            [
-                ChatUserMessage(question),
-                ChatAssistantMessage(cleanup_response(answer)),
-            ]
-            for question, answer in zip(
-                data["question"],
-                data[answer_key],
-                strict=True,
-            )
-        ],
+    conversations: ChatConversation = create_conversation(
+        responses=data[answer_key],
+        questions=data.get("question"),
     )
 
     return {"messages": list(conversations)}
