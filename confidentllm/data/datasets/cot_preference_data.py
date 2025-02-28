@@ -142,7 +142,7 @@ def _find_project_root() -> Path:
     while not (directory / "pyproject.toml").exists():
         directory = directory.parent
 
-    return directory / "wandb_downloads"
+    return directory / ".data_cache"
 
 
 def _load_table(
@@ -287,7 +287,7 @@ def load_cot_preference_data(  # noqa: PLR0913
     **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
     """Load the CoT preference data from a Weights and Biases run."""
-    data_caching_path: Path = _find_project_root() / run_name / "cache.dataset"
+    data_caching_path: Path = _find_project_root() / run_name / "cache.bin"
     if data_caching_path.exists() and use_cache:
         dataset: Dataset = torch.load(data_caching_path)
         return dataset
