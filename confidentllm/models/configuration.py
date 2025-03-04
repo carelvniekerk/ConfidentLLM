@@ -31,9 +31,11 @@ __all__ = ["get_chat_template", "get_pretrained_model_name_or_path"]
 
 PRETRAINED_MODEL_NAME_OR_PATH: dict[ModelName, str] = {
     ModelName.GPT2_124M: "gpt2",
+    ModelName.RM_GPT2_HARMLESS_774M: "Ray2333/gpt2-large-harmless-reward_model",
     ModelName.GEMMA_2B_IT: "google/gemma-1.1-2b-it",
     ModelName.GEMMA2_9B_IT: "google/gemma-2-9b-it",
     ModelName.GEMMA2_9B: "google/gemma-2-9b",
+    ModelName.RM_GEMMA_2B: "weqweasdas/RM-Gemma-2B",
     ModelName.PHI2_3B: "microsoft/phi-2",
     ModelName.PHI3_MINI_INSTRUCT_4B: "microsoft/Phi-3-mini-128k-instruct",
     ModelName.PHI4_14B: "microsoft/phi-4",
@@ -57,6 +59,19 @@ def get_pretrained_model_name_or_path(name: ModelName | Path) -> str | Path:
 
 CHAT_TEMPLATES: dict[ModelName, str] = {
     ModelName.GPT2_124M: (
+        "{{ bos_token }}"
+        "{% if messages[0]['role'] == 'system' %}"
+        "{{ raise_exception('System role not supported') }}{% endif %}"
+        "{% for message in messages %}"
+        "{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}"
+        "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"  # noqa: E501
+        "{% endif %}{% if (message['role'] == 'assistant') %}"
+        "{{ '\nOutput: ' + message['content'] | trim }}{% else %}"
+        "{{ 'Instruct: ' + message['content'] | trim }}"
+        "{% set role = message['role'] %}{% endif %}{% endfor %}"
+        "{% if add_generation_prompt %}{{ '\nOutput:' }}{% endif %}"
+    ),
+    ModelName.RM_GPT2_HARMLESS_774M: (
         "{{ bos_token }}"
         "{% if messages[0]['role'] == 'system' %}"
         "{{ raise_exception('System role not supported') }}{% endif %}"

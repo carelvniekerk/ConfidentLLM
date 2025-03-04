@@ -29,6 +29,9 @@ from confidentllm.scripts.run_reinforcement_learning import (
     main as reinforcement_learning,
 )
 from confidentllm.scripts.run_reporting import main as reporting
+from confidentllm.scripts.run_reward_model_evaluation import (
+    main as reward_model_evaluation,
+)
 from confidentllm.scripts.run_training import main as train
 
 __all__ = [
@@ -36,5 +39,6 @@ __all__ = [
     "question_answering",
     "reinforcement_learning",
     "reporting",
+    "reward_model_evaluation",
     "train",
 ]

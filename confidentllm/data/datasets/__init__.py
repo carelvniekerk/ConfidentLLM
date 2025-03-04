@@ -33,6 +33,7 @@ from confidentllm.data.datasets.hh_rlhf import load_hh_rlhf_data
 from confidentllm.data.datasets.mmlu import load_mmlu_data
 from confidentllm.data.datasets.multi_arith import load_multi_arith_data
 from confidentllm.data.datasets.openbook_qa import load_openbook_qa_data
+from confidentllm.data.datasets.reward_bench import load_reward_bench_data
 from confidentllm.data.datasets.union import load_union_data
 from confidentllm.data.types import DatasetSplit
 from confidentllm.hydra_tools import builds
@@ -47,6 +48,7 @@ MMLUConfig = builds(load_mmlu_data)
 MultiArithConfig = builds(load_multi_arith_data)
 ARCConfig = builds(load_arc_data)
 OpenbookQAConfig = builds(load_openbook_qa_data)
+RewardBenchConfig = builds(load_reward_bench_data)
 UnionConfig = builds(load_union_data)
 
 data_store = store(group="data")
@@ -56,6 +58,7 @@ data_store(MultiArithConfig(split=DatasetSplit.TEST), name="multiarith")
 data_store(CommonsenseQAConfig(split=DatasetSplit.VALIDATION), name="commonsense_qa")
 data_store(ARCConfig(split=DatasetSplit.TEST), name="arc")
 data_store(OpenbookQAConfig(split=DatasetSplit.TEST), name="openbook_qa")
+data_store(RewardBenchConfig(split=DatasetSplit.TEST), name="reward_bench")
 data_store(UnionConfig(split=DatasetSplit.TEST), name="union")
 data_store(HHRLHFConfig(split=DatasetSplit.TEST), name="hh_rlhf")
 
