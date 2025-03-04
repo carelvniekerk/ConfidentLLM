@@ -72,6 +72,9 @@ class ModelName(StrEnum):
     # Deepseek Models
     DEEPSEEK_R1_DISTILL_QWEN_7B = auto()
 
+    # OpenAI Models
+    GPT4O_MINI = auto()
+
 
 class ModelType(StrEnum):
     """Enum class to store the types of the models."""
