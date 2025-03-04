@@ -27,7 +27,7 @@ from enum import StrEnum
 from functools import partial
 from typing import Callable
 
-from datasets import Dataset, load_dataset
+from datasets import Dataset, load_dataset, Features, Value
 
 from confidentllm.data.types import DatasetSplit
 
@@ -88,6 +88,17 @@ def _filter_by_subset(
     return subset_name.value.lower() in example["subset"]
 
 
+def _map_reward_bench_data(examples: dict[str, list[str]]) -> dict[str, list[str]]:
+    """Map the keys of RewardBench to the standard keys."""
+    mapped_examples: dict[str, list[str]] = {
+        "question": examples["prompt"],
+        "preferred_response": examples["chosen"],
+        "rejected_response": examples["rejected"],
+    }
+
+    return mapped_examples
+
+
 def load_reward_bench_data(
     split: DatasetSplit = DatasetSplit.TEST,  # noqa: ARG001
     transformation_batch_size: int = 512,  # noqa: ARG001
@@ -146,6 +157,21 @@ def load_reward_bench_data(
         _get_reward_bench_task(name),
     )
     data = data.filter(function=filter_function)
+
+    data = data.map(
+        function=_map_reward_bench_data,
+        batched=True,
+        batch_size=transformation_batch_size,
+        load_from_cache_file=use_cache,
+        remove_columns=data.column_names,
+        features=Features(
+            {
+                "question": Value("string"),
+                "preferred_response": Value("string"),
+                "rejected_response": Value("string"),
+            },
+        ),
+    )
 
     data.cached_version = use_cache  # type: ignore[attr-defined]
 

@@ -28,6 +28,7 @@ from dataclasses import dataclass
 from pprint import pformat
 
 import torch
+import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from torch.utils.data import DataLoader
@@ -35,10 +36,9 @@ from tqdm import tqdm
 from transformers import BatchEncoding, TensorType
 from transformers.tokenization_utils_base import PaddingStrategy
 
-import wandb
 from confidentllm import data  # noqa: F401
+from confidentllm.data.preprocessing.data_cleaning_tools import create_conversation
 from confidentllm.evaluation import EvaluationBatch, Evaluator
-from confidentllm.generation import CausalLMGenerationMethod
 from confidentllm.generation.types import (
     ChatAssistantMessage,
     ChatConversation,
@@ -84,14 +84,14 @@ class RewardModelEvalRunner:
 
     def _rate_responses(
         self,
-        prompts: list[str],
         responses: list[str],
+        questions: list[str] | None = None,
     ) -> torch.Tensor:
         """Rate the responses for the given question.
 
         Args:
         ----
-            prompts (list[str]): The list of prompts to rate responses for.
+            questions (list[str] | None): The optional list of questions corresponding to the responses.
             responses (list[str]): The list of responses corresponding to the prompts.
 
         Returns:
@@ -99,14 +99,9 @@ class RewardModelEvalRunner:
             torch.Tensor: The scores for the rated responses.
 
         """
-        conversations: ChatConversation = ChatConversation(
-            messages=[
-                [
-                    ChatUserMessage(prompt),
-                    ChatAssistantMessage(response),
-                ]
-                for prompt, response in zip(prompts, responses, strict=True)
-            ],
+        conversations: ChatConversation = create_conversation(
+            questions=questions,
+            responses=responses,
         )
 
         inputs: BatchEncoding = self.tokenizer.apply_chat_template(
@@ -129,10 +124,10 @@ class RewardModelEvalRunner:
         """Run the reward model evaluation."""
         results_table = wandb.Table(
             columns=[
-                "Prompt",
-                "Chosen Response",
+                "Question",
+                "Preferred Response",
                 "Rejected Response",
-                "Chosen Confidence Score",
+                "Preferred Confidence Score",
                 "Rejected Confidence Score",
             ],
         )
@@ -144,32 +139,48 @@ class RewardModelEvalRunner:
         )
 
         for batch in tqdm(dataloader, desc="Evaluating Responses"):
-            prompts: list[str] = batch.get("prompt", [])
-            chosen_responses: list[str] = batch.get("chosen", [])
-            rejected_responses: list[str] = batch.get("rejected", [])
+            questions: list[str] = batch.get("question")
+            preferred_responses: list[str] = batch.get("preferred_response", [])
+            rejected_responses: list[str] = batch.get("rejected_response", [])
 
-            chosen_scores: torch.Tensor = self._rate_responses(
-                prompts=prompts,
-                responses=chosen_responses,
+            preferred_scores: torch.Tensor = self._rate_responses(
+                questions=questions,
+                responses=preferred_responses,
             )
             rejected_scores: torch.Tensor = self._rate_responses(
-                prompts=prompts,
+                questions=questions,
                 responses=rejected_responses,
             )
 
-            # Get the predictions (1 if chosen is better, 0 if rejected is better)
+            # Get the predictions (1 if preferred is better, 0 if rejected is better)
             predictions: list[int] = (
-                (chosen_scores > rejected_scores).int().reshape(-1).tolist()
+                (preferred_scores > rejected_scores).int().reshape(-1).tolist()
             )
-            # Get labels (chosen is better so label is 1)
+            # Get labels (preferred is better so label is 1)
             labels: list[int] = [1] * len(predictions)
-            # Get the confidences (difference between chosen and rejected scores)
+            # Get the confidences (difference between preferred and rejected scores)
             confidences: list[float] = (
-                (torch.sigmoid(chosen_scores) - torch.sigmoid(rejected_scores))
+                (torch.sigmoid(preferred_scores) - torch.sigmoid(rejected_scores))
                 .abs()
                 .reshape(-1)
                 .tolist()
             )
+
+            for prompt, preferred, rejected, preferred_score, rejected_score in zip(
+                questions,
+                preferred_responses,
+                rejected_responses,
+                preferred_scores,
+                rejected_scores,
+                strict=True,
+            ):
+                results_table.add_data(
+                    prompt,
+                    preferred,
+                    rejected,
+                    preferred_score.item(),
+                    rejected_score.item(),
+                )
 
             # Add the batch to the evaluator
             self.evaluator.add_batch(
@@ -181,19 +192,19 @@ class RewardModelEvalRunner:
             )
 
             # Log the answers and predictions
-            for prompt, chosen, rejected, chosen_score, rejected_score in zip(
-                prompts,
-                chosen_responses,
+            for prompt, preferred, rejected, preferred_score, rejected_score in zip(
+                questions,
+                preferred_responses,
                 rejected_responses,
-                chosen_scores,
+                preferred_scores,
                 rejected_scores,
                 strict=True,
             ):
                 results_table.add_data(
                     prompt,
-                    chosen,
+                    preferred,
                     rejected,
-                    chosen_score.item(),
+                    preferred_score.item(),
                     rejected_score.item(),
                 )
 
