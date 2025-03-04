@@ -40,10 +40,14 @@ class ModelName(StrEnum):
     # Default small GPT2 model for testing
     GPT2_124M = auto()
 
+    # Large GPT2 reward model
+    RM_GPT2_HARMLESS_774M = auto()
+
     # Google GEMMA Models
     GEMMA_2B_IT = auto()
     GEMMA2_9B_IT = auto()
     GEMMA2_9B = auto()
+    RM_GEMMA_2B = auto()
 
     # Microsoft PHI Models
     PHI2_3B = auto()
