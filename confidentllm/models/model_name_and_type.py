@@ -41,7 +41,6 @@ class ModelName(StrEnum):
     GPT2_124M = auto()
 
     # Google GEMMA Models
-    GEMMA_2B = auto()
     GEMMA_2B_IT = auto()
     GEMMA2_9B_IT = auto()
     GEMMA2_9B = auto()

@@ -31,7 +31,6 @@ __all__ = ["get_chat_template", "get_pretrained_model_name_or_path"]
 
 PRETRAINED_MODEL_NAME_OR_PATH: dict[ModelName, str] = {
     ModelName.GPT2_124M: "gpt2",
-    ModelName.GEMMA_2B: "google/gemma-1.1-2b",
     ModelName.GEMMA_2B_IT: "google/gemma-1.1-2b-it",
     ModelName.GEMMA2_9B_IT: "google/gemma-2-9b-it",
     ModelName.GEMMA2_9B: "google/gemma-2-9b",

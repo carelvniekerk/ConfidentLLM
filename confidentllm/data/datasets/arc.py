@@ -93,7 +93,9 @@ def _arc_map(
     long_format_answer: list[str] = [
         create_long_format_answer(
             choices=choices["text"],  # type: ignore[arg-type, index]
-            answer=raw_answer,  # type: ignore[arg-type]
+            answer=ARCAnswers(int(raw_answer)).name  # type: ignore[arg-type]
+            if raw_answer.isdigit()  # type: ignore[union-attr]
+            else raw_answer,
             choices_enum=ARCAnswers,  # type: ignore[arg-type]
         )
         for choices, raw_answer in zip(

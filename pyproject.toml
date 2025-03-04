@@ -1,6 +1,6 @@
 [project]
 name = "confidentllm"
-version = "0.3.0"
+version = "0.4.0"
 description = "Evaluate the confidence of various LLM models using different confidence methods and generation techniques."
 authors = [{ name = "Carel van Niekerk", email = "cvanniekerk@hhu.de" }]
 readme = "README.md"
@@ -22,7 +22,7 @@ dependencies = [
     "trl >= 0.12.0",
     "tqdm >= 4.66.0",
     "types-tqdm >= 4.66.0.20240417",
-    "wandb > 0.17, < 0.18",
+    "wandb > 0.17, <= 0.17.5",
 ]
 
 [dependency-groups]

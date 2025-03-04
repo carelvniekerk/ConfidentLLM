@@ -11,6 +11,13 @@ outputs
 hpc_jobs
 hydra_plugins
 
+# Data cache
+.data_cache
+
+# Binary files
+*.pkl
+*.bin
+
 # Python cache
 *__pycache__*
 
@@ -19,7 +26,6 @@ hydra_plugins
 
 # Weights and Biases logs
 wandb
-wandb_downloads
 
 # Pytest cache
 .coverage

@@ -23,16 +23,17 @@
 # limitations under the License.
 """Tokenization and data preparation for training a reward model."""
 
+from itertools import cycle
+from typing import TYPE_CHECKING
+
 import torch
 from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
 from transformers.tokenization_utils_base import PaddingStrategy
 
-from confidentllm.data.preprocessing.data_cleaning_tools import cleanup_response
-from confidentllm.generation.types import (
-    ChatAssistantMessage,
-    ChatConversation,
-    ChatUserMessage,
-)
+from confidentllm.data.preprocessing.data_cleaning_tools import create_conversation
+
+if TYPE_CHECKING:
+    from confidentllm.generation.types import ChatConversation
 
 __all__ = ["reward_model_preprocessing"]
 
@@ -45,32 +46,14 @@ def reward_model_preprocessing(
     include_preference_margin: bool = True,
 ) -> dict[str, torch.Tensor]:
     """Tokenize the input strings and return the tokenized data."""
-    preferred_conversations: ChatConversation = ChatConversation(
-        messages=[
-            [
-                ChatUserMessage(question),
-                ChatAssistantMessage(cleanup_response(response)),
-            ]
-            for question, response in zip(
-                data["question"],
-                data["preferred_response"],
-                strict=True,
-            )
-        ],
+    preferred_conversations: ChatConversation = create_conversation(
+        responses=data["preferred_response"],
+        questions=data.get("question"),
     )
 
-    rejected_conversations: ChatConversation = ChatConversation(
-        messages=[
-            [
-                ChatUserMessage(question),
-                ChatAssistantMessage(cleanup_response(response)),
-            ]
-            for question, response in zip(
-                data["question"],
-                data["rejected_response"],
-                strict=True,
-            )
-        ],
+    rejected_conversations: ChatConversation = create_conversation(
+        responses=data["rejected_response"],
+        questions=data.get("question"),
     )
 
     preferred_inputs: BatchEncoding = tokenizer.apply_chat_template(
