@@ -30,10 +30,10 @@ import torch
 from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
 from transformers.tokenization_utils_base import PaddingStrategy
 
-from confidentllm.data.preprocessing.data_cleaning_tools import create_conversation
+from confidentllm.conversations.create_chat import create_conversation
 
 if TYPE_CHECKING:
-    from confidentllm.generation.types import ChatConversation
+    from confidentllm.conversations.types import ChatConversation
 
 __all__ = ["reward_model_preprocessing"]
 

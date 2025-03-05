@@ -28,7 +28,6 @@ from dataclasses import dataclass
 from pprint import pformat
 
 import torch
-import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from torch.utils.data import DataLoader
@@ -36,14 +35,15 @@ from tqdm import tqdm
 from transformers import BatchEncoding, TensorType
 from transformers.tokenization_utils_base import PaddingStrategy
 
+import wandb
 from confidentllm import data  # noqa: F401
-from confidentllm.data.preprocessing.data_cleaning_tools import create_conversation
-from confidentllm.evaluation import EvaluationBatch, Evaluator
-from confidentllm.generation.types import (
+from confidentllm.conversations.create_chat import create_conversation
+from confidentllm.conversations.types import (
     ChatAssistantMessage,
     ChatConversation,
     ChatUserMessage,
 )
+from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.models import ModelLoader
 from confidentllm.scripts.setup_tools import (
     init_wandb,

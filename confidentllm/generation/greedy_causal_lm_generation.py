@@ -23,20 +23,24 @@
 # limitations under the License.
 """Main execution file for the project."""
 
+from typing import TYPE_CHECKING
+
 import torch
 from hydra_zen import store
 from transformers import BatchEncoding, TensorType
 from transformers.generation import GenerateDecoderOnlyOutput
 
+from confidentllm.conversations.create_chat import create_conversation
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
-    ChatConversation,
-    ChatUserMessage,
     GenerationOutput,
     ModelNotSetError,
     TokenizerNotSetError,
 )
 from confidentllm.hydra_tools import builds
+
+if TYPE_CHECKING:
+    from confidentllm.conversations.types import ChatConversation
 
 __all__: list[str] = []
 
@@ -46,23 +50,27 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
 
     def __call__(
         self,
-        prompt: str,
+        prompt: str | None = None,
+        responses: list[str] | None = None,
     ) -> GenerationOutput:
         """Generate text based on the given prompt."""
-        if isinstance(self.tokenizer, type(None)):
+        if self.tokenizer is None:
             raise TokenizerNotSetError(self.tokenizer)
-        if isinstance(self.model, type(None)):
+        if self.model is None:
             raise ModelNotSetError(self.model)
-        if self.num_beams != 1:
-            msg = "Greedy generation only generates one sequence."
-            raise RuntimeWarning(msg)
 
-        if self.zero_shot_prompt:
+        if self.zero_shot_prompt and prompt is not None:
             prompt = f"{prompt}\n\n{self.zero_shot_prompt}"
+        elif self.zero_shot_prompt and responses is not None:
+            responses[0] = f"{responses[0]}\n\n{self.zero_shot_prompt}"
 
-        conversation: ChatConversation = ChatConversation(
-            messages=[[ChatUserMessage(content=prompt)]],
+        conversation: ChatConversation = create_conversation(
+            responses=[responses] if responses is not None else [""],  # type: ignore[list-item]
+            questions=[prompt] if prompt is not None else None,
         )
+
+        if responses is None:
+            conversation.messages[0] = conversation.messages[0][:-1]
 
         inputs: BatchEncoding = self.tokenizer.apply_chat_template(
             list(conversation),

@@ -27,7 +27,7 @@ import torch
 from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
 from transformers.tokenization_utils_base import PaddingStrategy
 
-from confidentllm.generation.types import (
+from confidentllm.conversations.types import (
     ChatConversation,
     ChatUserMessage,
 )

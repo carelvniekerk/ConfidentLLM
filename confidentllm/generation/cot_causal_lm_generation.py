@@ -28,10 +28,9 @@ from hydra_zen import store
 from transformers import BatchEncoding, TensorType
 from transformers.generation import GenerateDecoderOnlyOutput
 
+from confidentllm.conversations.types import ChatConversation, ChatUserMessage
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
-    ChatConversation,
-    ChatUserMessage,
     GenerationOutput,
     ModelNotSetError,
     TokenizerNotSetError,
