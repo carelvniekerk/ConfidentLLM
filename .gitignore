@@ -30,3 +30,6 @@ wandb
 # Pytest cache
 .coverage
 .pytest_cache
+
+# Environment variables and secrets
+.env
