@@ -24,6 +24,7 @@ dependencies = [
     "types-tqdm >= 4.66.0.20240417",
     "wandb > 0.17, <= 0.17.5",
     "openai>=1.65.2",
+    "python-dotenv>=1.0.1",
 ]
 
 [dependency-groups]

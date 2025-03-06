@@ -24,12 +24,14 @@
 """Module to load pretrained models and tokenizers from Hugging Face's model hub."""
 
 import logging
+import os
 from functools import partial
 from pathlib import Path
 from typing import Protocol
 
 import torch
-from hydra_zen import just, store
+from dotenv import load_dotenv
+from hydra_zen import store
 from hydra_zen.third_party.pydantic import pydantic_parser
 from peft.auto import AutoPeftModelForCausalLM, AutoPeftModelForSequenceClassification
 from peft.mixed_model import PeftMixedModel
@@ -43,6 +45,7 @@ from transformers import (
 )
 
 from confidentllm.hydra_tools import builds
+from confidentllm.models.api_models.openai import ChatGPTModel
 from confidentllm.models.configuration import (
     get_chat_template,
     get_pretrained_model_name_or_path,
@@ -64,6 +67,8 @@ DEFAULT_DEVICE: ModelDevice = (
     ModelDevice.MPS if torch.backends.mps.is_available() else ModelDevice.CPU
 )
 DEFAULT_DEVICE = ModelDevice.CUDA if torch.cuda.is_available() else DEFAULT_DEVICE
+
+API_MODELS: list[ModelType] = [ModelType.OPENAI]
 
 
 class ModelLoaderFunction(Protocol):
@@ -154,17 +159,20 @@ class ModelLoader:
                 if not self.use_peft_model_class
                 else AutoPeftModelForSequenceClassification
             )  # type: ignore[assignment]
+        elif self.model_type == ModelType.OPENAI:
+            self.model_class = ChatGPTModel  # type: ignore[assignment]
         else:
             raise ValueError(f"Invalid model type: {self.model_type}")  # noqa: EM102, TRY003
 
-        self.model_loader: ModelLoaderFunction = partial(
-            self.model_class.from_pretrained,
-            device_map=self.device,
-            torch_dtype=self.data_type,
-        )  # type: ignore[assignment] # Paths can also be passed to from_pretrained
+        if self.model_type not in API_MODELS:
+            self.model_loader: ModelLoaderFunction = partial(
+                self.model_class.from_pretrained,
+                device_map=self.device,
+                torch_dtype=self.data_type,
+            )  # type: ignore[assignment] # Paths can also be passed to from_pretrained
 
         if self.model_type == ModelType.SEQUENCE_CLS:
-            self.model_loader = partial(self.model_loader, num_labels=1)
+            self.model_loader = partial(self.model_loader, num_labels=1)  # type: ignore[call-arg]
 
     def _log_model_info(self, model: PeftMixedModel | PreTrainedModel) -> None:
         """Log model information and a list of all trainable parameters."""
@@ -196,11 +204,21 @@ class ModelLoader:
             Module: The model loaded on the specified device.
 
         """
-        model: PeftMixedModel | PreTrainedModel = self.model_loader(
-            pretrained_model_name_or_path=self.pretrained_model_name_or_path,
-        )
+        if self.model_type in API_MODELS:
+            load_dotenv()
+            api_key_key: str = f"{self.model_type.name}_API_KEY"
+            model: PeftMixedModel | PreTrainedModel = self.model_class(
+                model_name=self.pretrained_model_name_or_path,
+                api_key=os.getenv(api_key_key),
+            )  # type: ignore[call-arg]
+        else:
+            model = self.model_loader(
+                pretrained_model_name_or_path=self.pretrained_model_name_or_path,
+            )
 
-        if self.model_mode == ModelMode.TRAIN:
+        if self.model_type in API_MODELS:
+            self.lora.inference_mode = True
+        elif self.model_mode == ModelMode.TRAIN:
             model.train()
             self.lora.inference_mode = False
         elif self.model_mode == ModelMode.EVAL:
@@ -209,7 +227,11 @@ class ModelLoader:
         else:
             raise ValueError(f"Invalid model mode: {self.model_mode}")  # noqa: EM102, TRY003
 
-        model = self.lora.get_lora_model(model)
+        model = (
+            self.lora.get_lora_model(model)
+            if self.model_type not in API_MODELS
+            else model
+        )
 
         # During eval perform a merge and unload operation to incorporate the LoRA
         # adapters and avoid extra memory and computation overhead
@@ -218,26 +240,31 @@ class ModelLoader:
         ) and self.model_mode == ModelMode.EVAL:
             model = model.merge_and_unload()  # type: ignore[assignment]
 
-        tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(
-            pretrained_model_name_or_path=self.pretrained_model_name_or_path,  # type: ignore[assignment]
-            clean_up_tokenization_spaces=True,
-            padding_side="left",
-        )
+        if self.model_type in API_MODELS:
+            tokenizer: PreTrainedTokenizer = None  # type: ignore[assignment]
+        else:
+            tokenizer = AutoTokenizer.from_pretrained(
+                pretrained_model_name_or_path=self.pretrained_model_name_or_path,  # type: ignore[assignment]
+                clean_up_tokenization_spaces=True,
+                padding_side="left",
+            )
 
         if self.chat_template:
             tokenizer.chat_template = self.chat_template
 
-        if tokenizer.pad_token_id is None:
+        if tokenizer is not None and tokenizer.pad_token_id is None:
             tokenizer.pad_token_id = tokenizer.eos_token_id
             tokenizer.pad_token = tokenizer.eos_token
 
-        if model.config.pad_token_id is None:  # type: ignore[attr-defined]
+        if tokenizer is not None and model.config.pad_token_id is None:  # type: ignore[attr-defined]
             model.config.pad_token_id = tokenizer.pad_token_id  # type: ignore[attr-defined]
             model.config.pad_token = tokenizer.pad_token  # type: ignore[attr-defined]
 
-        self._log_model_info(model)
+        if self.model_type not in API_MODELS:
+            self._log_model_info(model)
+            model = model.to(self.device)  # type: ignore[arg-type]
 
-        return model.to(self.device), tokenizer  # type: ignore[arg-type]
+        return model, tokenizer  # type: ignore[arg-type]
 
 
 # Add default model loader to the store
