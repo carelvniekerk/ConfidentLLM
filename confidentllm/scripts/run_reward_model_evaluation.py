@@ -26,6 +26,7 @@
 import logging
 from dataclasses import dataclass
 from pprint import pformat
+from typing import TYPE_CHECKING
 
 import torch
 from datasets import Dataset
@@ -38,11 +39,6 @@ from transformers.tokenization_utils_base import PaddingStrategy
 import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.conversations.create_chat import create_conversation
-from confidentllm.conversations.types import (
-    ChatAssistantMessage,
-    ChatConversation,
-    ChatUserMessage,
-)
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.models import ModelLoader
 from confidentllm.scripts.setup_tools import (
@@ -51,6 +47,9 @@ from confidentllm.scripts.setup_tools import (
     set_seed,
     setup_hydra_config_and_logging,
 )
+
+if TYPE_CHECKING:
+    from confidentllm.conversations.types import ChatConversation
 
 __all__ = ["main"]
 logger = logging.getLogger("__main__")

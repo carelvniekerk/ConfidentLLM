@@ -110,7 +110,7 @@ class AnswerProcessor(OutputProcessor):
         """
         return_best_answer_idx: bool = kwargs.get("return_best_answer_idx", False)
 
-        if isinstance(self.tokenizer, type(None)):
+        if self.tokenizer is None:
             raise TokenizerNotSetError(self.tokenizer)
 
         output_text: list[str] = self._decode_tokens(generation_output.generated_ids)
@@ -248,16 +248,16 @@ class AnswerProcessor(OutputProcessor):
     @cached_property
     def _ignore_tokens(self) -> list[int]:
         """Get the tokens to ignore during answer extraction and mathing."""
-        if isinstance(self.tokenizer, type(None)):
+        if self.tokenizer is None:
             raise TokenizerNotSetError(self.tokenizer)
 
         ignore_tokens: list[int] = []
         if self.tokenizer.pad_token_id is not None:
-            ignore_tokens.append(self.tokenizer.pad_token_id)
+            ignore_tokens.append(self.tokenizer.pad_token_id)  # type: ignore[arg-type]
         if self.tokenizer.eos_token_id is not None:
-            ignore_tokens.append(self.tokenizer.eos_token_id)
+            ignore_tokens.append(self.tokenizer.eos_token_id)  # type: ignore[arg-type]
         if self.tokenizer.bos_token_id is not None:
-            ignore_tokens.append(self.tokenizer.bos_token_id)
+            ignore_tokens.append(self.tokenizer.bos_token_id)  # type: ignore[arg-type]
 
         new_line_token_id: list[int] = self.tokenizer.convert_tokens_to_ids(["\n", "Ċ"])  # type: ignore[assignment]
         ignore_tokens.extend(new_line_token_id)
@@ -282,7 +282,7 @@ class AnswerProcessor(OutputProcessor):
 
     def _decode_tokens(self, tokens: list[list[int]] | torch.Tensor) -> list[str]:
         """Decode the tokens to a string."""
-        if isinstance(self.tokenizer, type(None)):
+        if self.tokenizer is None:
             raise TokenizerNotSetError(self.tokenizer)
 
         text: list[str] = self.tokenizer.batch_decode(
