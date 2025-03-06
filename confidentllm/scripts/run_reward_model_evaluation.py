@@ -90,7 +90,8 @@ class RewardModelEvalRunner:
 
         Args:
         ----
-            questions (list[str] | None): The optional list of questions corresponding to the responses.
+            questions (list[str] | None): The optional list of questions corresponding
+                to the responses.
             responses (list[str]): The list of responses corresponding to the prompts.
 
         Returns:

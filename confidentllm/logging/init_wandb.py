@@ -25,8 +25,9 @@
 
 from pathlib import Path
 
-import wandb
 from omegaconf import DictConfig, OmegaConf
+
+import wandb
 
 __all__ = ["initialize_wandb"]
 
@@ -72,6 +73,7 @@ def initialize_wandb(
     """Initialize wandb."""
     wandb_path = find_project_root(Path(__file__))
 
+    # TODO: Update wandb initialisation service wait for new API to remove restriction
     wandb.init(
         project=project_name,
         dir=str(wandb_path),

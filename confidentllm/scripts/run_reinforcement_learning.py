@@ -78,7 +78,7 @@ def run_training(
     # Disable Lora setup and set model mode to EVAL to load a reference model version of
     # the model. Further disable gradient computation for the reference model.
     if model.lora.active:
-        # peft_config: LoraConfig | None = model.lora._get_lora_config_object()  # noqa: SLF001
+        # peft_config: LoraConfig | None = model.lora._get_lora_config_object()
         model.model_mode = ModelMode.EVAL
         policy_reference_model: PreTrainedModel | None = None
     else:

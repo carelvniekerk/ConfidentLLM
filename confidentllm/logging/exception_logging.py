@@ -50,7 +50,7 @@ def setup_exception_logging(
     # Setting this environment variable to "1" makes Hydra print the full stack trace.
     print("Setting HYDRA_FULL_ERROR environment variable to '1'.")
     os.environ["HYDRA_FULL_ERROR"] = "1"
-    print(f"{os.environ['HYDRA_FULL_ERROR'] = }")  # noqa: G004
+    print(f"{os.environ['HYDRA_FULL_ERROR'] = }")
 
     def handle_exception(
         exc_type,  # noqa: ANN001

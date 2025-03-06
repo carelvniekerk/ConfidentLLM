@@ -134,7 +134,7 @@ class QARunner:
         answer: Answer = self.answer_processor(generation_output)  # type: ignore[assignment]
         return answer
 
-    def run(self, data: Dataset) -> None:  # noqa: F811
+    def run(self, data: Dataset) -> None:
         """Run the mathematical reasoning process."""
         results_table = wandb.Table(
             columns=["Question", "Reasoning", "Answer", "True Answer", "Confidence"],
@@ -232,7 +232,7 @@ class QARunner:
     ],
 )
 def run_qa(  # noqa: PLR0913
-    data: Dataset,  # noqa: F811
+    data: Dataset,
     model: ModelLoader,
     generation_method: CausalLMGenerationMethod,
     output_processor: OutputProcessor,

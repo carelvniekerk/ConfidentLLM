@@ -23,7 +23,6 @@
 # limitations under the License.
 """Model output answer processor."""
 
-import re
 from typing import Unpack
 
 import torch
@@ -120,7 +119,6 @@ class IdentityAnswerProcessor(AnswerProcessor):
             return Answer(
                 answer=answer,
                 confidence=answer_confidence,
-                reasoning="",
                 best_answer_idx=best_answer_id,
             )
-        return Answer(answer=answer, confidence=answer_confidence, reasoning="")
+        return Answer(answer=answer, confidence=answer_confidence)
