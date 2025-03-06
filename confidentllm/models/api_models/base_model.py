@@ -90,8 +90,8 @@ class BaseAPIModel(ABC):
         self,
         conversation: ChatConversation,
         max_new_tokens: int,
-        num_beams: int,
         temperature: float,
+        num_beams: int = 1,
     ) -> list[str]:
         """Generate a response to a conversation.
 
