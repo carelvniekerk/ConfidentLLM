@@ -68,6 +68,13 @@ class IdentityAnswerProcessor(AnswerProcessor):
         """
         return_best_answer_idx: bool = kwargs.get("return_best_answer_idx", False)
 
+        if isinstance(generation_output.generated_ids, list):
+            answer_object = Answer(
+                answer=generation_output.generated_ids[0],  # type: ignore[arg-type]
+                confidence=torch.tensor(1.0),
+            )
+            return answer_object
+
         if self.tokenizer is None:
             raise TokenizerNotSetError(self.tokenizer)
 
