@@ -296,9 +296,15 @@ SequenceCLSModelConfig = ModelLoaderConfig(
     lora=NoLoRAConfig,  # type: ignore[arg-type]
 )
 
+OpenAIModelConfig = ModelLoaderConfig(
+    pretrained_model_name_or_path=ModelName.GPT4O_MINI,
+    model_type=ModelType.OPENAI,
+)
+
 store(CausalLMModelConfig, name="causal_lm", group="model")
 store(TrainCausalLMModelConfig, name="train_causal_lm", group="model")
 store(TrainSequenceCLSModelConfig, name="train_sequence_cls", group="reward_model")
 store(SequenceCLSModelConfig, name="sequence_cls", group="reward_model")
 store(TrainSequenceCLSModelConfig, name="train_sequence_cls", group="model")
 store(SequenceCLSModelConfig, name="sequence_cls", group="model")
+store(OpenAIModelConfig, name="openai", group="model")
