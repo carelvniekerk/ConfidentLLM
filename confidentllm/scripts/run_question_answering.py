@@ -106,7 +106,11 @@ class QARunner:
             prompt=question,
             responses=responses,
         )
-        num_beams: int = generation_output.generated_ids.size(0)
+        num_beams: int = (
+            generation_output.generated_ids.size(0)
+            if not isinstance(generation_output.generated_ids, list)
+            else len(generation_output.generated_ids)
+        )
 
         if self.keep_all_generation_paths and num_beams == 1:
             msg = "Only one beam was generated, output will only contain one path."
