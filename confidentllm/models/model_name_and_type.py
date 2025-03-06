@@ -81,6 +81,7 @@ class ModelType(StrEnum):
 
     CAUSAL_LM = auto()
     SEQUENCE_CLS = auto()
+    OPENAI = auto()
 
 
 class ModelMode(StrEnum):
