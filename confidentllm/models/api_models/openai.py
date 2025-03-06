@@ -32,7 +32,7 @@ from openai.types.chat import (
     ChatCompletionUserMessageParam,
 )
 
-from confidentllm.generation.types import ChatConversation
+from confidentllm.conversations.types import ChatConversation
 from confidentllm.models.api_models.base_model import BaseAPIModel
 
 __all__ = ["ChatGPTModel"]
@@ -75,16 +75,25 @@ class ChatGPTModel(BaseAPIModel):
             role="system",
         )
 
-    def generate_response(self, conversation: ChatConversation) -> list[str]:
-        """Generate a response for the conversation.
+    def generate(
+        self,
+        conversation: ChatConversation,
+        max_new_tokens: int,
+        num_beams: int,
+        temperature: float,
+    ) -> list[str]:
+        """Generate a response to a conversation.
 
         Args:
         ----
-            conversation (ChatConversation): The conversation to generate a response for.
+            conversation (ChatConversation): The conversation to generate a response.
+            max_new_tokens (int): The maximum number of tokens to generate.
+            num_beams (int): The number of beams to use.
+            temperature (float): The temperature to use for sampling.
 
         Returns:
         -------
-            str: The generated response.
+            list[str]: The generated responses.
 
         """
         conversation_context: list[list[ChatCompletionMessageParam]] = []
@@ -111,8 +120,9 @@ class ChatGPTModel(BaseAPIModel):
             self.api.chat.completions.create(
                 model=self.model_name,
                 messages=conv,
-                temperature=self.temperature,
-                max_completion_tokens=self.max_tokens,
+                max_completion_tokens=max_new_tokens,
+                n=num_beams,
+                temperature=temperature,
             )
             for conv in conversation_context
         ]

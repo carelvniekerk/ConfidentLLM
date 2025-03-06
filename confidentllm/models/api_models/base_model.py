@@ -26,8 +26,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from confidentllm.generation.types import ChatConversation
-from confidentllm.models.model_name_and_type import ModelName
+from confidentllm.conversations.types import ChatConversation
 
 __all__ = ["BaseAPIModel"]
 
@@ -39,8 +38,6 @@ class BaseAPIModel(ABC):
         self,
         model_name: str,
         system_prompt: str = "You are a helpful assistant.",
-        temperature: float = 1.0,
-        max_tokens: int = 512,
         api_key: str | None = None,
     ) -> None:
         """Initialize the API Model.
@@ -49,15 +46,11 @@ class BaseAPIModel(ABC):
         ----
             system_prompt (str): The system prompt to use.
             model_name (ModelName): The model name to use.
-            temperature (float): The temperature for the model.
-            max_tokens (int): The maximum number of tokens to generate.
             api_key (str): The API key to use for the model.
 
         """
         self.system_prompt: Any = self._create_system_prompt(system_prompt)
         self.model_name = model_name
-        self.temperature = temperature
-        self.max_tokens = max_tokens
 
         if api_key is None:
             raise ValueError("API Key is required for API Models.")  # noqa: EM101, TRY003
@@ -93,15 +86,24 @@ class BaseAPIModel(ABC):
         """
 
     @abstractmethod
-    def generate_response(self, conversation: ChatConversation) -> list[str]:
+    def generate(
+        self,
+        conversation: ChatConversation,
+        max_new_tokens: int,
+        num_beams: int,
+        temperature: float,
+    ) -> list[str]:
         """Generate a response to a conversation.
 
         Args:
         ----
             conversation (ChatConversation): The conversation to generate a response.
+            max_new_tokens (int): The maximum number of tokens to generate.
+            num_beams (int): The number of beams to use.
+            temperature (float): The temperature to use for sampling.
 
         Returns:
         -------
-            str: The generated response.
+            list[str]: The generated responses.
 
         """
