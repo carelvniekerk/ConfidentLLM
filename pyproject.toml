@@ -25,6 +25,7 @@ dependencies = [
     "wandb > 0.17, <= 0.17.5",
     "openai>=1.65.2",
     "python-dotenv>=1.0.1",
+    "vertexai>=1.71.1",
 ]
 
 [dependency-groups]
@@ -73,5 +74,7 @@ module = [
     "transformers",
     "transformers.*",
     "trl",
+    "vertexai",
+    "vertexai.*",
 ]
 ignore_missing_imports = true
