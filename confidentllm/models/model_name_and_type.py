@@ -75,6 +75,9 @@ class ModelName(StrEnum):
     # OpenAI Models
     GPT4O_MINI = auto()
 
+    # VertexAI Models
+    GEMINI15_FLASH = auto()
+
 
 class ModelType(StrEnum):
     """Enum class to store the types of the models."""
@@ -82,6 +85,7 @@ class ModelType(StrEnum):
     CAUSAL_LM = auto()
     SEQUENCE_CLS = auto()
     OPENAI = auto()
+    VERTEXAI = auto()
 
 
 class ModelMode(StrEnum):

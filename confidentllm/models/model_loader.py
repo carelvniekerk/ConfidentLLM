@@ -46,6 +46,7 @@ from transformers import (
 
 from confidentllm.hydra_tools import builds
 from confidentllm.models.api_models.openai import ChatGPTModel
+from confidentllm.models.api_models.vertexai import GeminiModel
 from confidentllm.models.configuration import (
     get_chat_template,
     get_pretrained_model_name_or_path,
@@ -68,7 +69,7 @@ DEFAULT_DEVICE: ModelDevice = (
 )
 DEFAULT_DEVICE = ModelDevice.CUDA if torch.cuda.is_available() else DEFAULT_DEVICE
 
-API_MODELS: list[ModelType] = [ModelType.OPENAI]
+API_MODELS: list[ModelType] = [ModelType.OPENAI, ModelType.VERTEXAI]
 
 
 class ModelLoaderFunction(Protocol):
@@ -161,6 +162,8 @@ class ModelLoader:
             )  # type: ignore[assignment]
         elif self.model_type == ModelType.OPENAI:
             self.model_class = ChatGPTModel  # type: ignore[assignment]
+        elif self.model_type == ModelType.VERTEXAI:
+            self.model_class = GeminiModel  # type: ignore[assignment]
         else:
             raise ValueError(f"Invalid model type: {self.model_type}")  # noqa: EM102, TRY003
 
@@ -301,10 +304,16 @@ OpenAIModelConfig = ModelLoaderConfig(
     model_type=ModelType.OPENAI,
 )
 
+VertexAIModelConfig = ModelLoaderConfig(
+    pretrained_model_name_or_path=ModelName.GEMINI15_FLASH,
+    model_type=ModelType.VERTEXAI,
+)
+
 store(CausalLMModelConfig, name="causal_lm", group="model")
 store(TrainCausalLMModelConfig, name="train_causal_lm", group="model")
 store(TrainSequenceCLSModelConfig, name="train_sequence_cls", group="reward_model")
 store(SequenceCLSModelConfig, name="sequence_cls", group="reward_model")
 store(TrainSequenceCLSModelConfig, name="train_sequence_cls", group="model")
 store(SequenceCLSModelConfig, name="sequence_cls", group="model")
+store(VertexAIModelConfig, name="vertex_ai", group="model")
 store(OpenAIModelConfig, name="openai", group="model")

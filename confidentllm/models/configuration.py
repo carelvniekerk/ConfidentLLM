@@ -50,6 +50,7 @@ PRETRAINED_MODEL_NAME_OR_PATH: dict[ModelName, str] = {
     ModelName.QWEN25_7B_INSTRUCT: "Qwen/Qwen2.5-7B-Instruct",
     ModelName.DEEPSEEK_R1_DISTILL_QWEN_7B: "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
     ModelName.GPT4O_MINI: "gpt-4o-mini",
+    ModelName.GEMINI15_FLASH: "gemini-1.5-flash-001",
 }
 
 
