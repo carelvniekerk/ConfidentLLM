@@ -27,11 +27,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import wandb
 from hydra_zen import store, zen
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
+import wandb
 from confidentllm.logging.init_wandb import initialize_wandb
 from confidentllm.reporting import load_wandb_data
 from confidentllm.scripts.setup_tools import setup_hydra_config_and_logging

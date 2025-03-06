@@ -25,7 +25,6 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Iterator
 
 from torch import Tensor
 from transformers import PreTrainedModel, PreTrainedTokenizer
@@ -34,9 +33,6 @@ from confidentllm.confidence_metrics import ConfidenceMetric
 
 __all__ = [
     "CausalLMGenerationMethod",
-    "ChatAssistantMessage",
-    "ChatConversation",
-    "ChatUserMessage",
     "GenerationOutput",
     "ModelNotSetError",
     "TokenizerNotSetError",
@@ -49,34 +45,6 @@ class GenerationOutput:
 
     generated_ids: Tensor
     generation_scores: Tensor
-
-
-@dataclass
-class ChatUserMessage:
-    """Dataclass for the chat user message."""
-
-    content: str
-    role: str = "user"
-
-
-@dataclass
-class ChatAssistantMessage:
-    """Dataclass for the chat user message."""
-
-    content: str
-    role: str = "assistant"
-
-
-@dataclass
-class ChatConversation:
-    """Dataclass for the chat conversation."""
-
-    messages: list[list[ChatUserMessage | ChatAssistantMessage]]
-
-    def __iter__(self) -> Iterator[list[dict[str, str]]]:
-        """Convert the chat conversation to a iterator."""
-        for chat in self.messages:
-            yield [message.__dict__ for message in chat]
 
 
 class ModelNotSetError(Exception):
@@ -140,16 +108,15 @@ class CausalLMGenerationMethod(ABC):
     @abstractmethod
     def __call__(
         self,
-        prompt: str,
+        prompt: str | None = None,
+        responses: list[str] | None = None,
     ) -> GenerationOutput:
         """Generate text based on the given prompt.
 
         Args:
         ----
-            prompt (str): The prompt for text generation.
-            max_length (int, optional): The maximum length of the generated text.
-            temperature (float, optional): The temperature for sampling. Default is 1.0.
-            num_beams (int, optional): The number of beams for beam search.
+            prompt (str | None): The prompt for text generation.
+            responses (list[str] | None): Optional list of responses to consider.
 
         Returns:
         -------

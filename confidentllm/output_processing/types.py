@@ -1,4 +1,4 @@
-# coding=utf-8
+# coding=utf-8  # noqa: A005
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
@@ -32,9 +32,9 @@ from transformers import PreTrainedModel, PreTrainedTokenizer
 from confidentllm.generation.types import GenerationOutput
 
 __all__ = [
-    "ProcessedOutput",
     "OutputProcessor",
     "OutputProcessorKwargs",
+    "ProcessedOutput",
 ]
 
 
