@@ -272,7 +272,7 @@ def _log_python_env_info() -> None:
         logging.info(f"Python:         {python_version}")  # noqa: G004
         logging.info(f"Implementation: {implementation}")  # noqa: G004
         logging.info(
-            f"Path:           {venv_path if venv_path else 'Not in a virtual environment'}"  # noqa: G004
+            f"Path:           {venv_path if venv_path else 'Not in a virtual environment'}",  # noqa: E501, G004
         )
         logging.info(f"Executable:     {executable}")  # noqa: G004
         logging.info(f"Valid:          {valid_venv}")  # noqa: G004

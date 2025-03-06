@@ -27,12 +27,12 @@ import logging
 from dataclasses import dataclass
 from pprint import pformat
 
-import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
-from confidentllm import data  # noqa: F401
+import wandb
+from confidentllm.data import datasets  # noqa: F401
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
 from confidentllm.generation.types import GenerationOutput
@@ -87,21 +87,25 @@ class QARunner:
 
     def _answer_question(
         self,
-        question: str,
+        question: str | None = None,
+        responses: list[str] | None = None,
     ) -> Answer | list[Answer]:
         """Answer the given question.
 
         Args:
         ----
-            question (str): The question to answer.
-            keep_all_generation_paths (bool): Whether to keep all generation paths.
+            question (str | None): The question to answer.
+            responses (list[str] | None): Optional list of responses to consider.
 
         Returns:
         -------
             Answer | list[Answer]: The answer to the question.
 
         """
-        generation_output: GenerationOutput = self.generation_method(question)
+        generation_output: GenerationOutput = self.generation_method(
+            prompt=question,
+            responses=responses,
+        )
         num_beams: int = generation_output.generated_ids.size(0)
 
         if self.keep_all_generation_paths and num_beams == 1:
@@ -130,7 +134,7 @@ class QARunner:
         answer: Answer = self.answer_processor(generation_output)  # type: ignore[assignment]
         return answer
 
-    def run(self, data: Dataset) -> None:  # noqa: F811
+    def run(self, data: Dataset) -> None:
         """Run the mathematical reasoning process."""
         results_table = wandb.Table(
             columns=["Question", "Reasoning", "Answer", "True Answer", "Confidence"],
@@ -156,8 +160,13 @@ class QARunner:
         )
 
         for example in tqdm(data, desc="Answering questions"):
-            question: str = example.get("question", "")  # type: ignore[attr-access]
-            answers: Answer | list[Answer] = self._answer_question(question)
+            question: str = example.get("question")  # type: ignore[attr-access]
+            responses: list[str] | None = example.get("preferred_response")  # type: ignore[attr-access]
+            responses = responses[:-1] if responses else None
+            answers: Answer | list[Answer] = self._answer_question(
+                question=question,
+                responses=responses,
+            )
 
             if self.keep_all_generation_paths:
                 confidences: list[float] = [
@@ -223,7 +232,7 @@ class QARunner:
     ],
 )
 def run_qa(  # noqa: PLR0913
-    data: Dataset,  # noqa: F811
+    data: Dataset,
     model: ModelLoader,
     generation_method: CausalLMGenerationMethod,
     output_processor: OutputProcessor,

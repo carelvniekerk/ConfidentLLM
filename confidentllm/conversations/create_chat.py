@@ -25,7 +25,7 @@
 
 from itertools import cycle
 
-from confidentllm.generation.types import (
+from confidentllm.conversations.types import (
     ChatAssistantMessage,
     ChatConversation,
     ChatUserMessage,

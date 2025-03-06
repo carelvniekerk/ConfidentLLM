@@ -69,7 +69,7 @@ class UncertaintyAwareCLMLoss(ComputeLossFunction):
             dim=-1,
         )
         prediction_probabilities: torch.Tensor = predictive_distributions.max(
-            dim=-1
+            dim=-1,
         ).values
 
         correct_predictions: tuple[torch.Tensor, ...] | list[torch.Tensor] = (
@@ -84,7 +84,7 @@ class UncertaintyAwareCLMLoss(ComputeLossFunction):
         )
 
         log_probabilities: torch.Tensor = torch.log(
-            input=predictive_distributions + 1e-8
+            input=predictive_distributions + 1e-8,
         )
         entropy: torch.Tensor = -torch.sum(
             input=predictive_distributions * log_probabilities,
@@ -94,7 +94,8 @@ class UncertaintyAwareCLMLoss(ComputeLossFunction):
         correct_prediction_loss_term: torch.Tensor = 1 - prediction_probabilities
         correct_prediction_loss_term *= (1 - entropy.tanh() + 1e-8).log()
         correct_prediction_loss_term[
-            incorrect_predictions[0], incorrect_predictions[1]
+            incorrect_predictions[0],
+            incorrect_predictions[1],
         ] = 0
         correct_prediction_loss_term[ignore_indices] = 0
         num_correct_predictions: torch.Tensor = correct_prediction_loss_term != 0
@@ -106,7 +107,8 @@ class UncertaintyAwareCLMLoss(ComputeLossFunction):
         incorrect_prediction_loss_term: torch.Tensor = prediction_probabilities
         incorrect_prediction_loss_term *= (entropy.tanh() + 1e-8).log()
         incorrect_prediction_loss_term[
-            correct_predictions[0], correct_predictions[1]
+            correct_predictions[0],
+            correct_predictions[1],
         ] = 0
         incorrect_prediction_loss_term[ignore_indices] = 0
         num_incorrect_predictions: torch.Tensor = incorrect_prediction_loss_term != 0
