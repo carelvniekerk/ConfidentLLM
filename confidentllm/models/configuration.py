@@ -63,7 +63,7 @@ def get_pretrained_model_name_or_path(name: ModelName | Path) -> str | Path:
 
 
 CHAT_TEMPLATES: dict[ModelName, str] = {
-    ModelName.GPT2_124M: (
+    ModelName.GPT2_137M: (
         "{{ bos_token }}"
         "{% if messages[0]['role'] == 'system' %}"
         "{{ raise_exception('System role not supported') }}{% endif %}"
@@ -71,10 +71,49 @@ CHAT_TEMPLATES: dict[ModelName, str] = {
         "{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}"
         "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"  # noqa: E501
         "{% endif %}{% if (message['role'] == 'assistant') %}"
-        "{{ '\nOutput: ' + message['content'] | trim }}{% else %}"
-        "{{ 'Instruct: ' + message['content'] | trim }}"
+        "{{ '\nAssistant: ' + message['content'] | trim }}{% else %}"
+        "{{ 'User: ' + message['content'] | trim }}"
         "{% set role = message['role'] %}{% endif %}{% endfor %}"
-        "{% if add_generation_prompt %}{{ '\nOutput:' }}{% endif %}"
+        "{% if add_generation_prompt %}{{ '\nAssistant:' }}{% endif %}"
+    ),
+    ModelName.GPT2_380M: (
+        "{{ bos_token }}"
+        "{% if messages[0]['role'] == 'system' %}"
+        "{{ raise_exception('System role not supported') }}{% endif %}"
+        "{% for message in messages %}"
+        "{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}"
+        "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"  # noqa: E501
+        "{% endif %}{% if (message['role'] == 'assistant') %}"
+        "{{ '\nAssistant: ' + message['content'] | trim }}{% else %}"
+        "{{ 'User: ' + message['content'] | trim }}"
+        "{% set role = message['role'] %}{% endif %}{% endfor %}"
+        "{% if add_generation_prompt %}{{ '\nAssistant:' }}{% endif %}"
+    ),
+    ModelName.GPT2_812M: (
+        "{{ bos_token }}"
+        "{% if messages[0]['role'] == 'system' %}"
+        "{{ raise_exception('System role not supported') }}{% endif %}"
+        "{% for message in messages %}"
+        "{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}"
+        "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"  # noqa: E501
+        "{% endif %}{% if (message['role'] == 'assistant') %}"
+        "{{ '\nAssistant: ' + message['content'] | trim }}{% else %}"
+        "{{ 'User: ' + message['content'] | trim }}"
+        "{% set role = message['role'] %}{% endif %}{% endfor %}"
+        "{% if add_generation_prompt %}{{ '\nAssistant:' }}{% endif %}"
+    ),
+    ModelName.GPT2_2B: (
+        "{{ bos_token }}"
+        "{% if messages[0]['role'] == 'system' %}"
+        "{{ raise_exception('System role not supported') }}{% endif %}"
+        "{% for message in messages %}"
+        "{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}"
+        "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"  # noqa: E501
+        "{% endif %}{% if (message['role'] == 'assistant') %}"
+        "{{ '\nAssistant: ' + message['content'] | trim }}{% else %}"
+        "{{ 'User: ' + message['content'] | trim }}"
+        "{% set role = message['role'] %}{% endif %}{% endfor %}"
+        "{% if add_generation_prompt %}{{ '\nAssistant:' }}{% endif %}"
     ),
     ModelName.RM_GPT2_HARMLESS_774M: (
         "{{ bos_token }}"
@@ -84,10 +123,10 @@ CHAT_TEMPLATES: dict[ModelName, str] = {
         "{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}"
         "{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}"  # noqa: E501
         "{% endif %}{% if (message['role'] == 'assistant') %}"
-        "{{ '\nOutput: ' + message['content'] | trim }}{% else %}"
-        "{{ 'Instruct: ' + message['content'] | trim }}"
+        "{{ '\nAssistant: ' + message['content'] | trim }}{% else %}"
+        "{{ 'User: ' + message['content'] | trim }}"
         "{% set role = message['role'] %}{% endif %}{% endfor %}"
-        "{% if add_generation_prompt %}{{ '\nOutput:' }}{% endif %}"
+        "{% if add_generation_prompt %}{{ '\nAssistant:' }}{% endif %}"
     ),
     ModelName.PHI2_3B: (
         "{{ bos_token }}"
