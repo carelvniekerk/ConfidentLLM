@@ -26,6 +26,7 @@
 from confidentllm.generation import (  # noqa: F401 - Importing to add methods to the hydra store
     beam_causal_lm_generation,
     cot_causal_lm_generation,
+    greedy_api_lm_generation,
     greedy_causal_lm_generation,
 )
 from confidentllm.generation.types import CausalLMGenerationMethod
