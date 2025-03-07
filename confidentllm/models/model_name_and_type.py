@@ -37,10 +37,11 @@ __all__ = [
 class ModelName(StrEnum):
     """Enum class to store the names of the models."""
 
-    # Default small GPT2 model for testing
-    GPT2_124M = auto()
-
-    # Large GPT2 reward model
+    # GPT2 based Models
+    GPT2_137M = auto()
+    GPT2_380M = auto()
+    GPT2_812M = auto()
+    GPT2_2B = auto()
     RM_GPT2_HARMLESS_774M = auto()
 
     # Google GEMMA Models

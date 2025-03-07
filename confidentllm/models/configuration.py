@@ -30,7 +30,10 @@ from confidentllm.models.model_name_and_type import ModelName
 __all__ = ["get_chat_template", "get_pretrained_model_name_or_path"]
 
 PRETRAINED_MODEL_NAME_OR_PATH: dict[ModelName, str] = {
-    ModelName.GPT2_124M: "gpt2",
+    ModelName.GPT2_137M: "openai-community/gpt2",
+    ModelName.GPT2_380M: "openai-community/gpt2-medium",
+    ModelName.GPT2_812M: "openai-community/gpt2-large",
+    ModelName.GPT2_2B: "openai-community/gpt2-xl",
     ModelName.RM_GPT2_HARMLESS_774M: "Ray2333/gpt2-large-harmless-reward_model",
     ModelName.GEMMA_2B_IT: "google/gemma-1.1-2b-it",
     ModelName.GEMMA2_9B_IT: "google/gemma-2-9b-it",
