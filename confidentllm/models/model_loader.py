@@ -194,7 +194,7 @@ class ModelLoader:
         for param_name in trainable_params:
             logger.info(f" - {param_name}")  # noqa: G004
 
-    def load(self) -> tuple[PreTrainedModel, PreTrainedTokenizer]:
+    def load(self) -> tuple[PreTrainedModel, PreTrainedTokenizer]:  # noqa: C901, PLR0912
         """Load a pretrained model from Hugging Face's model hub.
 
         Args:

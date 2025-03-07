@@ -262,7 +262,7 @@ def run_qa(  # noqa: PLR0913
     if hasattr(data, "choices"):
         runner.answer_processor.set_choices(data.choices)  # type: ignore[attr-defined] # All QA datasets should have the choices attribute
 
-    runner.run(data)
+    runner.run(data=data)
 
 
 def main() -> None:
