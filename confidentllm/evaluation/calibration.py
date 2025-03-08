@@ -153,7 +153,7 @@ class CalibrationEvaluator(Evaluator):
             ece += bin_size * abs(accuracy - avg_confidence)
             total_samples += bin_size
 
-        ece /= total_samples
+        ece /= total_samples if total_samples > 0 else 1
         return ece
 
     def evaluate(self) -> CalibrationResults:
