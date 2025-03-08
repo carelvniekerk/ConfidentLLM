@@ -196,7 +196,7 @@ class QARunner:
             results_table.add_data(
                 question,
                 answer.reasoning,
-                answer.answer.upper(),
+                answer.answer,
                 example.get("answer", "-1"),  # type: ignore[attr-access]
                 answer.confidence.mean().item(),
             )
