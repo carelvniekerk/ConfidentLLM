@@ -197,7 +197,7 @@ class QARunner:
                 question,
                 answer.reasoning,
                 answer.answer.upper(),
-                example.get("answer", "-1").upper(),  # type: ignore[attr-access]
+                example.get("answer", "-1"),  # type: ignore[attr-access]
                 answer.confidence.mean().item(),
             )
 
