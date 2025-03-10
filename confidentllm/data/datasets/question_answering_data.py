@@ -24,6 +24,7 @@
 """Dataset containing the generated answer data."""
 
 import json
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
@@ -132,7 +133,7 @@ def _load_table(
 
 def _reformat_table(
     table: Table,
-) -> dict[str, dict[str, str]]:
+) -> dict[str, str]:
     """Reformat the table data into a dictionary."""
     answer_columns: list[int] = [
         idx
@@ -141,7 +142,7 @@ def _reformat_table(
     ]
     answer_column: int = answer_columns[0] if answer_columns else 1
 
-    responses_data: dict[str, dict[str, str]] = {}
+    responses_data: dict[str, str] = {}
     for row in table["data"]:
         question: str = row[0]  # type: ignore[assignment]
         responses_data[question] = row[answer_column]  # type: ignore[assignment]
@@ -149,9 +150,29 @@ def _reformat_table(
     return responses_data
 
 
+def _extract_utterances(
+    text: str,
+    pattern: str = r"(User|Assistant): (.*?)(?=\s*(?:User|Assistant):|$)",
+) -> list[str]:
+    # Remove escape characters
+    text = text.replace('"', "").replace("\n", "\n")
+    text = re.sub(r"\n\n+", " ", text)
+
+    # Use regex to capture all user and assistant utterances
+    regex_matches: list[tuple[str, str]] = re.findall(
+        pattern=pattern,
+        string=text,
+        flags=re.DOTALL,
+    )
+    # Format as a list of alternating turns
+    utterances: list[str] = [utterance.strip() for _, utterance in regex_matches]
+
+    return utterances
+
+
 def _process_data(table: Table) -> Dataset:
     """Process the table data into a dataset."""
-    preference_data: dict[str, list[str]] = {
+    preference_data: dict[str, list[str | list[str]]] = {
         "question": [],
         "preferred_response": [],
         "rejected_response": [],
@@ -160,12 +181,23 @@ def _process_data(table: Table) -> Dataset:
         question = _cleanup_text(text=question)  # noqa: PLW2901
         if not question:
             continue
-        response = _cleanup_text(text=response)  # type: ignore[assignment,arg-type]  # noqa: PLW2901
+        response = _cleanup_text(text=response)  # type: ignore[arg-type]  # noqa: PLW2901
         if not response:
             continue
-        preference_data["question"].append(question)
-        preference_data["preferred_response"].append(response)  # type: ignore[arg-type]
-        preference_data["rejected_response"].append(response)  # type: ignore[arg-type]
+
+        if "User: " in question:
+            responses: list[str] = _extract_utterances(text=question)
+            responses.append(response)
+
+            preference_data["preferred_response"].append(responses)
+            preference_data["rejected_response"].append(responses)
+        else:
+            preference_data["question"].append(question)
+            preference_data["preferred_response"].append(response)
+            preference_data["rejected_response"].append(response)
+
+    if not preference_data["question"]:
+        preference_data.pop("question")
 
     return Dataset.from_dict(preference_data)
 
