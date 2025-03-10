@@ -27,9 +27,10 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
-import wandb
 from datasets import Dataset
 from numpy import exp
+
+import wandb
 from wandb.apis.public.runs import Run, Runs
 
 if TYPE_CHECKING:
