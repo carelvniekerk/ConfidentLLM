@@ -118,7 +118,7 @@ class IdentityAnswerProcessor(AnswerProcessor):
         best_answer_id: int = int(torch.argmax(answer_confidences).item())
 
         answer: str = self._decode_tokens(
-            generation_output.generated_ids[best_answer_id].unsqueeze(0),
+            tokens=[generated_response_tokens[best_answer_id]],
         )[0]
         answer_confidence: torch.Tensor = answer_confidences[best_answer_id]
 

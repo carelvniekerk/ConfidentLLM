@@ -25,6 +25,7 @@
 
 import logging
 from dataclasses import dataclass
+from itertools import cycle
 from pprint import pformat
 
 from datasets import Dataset
@@ -193,6 +194,15 @@ class QARunner:
             )
 
             # Log the answers and predictions
+            if question is None:
+                question = ""
+                for speaker, utterance in zip(
+                    cycle(["User", "Assistant"]),
+                    responses,
+                    strict=False,
+                ):
+                    question += f"{speaker}: {utterance}\n"
+
             results_table.add_data(
                 question,
                 answer.reasoning,

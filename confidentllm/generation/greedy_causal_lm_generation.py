@@ -93,6 +93,7 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
             output_logits=True,
             return_dict_in_generate=True,
             pad_token_id=self.tokenizer.pad_token_id,
+            eos_token_id=self.tokenizer.eos_token_id,
         )  # type: ignore[reportAssignmentType] # When using return dict a type GenerateDecoderOnlyOutput is returned
 
         if generation_output.logits is None:
