@@ -118,7 +118,7 @@ class RewardModelEvalRunner:
         with torch.no_grad():
             scores: torch.Tensor = self.model(**inputs).logits.detach()
 
-        return scores
+        return torch.sigmoid(scores).reshape(-1)
 
     @staticmethod
     def _collate_fn(
@@ -152,6 +152,9 @@ class RewardModelEvalRunner:
             collate_fn=self._collate_fn,
         )
 
+        preferred_scores_list: list[torch.Tensor] = []
+        rejected_scores_list: list[torch.Tensor] = []
+
         for batch in tqdm(dataloader, desc="Evaluating Responses"):
             questions: list[str] = batch.get("question")
             preferred_responses: list[str] = batch.get("preferred_response", [])
@@ -165,6 +168,9 @@ class RewardModelEvalRunner:
                 questions=questions,
                 responses=rejected_responses,
             )
+
+            preferred_scores_list.append(preferred_scores)
+            rejected_scores_list.append(rejected_scores)
 
             # Get the predictions (1 if preferred is better, 0 if rejected is better)
             predictions: list[int] = (
@@ -229,6 +235,19 @@ class RewardModelEvalRunner:
         wandb_log: dict[str, wandb.Table] = {"results_table": results_table}
         wandb_log.update(results.to_dict())
         wandb.log(wandb_log)
+
+        preferred_scores = torch.cat(preferred_scores_list, dim=0)
+        rejected_scores = torch.cat(rejected_scores_list, dim=0)
+        logging_message = (
+            f"Average Score for preferred responses: {preferred_scores.mean().item()}"
+        )
+        logger.info(logging_message)
+        wandb.log({"average_score_preferred": preferred_scores.mean().item()})
+        logging_message = (
+            f"Average Score for rejected responses: {rejected_scores.mean().item()}"
+        )
+        logger.info(logging_message)
+        wandb.log({"average_score_rejected": rejected_scores.mean().item()})
 
 
 @store(
