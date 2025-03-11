@@ -36,7 +36,7 @@ from wandb.apis.public.runs import Run, Runs
 if TYPE_CHECKING:
     from wandb.apis.public.files import File, Files
 
-__all__ = ["load_question_answering_data"]
+# __all__ = ["load_question_answering_data"]
 
 
 class Table(TypedDict):

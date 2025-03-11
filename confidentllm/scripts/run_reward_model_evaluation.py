@@ -120,6 +120,19 @@ class RewardModelEvalRunner:
 
         return scores
 
+    @staticmethod
+    def _collate_fn(
+        batch: list[dict[str, str | list[str]]],
+    ) -> dict[str, list[str | list[str]]]:
+        """Collate function to handle variable-length sequences by padding."""
+        output: dict[str, list[str | list[str]]] = {}
+        if "question" in batch[0]:
+            output["question"] = [item["question"] for item in batch]
+        output["preferred_response"] = [item["preferred_response"] for item in batch]
+        output["rejected_response"] = [item["rejected_response"] for item in batch]
+
+        return output
+
     def run(self, data: Dataset) -> None:  # noqa: F811
         """Run the reward model evaluation."""
         results_table = wandb.Table(
@@ -136,6 +149,7 @@ class RewardModelEvalRunner:
             dataset=data,  # type: ignore[arg-type]
             batch_size=self.batch_size,
             shuffle=False,
+            collate_fn=self._collate_fn,
         )
 
         for batch in tqdm(dataloader, desc="Evaluating Responses"):
@@ -166,6 +180,7 @@ class RewardModelEvalRunner:
                 .tolist()
             )
 
+            questions = questions if questions else [""] * len(preferred_responses)
             for prompt, preferred, rejected, preferred_score, rejected_score in zip(
                 questions,
                 preferred_responses,
