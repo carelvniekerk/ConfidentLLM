@@ -45,6 +45,8 @@ if TYPE_CHECKING:
 
 __all__: list[str] = []
 
+MAX_CONTEXT_LENGTH: int = 2048
+
 
 class CoTDecodingCausalLMGenerationMethod(CausalLMGenerationMethod):
     """Greedy generation method for causal language models."""
@@ -74,6 +76,10 @@ class CoTDecodingCausalLMGenerationMethod(CausalLMGenerationMethod):
             conversation.messages[0] = conversation.messages[0][:-1]
 
         context_max_length: int = self.tokenizer.model_max_length - self.max_length
+        context_max_length = min(
+            context_max_length,
+            MAX_CONTEXT_LENGTH,
+        )
         inputs: BatchEncoding = self.tokenizer.apply_chat_template(
             list(conversation),
             add_generation_prompt=True,
