@@ -50,7 +50,7 @@ class Entropy(ConfidenceMetric):
         normalisation_factor: Tensor = torch.log(torch.tensor(scores.size(-1)))
         entropy /= normalisation_factor
 
-        return entropy
+        return 1.0 - entropy
 
 
 class MeanTokenEntropy(Entropy):
@@ -67,7 +67,7 @@ class MeanTokenEntropy(Entropy):
         mean_token_entropy: Tensor = torch.mean(entropy, dim=-1)
         mean_token_entropy = mean_token_entropy.unsqueeze(-1).repeat(1, scores.size(-2))
 
-        return mean_token_entropy
+        return 1.0 - mean_token_entropy
 
 
 class PredictiveEntropy(PredictiveProbability):
@@ -99,7 +99,7 @@ class PredictiveEntropy(PredictiveProbability):
         predictive_entropy = predictive_entropy.repeat(scores.size(0))
         predictive_entropy = predictive_entropy.unsqueeze(-1).repeat(1, scores.size(-2))
 
-        return predictive_entropy
+        return 1.0 - predictive_entropy
 
 
 EntropyConfig = builds(Entropy)
