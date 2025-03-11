@@ -36,6 +36,7 @@ PRETRAINED_MODEL_NAME_OR_PATH: dict[ModelName, str] = {
     ModelName.GPT2_2B: "openai-community/gpt2-xl",
     ModelName.RM_GPT2_HARMLESS_774M: "Ray2333/gpt2-large-harmless-reward_model",
     ModelName.GEMMA_2B_IT: "google/gemma-1.1-2b-it",
+    ModelName.GEMMA2_2B_IT: "google/gemma-2-2b-it",
     ModelName.GEMMA2_9B_IT: "google/gemma-2-9b-it",
     ModelName.GEMMA2_9B: "google/gemma-2-9b",
     ModelName.RM_GEMMA_2B: "weqweasdas/RM-Gemma-2B",
