@@ -21,14 +21,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Dataset containing the CoT responses ranked based on confidence scores."""
+"""Dataset containing the generated answer data."""
 
 import json
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 from datasets import Dataset
-from numpy import exp
 
 import wandb
 from wandb.apis.public.runs import Run, Runs
@@ -36,7 +36,7 @@ from wandb.apis.public.runs import Run, Runs
 if TYPE_CHECKING:
     from wandb.apis.public.files import File, Files
 
-__all__ = ["load_cot_preference_data"]
+# __all__ = ["load_question_answering_data"]
 
 
 class Table(TypedDict):
@@ -133,121 +133,85 @@ def _load_table(
 
 def _reformat_table(
     table: Table,
-) -> dict[str, dict[str, str | list[dict[str, str | float]]]]:
+) -> dict[str, str]:
     """Reformat the table data into a dictionary."""
-    decoding_path_columns: list[int] = [
+    answer_columns: list[int] = [
         idx
         for idx, column_name in enumerate(table["columns"])
-        if "decoded" in column_name.lower()
+        if column_name.lower() == "answer"
     ]
-    confidence_columns: list[int] = [
-        idx
-        for idx, column_name in enumerate(table["columns"])
-        if "confidence" in column_name.lower()
-    ]
+    answer_column: int = answer_columns[0] if answer_columns else 1
 
-    responses_data: dict[str, dict[str, str | list[dict[str, str | float]]]] = {}
+    responses_data: dict[str, str] = {}
     for row in table["data"]:
         question: str = row[0]  # type: ignore[assignment]
-        responses_data[question] = [  # type: ignore[assignment]
-            {
-                "answer": row[answer_idx],
-                "confidence": row[conf_idx],
-            }
-            for answer_idx, conf_idx in zip(
-                decoding_path_columns,
-                confidence_columns,
-                strict=True,
-            )
-        ]
+        responses_data[question] = row[answer_column]  # type: ignore[assignment]
 
     return responses_data
 
 
-def _rank_data(
-    question: str,
-    response_data: list[dict[str, str | float]],
-    *,
-    threshold: float,
-) -> dict[str, list[str]]:
-    """Rank the response data based on the confidence scores."""
-    ranked_data: dict[str, list[str]] = {
-        "question": [],
-        "preferred_response": [],
-        "rejected_response": [],
-        "margin": [],
-    }
-    for response_1 in response_data:
-        if response_1["confidence"] < threshold:  # type: ignore[operator]
-            continue
-        for response_2 in response_data:
-            if response_1["confidence"] <= response_2["confidence"]:  # type: ignore[operator]
-                continue
+def _extract_utterances(
+    text: str,
+    pattern: str = r"(User|Assistant): (.*?)(?=\s*(?:User|Assistant):|$)",
+) -> list[str]:
+    # Remove escape characters
+    text = text.replace('"', "").replace("\n", "\n")
+    text = re.sub(r"\n\n+", " ", text)
 
-            preferred_response = _cleanup_text(
-                text=response_1["answer"],  # type: ignore[arg-type]
-                remove_prompt=True,
-            )
-            if not preferred_response:
-                continue
-            rejected_response = _cleanup_text(
-                text=response_2["answer"],  # type: ignore[arg-type]
-                remove_prompt=True,
-            )
-            if not rejected_response:
-                continue
+    # Use regex to capture all user and assistant utterances
+    regex_matches: list[tuple[str, str]] = re.findall(
+        pattern=pattern,
+        string=text,
+        flags=re.DOTALL,
+    )
+    # Format as a list of alternating turns
+    utterances: list[str] = [utterance.strip() for _, utterance in regex_matches]
 
-            ranked_data["question"].append(question)
-            ranked_data["preferred_response"].append(preferred_response)
-            ranked_data["rejected_response"].append(rejected_response)
-            # Margin the the exponential of the difference in confidence scores. This
-            ranked_data["margin"].append(
-                exp(response_1["confidence"] - response_2["confidence"]),  # type: ignore[arg-type,operator]
-            )
-
-    return ranked_data
+    return utterances
 
 
-def _process_data(table: Table, ranking_threshold: float) -> Dataset:
+def _process_data(table: Table) -> Dataset:
     """Process the table data into a dataset."""
-    preference_data: dict[str, list[str]] = {
+    preference_data: dict[str, list[str | list[str]]] = {
         "question": [],
         "preferred_response": [],
         "rejected_response": [],
-        "margin": [],
     }
-    for question, response_data in _reformat_table(table).items():
+    for question, response in _reformat_table(table).items():
         question = _cleanup_text(text=question)  # noqa: PLW2901
         if not question:
             continue
-        ranked_data: dict[str, list[str]] = _rank_data(
-            question=question,
-            response_data=response_data,  # type: ignore[arg-type]
-            threshold=ranking_threshold,
-        )
-        if not ranked_data["question"]:
+        response = _cleanup_text(text=response)  # type: ignore[arg-type]  # noqa: PLW2901
+        if not response:
             continue
-        preference_data["question"].extend(ranked_data["question"])
-        preference_data["preferred_response"].extend(
-            ranked_data["preferred_response"],
-        )
-        preference_data["rejected_response"].extend(ranked_data["rejected_response"])
-        preference_data["margin"].extend(ranked_data["margin"])
+
+        if "User: " in question:
+            responses: list[str] = _extract_utterances(text=question)
+            responses.append(response)
+
+            preference_data["preferred_response"].append(responses)
+            preference_data["rejected_response"].append(responses)
+        else:
+            preference_data["question"].append(question)
+            preference_data["preferred_response"].append(response)
+            preference_data["rejected_response"].append(response)
+
+    if not preference_data["question"]:
+        preference_data.pop("question")
 
     return Dataset.from_dict(preference_data)
 
 
-def load_cot_preference_data(  # noqa: PLR0913
+def load_question_answering_data(
     run_path: str,
     run_name: str,
     table_name: str,
-    ranking_threshold: float = 0.9,
-    name: str = "cot_preference",  # noqa: ARG001
+    name: str = "question_answering",  # noqa: ARG001
     *,
     use_cache: bool = True,
     **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
-    """Load the CoT preference data from a Weights and Biases run."""
+    """Load the question answering data from a Weights and Biases run."""
     data_caching_path: Path = _find_project_root() / run_name
     if data_caching_path.exists() and use_cache:
         dataset: Dataset = Dataset.load_from_disk(data_caching_path)
@@ -264,12 +228,6 @@ def load_cot_preference_data(  # noqa: PLR0913
         {},
     )
 
-    if "cotdecoding" not in generation_method_config.get("_target_", "").lower():  # type: ignore[union-attr]
-        raise ValueError(  # noqa: TRY003
-            "Expected generation method to be CoTDecoding, got "  # noqa: EM102
-            f"{generation_method_config.get('_target_', '')}",
-        )
-
     confidence_method: str = (
         generation_method_config.get(
             "confidence_extraction_method",
@@ -280,21 +238,18 @@ def load_cot_preference_data(  # noqa: PLR0913
     )
 
     generation_method_description: str = (
-        f"CoTDecoding with {generation_method_config.get('num_beams')} beams each with "
-        f"a maximum length of {generation_method_config.get('max_length')}. During "
-        f"decoding sampling was set to {generation_method_config.get('sampling')} "
-        f"with a temperature of {generation_method_config.get('temperature')}. "
+        f"Answer generation with {generation_method_config.get('num_beams')} beams each"
+        f" with a maximum length of {generation_method_config.get('max_length')}. "
+        f"During decoding sampling was set to {generation_method_config.get('sampling')}"  # noqa: E501
+        f" with a temperature of {generation_method_config.get('temperature')}. "
         f"The answers were ranked based on the answer token {confidence_method}."
     )
 
     table: Table = _load_table(run=run, table_name=table_name)
-    text_dataset: Dataset = _process_data(
-        table=table,
-        ranking_threshold=ranking_threshold,
-    )
+    text_dataset: Dataset = _process_data(table=table)
 
     text_dataset._info.description = (  # noqa: SLF001 # Adding description to dataset
-        f"CoT decoding based preference data for {initial_dataset_name}. "
+        f"Answer generation data for {initial_dataset_name}. "
         f"The data was obtained using {generation_method_description}."
     )
     text_dataset._info.citation = f"See original dataset {initial_dataset_name}."  # noqa: SLF001

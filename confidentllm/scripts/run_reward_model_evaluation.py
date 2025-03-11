@@ -118,7 +118,20 @@ class RewardModelEvalRunner:
         with torch.no_grad():
             scores: torch.Tensor = self.model(**inputs).logits.detach()
 
-        return scores
+        return torch.sigmoid(scores).reshape(-1)
+
+    @staticmethod
+    def _collate_fn(
+        batch: list[dict[str, str | list[str]]],
+    ) -> dict[str, list[str | list[str]]]:
+        """Collate function to handle variable-length sequences by padding."""
+        output: dict[str, list[str | list[str]]] = {}
+        if "question" in batch[0]:
+            output["question"] = [item["question"] for item in batch]
+        output["preferred_response"] = [item["preferred_response"] for item in batch]
+        output["rejected_response"] = [item["rejected_response"] for item in batch]
+
+        return output
 
     def run(self, data: Dataset) -> None:  # noqa: F811
         """Run the reward model evaluation."""
@@ -136,7 +149,11 @@ class RewardModelEvalRunner:
             dataset=data,  # type: ignore[arg-type]
             batch_size=self.batch_size,
             shuffle=False,
+            collate_fn=self._collate_fn,
         )
+
+        preferred_scores_list: list[torch.Tensor] = []
+        rejected_scores_list: list[torch.Tensor] = []
 
         for batch in tqdm(dataloader, desc="Evaluating Responses"):
             questions: list[str] = batch.get("question")
@@ -152,6 +169,9 @@ class RewardModelEvalRunner:
                 responses=rejected_responses,
             )
 
+            preferred_scores_list.append(preferred_scores)
+            rejected_scores_list.append(rejected_scores)
+
             # Get the predictions (1 if preferred is better, 0 if rejected is better)
             predictions: list[int] = (
                 (preferred_scores > rejected_scores).int().reshape(-1).tolist()
@@ -166,6 +186,7 @@ class RewardModelEvalRunner:
                 .tolist()
             )
 
+            questions = questions if questions else [""] * len(preferred_responses)
             for prompt, preferred, rejected, preferred_score, rejected_score in zip(
                 questions,
                 preferred_responses,
@@ -214,6 +235,19 @@ class RewardModelEvalRunner:
         wandb_log: dict[str, wandb.Table] = {"results_table": results_table}
         wandb_log.update(results.to_dict())
         wandb.log(wandb_log)
+
+        preferred_scores = torch.cat(preferred_scores_list, dim=0)
+        rejected_scores = torch.cat(rejected_scores_list, dim=0)
+        logging_message = (
+            f"Average Score for preferred responses: {preferred_scores.mean().item()}"
+        )
+        logger.info(logging_message)
+        wandb.log({"average_score_preferred": preferred_scores.mean().item()})
+        logging_message = (
+            f"Average Score for rejected responses: {rejected_scores.mean().item()}"
+        )
+        logger.info(logging_message)
+        wandb.log({"average_score_rejected": rejected_scores.mean().item()})
 
 
 @store(

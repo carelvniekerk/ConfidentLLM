@@ -33,6 +33,9 @@ from confidentllm.data.datasets.hh_rlhf import load_hh_rlhf_data
 from confidentllm.data.datasets.mmlu import load_mmlu_data
 from confidentllm.data.datasets.multi_arith import load_multi_arith_data
 from confidentllm.data.datasets.openbook_qa import load_openbook_qa_data
+from confidentllm.data.datasets.qa_data import (
+    load_question_answering_data,
+)
 from confidentllm.data.datasets.reward_bench import load_reward_bench_data
 from confidentllm.data.datasets.union import load_union_data
 from confidentllm.data.types import DatasetSplit
@@ -48,6 +51,7 @@ MMLUConfig = builds(load_mmlu_data)
 MultiArithConfig = builds(load_multi_arith_data)
 ARCConfig = builds(load_arc_data)
 OpenbookQAConfig = builds(load_openbook_qa_data)
+QuestionAnsweringConfig = builds(load_question_answering_data)
 RewardBenchConfig = builds(load_reward_bench_data)
 UnionConfig = builds(load_union_data)
 
@@ -61,6 +65,13 @@ data_store(OpenbookQAConfig(split=DatasetSplit.TEST), name="openbook_qa")
 data_store(RewardBenchConfig(split=DatasetSplit.TEST), name="reward_bench")
 data_store(UnionConfig(split=DatasetSplit.TEST), name="union")
 data_store(HHRLHFConfig(split=DatasetSplit.TEST), name="hh_rlhf")
+
+question_answering_data = QuestionAnsweringConfig(
+    run_path="dialgroup-hhu/ConfidentLLM-QuestionAnswering",
+    run_name="cosmic-monkey-122",
+    table_name="results_table",
+)
+data_store(question_answering_data, name="question_answering")
 
 cot_preference_train_data = COTPreferenceDataConfig(
     run_path="dialgroup-hhu/ConfidentLLM-QuestionAnswering",
