@@ -138,13 +138,14 @@ class AnswerProcessor(OutputProcessor):
         )
         inputs.to(self.model.device)
 
-        answer_output: GenerateDecoderOnlyOutput = self.model.generate(
-            input_ids=inputs.input_ids,
-            attention_mask=inputs.attention_mask,
-            max_new_tokens=self.max_answer_generation_length,
-            return_dict_in_generate=True,
-            pad_token_id=self.tokenizer.pad_token_id,
-        )  # type: ignore[reportAssignmentType]
+        with torch.no_grad():
+            answer_output: GenerateDecoderOnlyOutput = self.model.generate(
+                input_ids=inputs.input_ids,
+                attention_mask=inputs.attention_mask,
+                max_new_tokens=self.max_answer_generation_length,
+                return_dict_in_generate=True,
+                pad_token_id=self.tokenizer.pad_token_id,
+            )  # type: ignore[reportAssignmentType]
 
         answer_tokens: list[list[int]] = (
             answer_output.sequences[:, inputs.input_ids[0].size(-1) :]

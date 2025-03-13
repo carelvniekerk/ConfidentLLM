@@ -91,18 +91,19 @@ class BeamSearchCausalLMGenerationMethod(CausalLMGenerationMethod):
         )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
         inputs.to(self.model.device)
 
-        generation_output: GenerateDecoderOnlyOutput = self.model.generate(
-            input_ids=inputs.input_ids,
-            attention_mask=inputs.attention_mask,
-            max_new_tokens=self.max_length,
-            num_beams=self.num_beams,
-            num_return_sequences=self.num_beams,
-            temperature=self.temperature,
-            early_stopping=True,
-            output_logits=True,
-            return_dict_in_generate=True,
-            pad_token_id=self.tokenizer.pad_token_id,
-        )  # type: ignore[reportAssignmentType] # When using return dict a type GenerateDecoderOnlyOutput is returned
+        with torch.no_grad():
+            generation_output: GenerateDecoderOnlyOutput = self.model.generate(
+                input_ids=inputs.input_ids,
+                attention_mask=inputs.attention_mask,
+                max_new_tokens=self.max_length,
+                num_beams=self.num_beams,
+                num_return_sequences=self.num_beams,
+                temperature=self.temperature,
+                early_stopping=True,
+                output_logits=True,
+                return_dict_in_generate=True,
+                pad_token_id=self.tokenizer.pad_token_id,
+            )  # type: ignore[reportAssignmentType] # When using return dict a type GenerateDecoderOnlyOutput is returned
 
         if generation_output.logits is None:
             msg = "The logits are not set."

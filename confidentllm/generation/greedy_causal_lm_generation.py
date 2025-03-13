@@ -90,17 +90,18 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
             max_length=context_max_length,
         )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
 
-        generation_output: GenerateDecoderOnlyOutput = self.model.generate(
-            input_ids=inputs.input_ids.to(self.model.device),
-            attention_mask=inputs.attention_mask.to(self.model.device),
-            max_new_tokens=self.max_length,
-            do_sample=self.sampling,
-            temperature=self.temperature,
-            output_logits=True,
-            return_dict_in_generate=True,
-            pad_token_id=self.tokenizer.pad_token_id,
-            eos_token_id=self.tokenizer.eos_token_id,
-        )  # type: ignore[reportAssignmentType] # When using return dict a type GenerateDecoderOnlyOutput is returned
+        with torch.no_grad():
+            generation_output: GenerateDecoderOnlyOutput = self.model.generate(
+                input_ids=inputs.input_ids.to(self.model.device),
+                attention_mask=inputs.attention_mask.to(self.model.device),
+                max_new_tokens=self.max_length,
+                do_sample=self.sampling,
+                temperature=self.temperature,
+                output_logits=True,
+                return_dict_in_generate=True,
+                pad_token_id=self.tokenizer.pad_token_id,
+                eos_token_id=self.tokenizer.eos_token_id,
+            )  # type: ignore[reportAssignmentType] # When using return dict a type GenerateDecoderOnlyOutput is returned
 
         if generation_output.logits is None:
             msg = "The logits are not set."

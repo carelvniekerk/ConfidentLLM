@@ -102,13 +102,14 @@ class VerbalisedConfidenceGenerator:
             max_length=context_max_length,
         )
 
-        confidence_output: GenerateDecoderOnlyOutput = self.model.generate(
-            input_ids=inputs.input_ids.to(self.model.device),
-            attention_mask=inputs.attention_mask.to(self.model.device),
-            max_new_tokens=self.max_answer_generation_length,
-            return_dict_in_generate=True,
-            pad_token_id=self.tokenizer.pad_token_id,
-        )  # type: ignore[reportAssignmentType]
+        with torch.no_grad():
+            confidence_output: GenerateDecoderOnlyOutput = self.model.generate(
+                input_ids=inputs.input_ids.to(self.model.device),
+                attention_mask=inputs.attention_mask.to(self.model.device),
+                max_new_tokens=self.max_answer_generation_length,
+                return_dict_in_generate=True,
+                pad_token_id=self.tokenizer.pad_token_id,
+            )  # type: ignore[reportAssignmentType]
 
         confidence_term_token_ids: torch.Tensor = confidence_output.sequences[
             :,

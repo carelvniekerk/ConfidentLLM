@@ -91,18 +91,21 @@ class CoTDecodingCausalLMGenerationMethod(CausalLMGenerationMethod):
         )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
         inputs = inputs.to(self.model.device)
 
-        first_token_generation_output: GenerateDecoderOnlyOutput = self.model.generate(
-            input_ids=inputs.input_ids,
-            attention_mask=inputs.attention_mask,
-            max_new_tokens=1,
-            do_sample=self.sampling,
-            num_beams=self.num_beams,
-            num_return_sequences=self.num_beams,
-            temperature=self.temperature,
-            output_logits=True,
-            return_dict_in_generate=True,
-            pad_token_id=self.tokenizer.pad_token_id,
-        )  # type: ignore[reportAssignmentType] # When using return dict a type GenerateDecoderOnlyOutput is returned
+        with torch.no_grad():
+            first_token_generation_output: GenerateDecoderOnlyOutput = (
+                self.model.generate(
+                    input_ids=inputs.input_ids,
+                    attention_mask=inputs.attention_mask,
+                    max_new_tokens=1,
+                    do_sample=self.sampling,
+                    num_beams=self.num_beams,
+                    num_return_sequences=self.num_beams,
+                    temperature=self.temperature,
+                    output_logits=True,
+                    return_dict_in_generate=True,
+                    pad_token_id=self.tokenizer.pad_token_id,
+                )
+            )  # type: ignore[reportAssignmentType] # When using return dict a type GenerateDecoderOnlyOutput is returned
 
         # Add an extra row of ones to the attention mask for the first tokens
         attention_mask: torch.Tensor = torch.cat(
@@ -118,16 +121,17 @@ class CoTDecodingCausalLMGenerationMethod(CausalLMGenerationMethod):
             dim=1,
         )
 
-        generation_output: GenerateDecoderOnlyOutput = self.model.generate(
-            input_ids=first_token_generation_output.sequences,
-            attention_mask=attention_mask,
-            max_new_tokens=self.max_length - 1,
-            do_sample=self.sampling,
-            temperature=self.temperature,
-            output_logits=True,
-            return_dict_in_generate=True,
-            pad_token_id=self.tokenizer.pad_token_id,
-        )  # type: ignore[reportAssignmentType] # When using return dict a type GenerateDecoderOnlyOutput is returned
+        with torch.no_grad():
+            generation_output: GenerateDecoderOnlyOutput = self.model.generate(
+                input_ids=first_token_generation_output.sequences,
+                attention_mask=attention_mask,
+                max_new_tokens=self.max_length - 1,
+                do_sample=self.sampling,
+                temperature=self.temperature,
+                output_logits=True,
+                return_dict_in_generate=True,
+                pad_token_id=self.tokenizer.pad_token_id,
+            )  # type: ignore[reportAssignmentType] # When using return dict a type GenerateDecoderOnlyOutput is returned
 
         if (
             generation_output.logits is None
