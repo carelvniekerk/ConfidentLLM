@@ -26,6 +26,9 @@
 from hydra_zen import store
 
 from confidentllm.data.datasets.arc import load_arc_data
+from confidentllm.data.datasets.argilla_distilabel_math_preference import (
+    load_argilla_math_data,
+)
 from confidentllm.data.datasets.commonsense_qa import load_commonsense_qa_data
 from confidentllm.data.datasets.cot_preference_data import load_cot_preference_data
 from confidentllm.data.datasets.gsm8k import load_gsm8k_data
@@ -53,6 +56,7 @@ ARCConfig = builds(load_arc_data)
 OpenbookQAConfig = builds(load_openbook_qa_data)
 QuestionAnsweringConfig = builds(load_question_answering_data)
 RewardBenchConfig = builds(load_reward_bench_data)
+ArgillaMathConfig = builds(load_argilla_math_data)
 UnionConfig = builds(load_union_data)
 
 data_store = store(group="data")
@@ -65,6 +69,7 @@ data_store(OpenbookQAConfig(split=DatasetSplit.TEST), name="openbook_qa")
 data_store(RewardBenchConfig(split=DatasetSplit.TEST), name="reward_bench")
 data_store(UnionConfig(split=DatasetSplit.TEST), name="union")
 data_store(HHRLHFConfig(split=DatasetSplit.TEST), name="hh_rlhf")
+data_store(ArgillaMathConfig(split=DatasetSplit.TRAIN), name="argilla_math")
 
 question_answering_data = QuestionAnsweringConfig(
     run_path="dialgroup-hhu/ConfidentLLM-QuestionAnswering",
