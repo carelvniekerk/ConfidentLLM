@@ -97,7 +97,6 @@ class VerbalisedConfidenceGenerator:
         inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             output_text,
             return_tensors=TensorType.PYTORCH,
-            return_dict=True,
             padding=PaddingStrategy.MAX_LENGTH,
             truncation=True,
             max_length=context_max_length,
