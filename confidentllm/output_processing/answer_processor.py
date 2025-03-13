@@ -33,6 +33,7 @@ from typing import Unpack
 import torch
 from transformers import BatchEncoding, TensorType
 from transformers.generation import GenerateDecoderOnlyOutput
+from transformers.tokenization_utils_base import PaddingStrategy
 
 from confidentllm.generation.types import (
     GenerationOutput,
@@ -47,6 +48,8 @@ from confidentllm.output_processing.types import (
 __all__ = ["Answer", "AnswerProcessor"]
 
 logger = logging.getLogger("__main__")
+
+MAX_CONTEXT_LENGTH: int = 2048
 
 
 class NoOverlappingSpanFoundError(Exception):
@@ -119,10 +122,20 @@ class AnswerProcessor(OutputProcessor):
             for beam_text in output_text
         ]
 
+        context_max_length: int = (
+            self.tokenizer.model_max_length - self.max_answer_generation_length
+        )
+        context_max_length = min(
+            context_max_length,
+            MAX_CONTEXT_LENGTH,
+        )
         inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             batch_text_or_text_pairs=output_text,
             return_tensors=TensorType.PYTORCH,
-            padding=True,
+            return_dict=True,
+            padding=PaddingStrategy.MAX_LENGTH,
+            truncation=True,
+            max_length=context_max_length,
         )
         inputs.to(self.model.device)
 
