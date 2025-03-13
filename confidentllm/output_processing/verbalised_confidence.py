@@ -30,6 +30,7 @@ from typing import Callable, Protocol, Unpack
 import torch
 from transformers import BatchEncoding, PreTrainedModel, PreTrainedTokenizer, TensorType
 from transformers.generation import GenerateDecoderOnlyOutput
+from transformers.tokenization_utils_base import PaddingStrategy
 
 from confidentllm.generation.types import GenerationOutput
 from confidentllm.output_processing.answer_processor import Answer, AnswerProcessor
@@ -42,6 +43,8 @@ __all__ = [
     "VerbalisedConfidenceAnswerProcessor",
     "VerbalisedConfidenceNumericAnswerProcessor",
 ]
+
+MAX_CONTEXT_LENGTH: int = 2048
 
 
 class VerbalisedConfidenceAnswerProcessorProtocol(Protocol):
@@ -84,10 +87,20 @@ class VerbalisedConfidenceGenerator:
             f"{text_item}. {self.confidence_prompt}" for text_item in output_text
         ]
 
+        context_max_length: int = (
+            self.tokenizer.model_max_length - self.max_answer_generation_length
+        )
+        context_max_length = min(
+            context_max_length,
+            MAX_CONTEXT_LENGTH,
+        )
         inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             output_text,
             return_tensors=TensorType.PYTORCH,
-            padding=True,
+            return_dict=True,
+            padding=PaddingStrategy.MAX_LENGTH,
+            truncation=True,
+            max_length=context_max_length,
         )
 
         confidence_output: GenerateDecoderOnlyOutput = self.model.generate(
