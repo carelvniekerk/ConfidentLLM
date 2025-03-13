@@ -27,15 +27,12 @@ from typing import TYPE_CHECKING
 
 import torch
 from hydra_zen import store
-from transformers import BatchEncoding, TensorType
-from transformers.generation import GenerateDecoderOnlyOutput
 
 from confidentllm.conversations.create_chat import create_conversation
 from confidentllm.generation.types import (
     CausalLMGenerationMethod,
     GenerationOutput,
     ModelNotSetError,
-    TokenizerNotSetError,
 )
 from confidentllm.hydra_tools import builds
 
