@@ -77,7 +77,7 @@ class ModelAndDataDownloader:
     name="download_and_sync",
     hydra_defaults=[
         "_self_",
-        {"model": "default"},
+        {"model": "causal_lm"},
         {"data": "gsm8k"},
     ],
 )
