@@ -82,7 +82,7 @@ class CoTDecodingCausalLMGenerationMethod(CausalLMGenerationMethod):
             add_generation_prompt=True,
             return_tensors=TensorType.PYTORCH,
             return_dict=True,
-            padding=PaddingStrategy.MAX_LENGTH,
+            # padding=PaddingStrategy.MAX_LENGTH,
             truncation=True,
             max_length=max_context_length,
         )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
@@ -120,7 +120,7 @@ class CoTDecodingCausalLMGenerationMethod(CausalLMGenerationMethod):
 
         with torch.no_grad():
             generation_output: GenerateDecoderOnlyOutput = self.model.generate(
-                input_ids=first_token_generation_output.sequences,
+                input_ids=first_token_generation_output.sequences.detach(),
                 attention_mask=attention_mask,
                 max_new_tokens=self.max_generation_length - 1,
                 do_sample=self.sampling,

@@ -84,7 +84,7 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
             add_generation_prompt=True,
             return_tensors=TensorType.PYTORCH,
             return_dict=True,
-            padding=PaddingStrategy.MAX_LENGTH,
+            # padding=PaddingStrategy.MAX_LENGTH,
             truncation=True,
             max_length=max_context_length,
         )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
