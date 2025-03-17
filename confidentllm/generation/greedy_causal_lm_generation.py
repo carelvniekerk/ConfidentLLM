@@ -75,10 +75,9 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
         if responses is None:
             conversation.messages[0] = conversation.messages[0][:-1]
 
-        context_max_length: int = self.tokenizer.model_max_length - self.max_length
-        context_max_length = min(
-            context_max_length,
-            MAX_CONTEXT_LENGTH,
+        max_context_length = min(
+            self.tokenizer.model_max_length - self.max_generation_length,
+            self.max_context_length,
         )
         inputs: BatchEncoding = self.tokenizer.apply_chat_template(
             list(conversation),
@@ -87,14 +86,14 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
             return_dict=True,
             padding=PaddingStrategy.MAX_LENGTH,
             truncation=True,
-            max_length=context_max_length,
+            max_length=max_context_length,
         )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
 
         with torch.no_grad():
             generation_output: GenerateDecoderOnlyOutput = self.model.generate(
                 input_ids=inputs.input_ids.to(self.model.device),
                 attention_mask=inputs.attention_mask.to(self.model.device),
-                max_new_tokens=self.max_length,
+                max_new_tokens=self.max_generation_length,
                 do_sample=self.sampling,
                 temperature=self.temperature,
                 output_logits=True,

@@ -78,7 +78,8 @@ class CausalLMGenerationMethod(ABC):
         confidence_metric: ConfidenceMetric,
         tokenizer: PreTrainedTokenizer | None = None,
         model: PreTrainedModel | None = None,
-        max_length: int = 256,
+        max_context_length: int = 512,
+        max_generation_length: int = 256,
         sampling: bool = False,
         temperature: float = 1.0,
         num_beams: int = 1,
@@ -93,7 +94,9 @@ class CausalLMGenerationMethod(ABC):
         self.sampling = sampling
         self.temperature = temperature
         self.num_beams = num_beams
-        self.max_length = max_length
+
+        self.max_generation_length = max_generation_length
+        self.max_context_length = max_context_length
 
         self.zero_shot_prompt = zero_shot_prompt
 

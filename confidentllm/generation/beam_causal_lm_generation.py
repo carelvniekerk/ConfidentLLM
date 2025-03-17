@@ -75,10 +75,9 @@ class BeamSearchCausalLMGenerationMethod(CausalLMGenerationMethod):
         if responses is None:
             conversation.messages[0] = conversation.messages[0][:-1]
 
-        context_max_length: int = self.tokenizer.model_max_length - self.max_length
-        context_max_length = min(
-            context_max_length,
-            MAX_CONTEXT_LENGTH,
+        max_context_length = min(
+            self.tokenizer.model_max_length - self.max_generation_length,
+            self.max_context_length,
         )
         inputs: BatchEncoding = self.tokenizer.apply_chat_template(
             list(conversation),
@@ -87,7 +86,7 @@ class BeamSearchCausalLMGenerationMethod(CausalLMGenerationMethod):
             return_dict=True,
             padding=PaddingStrategy.MAX_LENGTH,
             truncation=True,
-            max_length=context_max_length,
+            max_length=max_context_length,
         )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
         inputs.to(self.model.device)
 
@@ -95,7 +94,7 @@ class BeamSearchCausalLMGenerationMethod(CausalLMGenerationMethod):
             generation_output: GenerateDecoderOnlyOutput = self.model.generate(
                 input_ids=inputs.input_ids,
                 attention_mask=inputs.attention_mask,
-                max_new_tokens=self.max_length,
+                max_new_tokens=self.max_generation_length,
                 num_beams=self.num_beams,
                 num_return_sequences=self.num_beams,
                 temperature=self.temperature,
