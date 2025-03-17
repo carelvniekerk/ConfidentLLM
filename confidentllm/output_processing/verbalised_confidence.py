@@ -55,6 +55,7 @@ class VerbalisedConfidenceAnswerProcessorProtocol(Protocol):
 
     confidence_prompt: str
     max_answer_generation_length: int
+    max_context_length: int
 
     _extract_confidence: Callable[[str], float]
 
@@ -87,19 +88,16 @@ class VerbalisedConfidenceGenerator:
             f"{text_item}. {self.confidence_prompt}" for text_item in output_text
         ]
 
-        context_max_length: int = (
-            self.tokenizer.model_max_length - self.max_answer_generation_length
-        )
-        context_max_length = min(
-            context_max_length,
-            MAX_CONTEXT_LENGTH,
+        max_context_length = min(
+            self.tokenizer.model_max_length - self.max_answer_generation_length,
+            self.max_context_length,
         )
         inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             output_text,
             return_tensors=TensorType.PYTORCH,
             padding=PaddingStrategy.MAX_LENGTH,
             truncation=True,
-            max_length=context_max_length,
+            max_length=max_context_length,
         )
 
         with torch.no_grad():

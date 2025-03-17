@@ -49,8 +49,6 @@ __all__ = ["Answer", "AnswerProcessor"]
 
 logger = logging.getLogger("__main__")
 
-MAX_CONTEXT_LENGTH: int = 2048
-
 
 class NoOverlappingSpanFoundError(Exception):
     """Exception raised when no overlapping span is found."""
@@ -87,11 +85,13 @@ class AnswerProcessor(OutputProcessor):
         self,
         prompt: str = "So the answer is",
         max_answer_generation_length: int = 20,
+        max_context_length: int = 1024,
     ) -> None:
         """Initialize the processor."""
         super().__init__()
         self.prompt = prompt
         self.max_answer_generation_length = max_answer_generation_length
+        self.max_context_length = max_context_length
 
     def __call__(
         self,
@@ -122,19 +122,16 @@ class AnswerProcessor(OutputProcessor):
             for beam_text in output_text
         ]
 
-        context_max_length: int = (
-            self.tokenizer.model_max_length - self.max_answer_generation_length
-        )
-        context_max_length = min(
-            context_max_length,
-            MAX_CONTEXT_LENGTH,
+        max_context_length = min(
+            self.tokenizer.model_max_length - self.max_answer_generation_length,
+            self.max_context_length,
         )
         inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             batch_text_or_text_pairs=output_text,
             return_tensors=TensorType.PYTORCH,
-            padding=PaddingStrategy.MAX_LENGTH,
+            # padding=PaddingStrategy.MAX_LENGTH,
             truncation=True,
-            max_length=context_max_length,
+            max_length=max_context_length,
         )
         inputs.to(self.model.device)
 
