@@ -137,9 +137,13 @@ class CoTDecodingCausalLMGenerationMethod(CausalLMGenerationMethod):
             msg = "The logits are not set."
             raise ValueError(msg)
 
-        generation_scores: torch.Tensor = torch.cat(
-            first_token_generation_output.logits + generation_output.logits,
-            dim=0,
+        generation_scores: torch.Tensor = (
+            torch.cat(
+                first_token_generation_output.logits + generation_output.logits,
+                dim=0,
+            )
+            .detach()
+            .cpu()
         )
         generation_scores = generation_scores.reshape(
             -1,
@@ -149,13 +153,13 @@ class CoTDecodingCausalLMGenerationMethod(CausalLMGenerationMethod):
         generation_scores = torch.softmax(generation_scores, dim=-1)
 
         generation_scores = self.confidence_metric(
-            next_token_ids=generation_output.sequences,
+            next_token_ids=generation_output.sequences.detach().cpu(),
             scores=generation_scores,
         )
 
         return GenerationOutput(
-            generated_ids=generation_output.sequences,
-            generation_scores=generation_scores,
+            generated_ids=generation_output.sequences.detach().cpu(),
+            generation_scores=generation_scores.detach().cpu(),
         )
 
 

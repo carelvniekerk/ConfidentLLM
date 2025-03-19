@@ -28,11 +28,11 @@ from dataclasses import dataclass
 from itertools import cycle
 from pprint import pformat
 
+import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
-import wandb
 from confidentllm.data import datasets  # noqa: F401
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
@@ -274,7 +274,7 @@ def run_qa(  # noqa: PLR0913
 
     # Select subset of data for debugging
     if run_config.debug:
-        data = data.select(range(10))
+        data = data.select(range(80, 85))
 
     runner.run(data=data)
 
