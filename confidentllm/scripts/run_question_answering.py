@@ -25,6 +25,7 @@
 
 import gc
 import logging
+from copy import copy
 from dataclasses import dataclass
 from itertools import cycle
 from pprint import pformat
@@ -228,16 +229,16 @@ class QARunner:
                 *confidences,
             )
 
-            wandb_log["results_table"] = results_table
+            wandb_log["results_table"] = copy(results_table)
             if self.keep_all_generation_paths:
-                wandb_log["generation_path_data"] = generation_path_data  # type: ignore[assignment]
-            wandb.log(wandb_log, commit=False)
+                wandb_log["generation_path_data"] = copy(generation_path_data)  # type: ignore[assignment]
+            wandb.log(wandb_log)
 
         results = self.evaluator.evaluate()
         logging_message: str = str(results)
         logger.info(logging_message)
         wandb_log.update(results.to_dict())
-        wandb.log(wandb_log, commit=False)
+        wandb.log(wandb_log)
 
 
 @store(
