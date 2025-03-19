@@ -231,13 +231,13 @@ class QARunner:
             wandb_log["results_table"] = results_table
             if self.keep_all_generation_paths:
                 wandb_log["generation_path_data"] = generation_path_data  # type: ignore[assignment]
-            wandb.log(wandb_log)
+            wandb.log(wandb_log, commit=False)
 
         results = self.evaluator.evaluate()
         logging_message: str = str(results)
         logger.info(logging_message)
         wandb_log.update(results.to_dict())
-        wandb.log(wandb_log)
+        wandb.log(wandb_log, commit=False)
 
 
 @store(
