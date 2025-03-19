@@ -23,11 +23,13 @@
 # limitations under the License.
 """Runner for question answering using the ConfidentLLM package."""
 
+import gc
 import logging
 from dataclasses import dataclass
 from itertools import cycle
 from pprint import pformat
 
+import torch
 import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
@@ -134,9 +136,13 @@ class QARunner:
                 self.answer_processor(single_path)  # type: ignore[misc]
                 for single_path in single_paths
             ]
+            gc.collect()
+            torch.cuda.empty_cache()
             return answers
 
         answer: Answer = self.answer_processor(generation_output)  # type: ignore[assignment]
+        gc.collect()
+        torch.cuda.empty_cache()
         return answer
 
     def run(self, data: Dataset) -> None:
@@ -164,6 +170,7 @@ class QARunner:
             else None
         )
 
+        wandb_log: dict[str, wandb.Table] = {}
         for example in tqdm(data, desc="Answering questions"):
             question: str = example.get("question")  # type: ignore[attr-access]
             responses: list[str] | None = example.get("preferred_response")  # type: ignore[attr-access]
@@ -221,12 +228,14 @@ class QARunner:
                 *confidences,
             )
 
+            wandb_log["results_table"] = results_table
+            if self.keep_all_generation_paths:
+                wandb_log["generation_path_data"] = generation_path_data  # type: ignore[assignment]
+            wandb.log(wandb_log)
+
         results = self.evaluator.evaluate()
         logging_message: str = str(results)
         logger.info(logging_message)
-        wandb_log: dict[str, wandb.Table] = {"results_table": results_table}
-        if self.keep_all_generation_paths:
-            wandb_log["generation_path_data"] = generation_path_data  # type: ignore[assignment]
         wandb_log.update(results.to_dict())
         wandb.log(wandb_log)
 
@@ -274,7 +283,7 @@ def run_qa(  # noqa: PLR0913
 
     # Select subset of data for debugging
     if run_config.debug:
-        data = data.select(range(80, 85))
+        data = data.select(range(10))
 
     runner.run(data=data)
 
