@@ -114,3 +114,5 @@ eval_data_store(
     HHRLHFConfig(split=DatasetSplit.TEST, name="helpful-rlhf"),
     name="hh_rlhf",
 )
+train_data_store(ArgillaMathConfig(split=DatasetSplit.TRAIN), name="argilla_math")
+eval_data_store(ArgillaMathConfig(split=DatasetSplit.TRAIN), name="argilla_math")
