@@ -25,6 +25,7 @@
 
 import gc
 import logging
+from copy import copy
 from dataclasses import dataclass
 from itertools import cycle
 from pprint import pformat
@@ -170,7 +171,6 @@ class QARunner:
             else None
         )
 
-        wandb_log: dict[str, wandb.Table] = {}
         for example in tqdm(data, desc="Answering questions"):
             question: str = example.get("question")  # type: ignore[attr-access]
             responses: list[str] | None = example.get("preferred_response")  # type: ignore[attr-access]
@@ -228,11 +228,10 @@ class QARunner:
                 *confidences,
             )
 
-            wandb_log["results_table"] = results_table
-            if self.keep_all_generation_paths:
-                wandb_log["generation_path_data"] = generation_path_data  # type: ignore[assignment]
-            wandb.log(wandb_log)
-
+        wandb_log: dict[str, wandb.Table] = {}
+        wandb_log["results_table"] = results_table
+        if self.keep_all_generation_paths:
+            wandb_log["generation_path_data"] = generation_path_data  # type: ignore[assignment]
         results = self.evaluator.evaluate()
         logging_message: str = str(results)
         logger.info(logging_message)
