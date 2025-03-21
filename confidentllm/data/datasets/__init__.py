@@ -83,6 +83,7 @@ cot_preference_train_data = COTPreferenceDataConfig(
     run_name="ancient-universe-243",
     table_name="generation_path_data",
 )
+data_store(cot_preference_train_data, name="cot_preference")
 
 train_data_store = store(group="train_data")
 eval_data_store = store(group="eval_data")
