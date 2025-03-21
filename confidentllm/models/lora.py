@@ -31,8 +31,8 @@ from typing import Literal
 from hydra_zen import store
 from peft import (
     LoraConfig,  # type: ignore[import] # LoraConfig is publically available in peft
+    get_peft_model,
 )
-from peft.mapping import get_peft_model
 from peft.mixed_model import PeftMixedModel
 from peft.utils.peft_types import TaskType
 from transformers import PreTrainedModel
