@@ -124,13 +124,18 @@ class RewardModelEvalRunner:
         elif self.model.model_type == ModelType.CAUSAL_LM:  # noqa: RET505
             # Use torch.gather to extract the logits of the response tokens
             scores = torch.gather(
-                scores,  # tensor of shape (batch_size, gen_length, vocab_size)
+                input=torch.softmax(
+                    input=scores,
+                    dim=-1,
+                ),  # tensor of shape (batch_size, gen_length, vocab_size)
                 dim=-1,  # we are selecting along the vocab dimension
                 index=inputs.input_ids.unsqueeze(
                     dim=-1,
                 ),  # shape (batch_size, gen_length, 1)
             ).squeeze(dim=-1)  # shape (batch_size, gen_length)
-            return torch.sigmoid(scores.sum(dim=-1)).reshape(-1)
+            scores = (scores * inputs.attention_mask).sum(dim=-1)  # shape (batch_size)
+            scores /= inputs.attention_mask.sum(dim=-1)  # shape (batch_size)
+            return scores.reshape(-1)
         else:
             raise ValueError("Unsupported model type")  # noqa: EM101, TRY003
 
