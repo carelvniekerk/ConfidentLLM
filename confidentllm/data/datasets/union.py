@@ -131,14 +131,15 @@ def load_union_data(  # noqa: PLR0913
             ranking_threshold=ranking_threshold,
         )
 
-        if datasets and (dataset.column_names != datasets[0].column_names):
-            msg = (
-                f"Columns of dataset {dataset_name}: {dataset.column_names} do not "
-                f"match columns of first dataset: {datasets[0].column_names}."
-            )
-            raise KeyError(msg)
-
         datasets.append(dataset)
+
+    # Ensure all datasets have the same set of columns by intersecting them
+    common_columns: set[str] = set(datasets[0].column_names)
+    for dataset in datasets[1:]:
+        common_columns.intersection_update(dataset.column_names)
+
+    # Select only common columns in all datasets
+    datasets = [dataset.select_columns(sorted(common_columns)) for dataset in datasets]
 
     union_dataset = concatenate_datasets(datasets)
     union_dataset.cached_version = datasets[0].cached_version  # type: ignore[attr-defined]
