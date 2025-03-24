@@ -26,6 +26,9 @@
 from datasets import Dataset, concatenate_datasets
 
 from confidentllm.data.datasets.arc import load_arc_data
+from confidentllm.data.datasets.argilla_distilabel_math_preference import (
+    load_argilla_math_data,
+)
 from confidentllm.data.datasets.commonsense_qa import load_commonsense_qa_data
 from confidentllm.data.datasets.cot_preference_data import load_cot_preference_data
 from confidentllm.data.datasets.gsm8k import load_gsm8k_data
@@ -44,6 +47,7 @@ DATASETS: dict[str, LoadDatasetFunction] = {
     "multiarith": load_multi_arith_data,  # type: ignore [dict-item]
     "openbook_qa": load_openbook_qa_data,  # type: ignore [dict-item]
     "mmlu": load_mmlu_data,  # type: ignore [dict-item]
+    "argilla_math": load_argilla_math_data,  # type: ignore [dict-item]
 }
 
 
