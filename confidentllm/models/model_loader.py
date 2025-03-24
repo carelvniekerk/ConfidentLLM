@@ -266,6 +266,7 @@ class ModelLoader:
         if self.model_type not in API_MODELS:
             self._log_model_info(model)
             model = model.to(self.device)  # type: ignore[arg-type]
+            model.model_type = self.model_type  # type: ignore[attr-defined]
 
         return model, tokenizer  # type: ignore[arg-type]
 

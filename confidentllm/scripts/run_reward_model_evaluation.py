@@ -41,6 +41,7 @@ from confidentllm import data  # noqa: F401
 from confidentllm.conversations.create_chat import create_conversation
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.models import ModelLoader
+from confidentllm.models.model_name_and_type import ModelType
 from confidentllm.scripts.setup_tools import (
     init_wandb,
     log_system_info,
@@ -118,7 +119,20 @@ class RewardModelEvalRunner:
         with torch.no_grad():
             scores: torch.Tensor = self.model(**inputs).logits.detach()
 
-        return torch.sigmoid(scores).reshape(-1)
+        if self.model.model_type == ModelType.SEQUENCE_CLS:
+            return torch.sigmoid(scores).reshape(-1)
+        elif self.model.model_type == ModelType.CAUSAL_LM:  # noqa: RET505
+            # Use torch.gather to extract the logits of the response tokens
+            scores = torch.gather(
+                scores,  # tensor of shape (batch_size, gen_length, vocab_size)
+                dim=-1,  # we are selecting along the vocab dimension
+                index=inputs.input_ids.unsqueeze(
+                    dim=-1,
+                ),  # shape (batch_size, gen_length, 1)
+            ).squeeze(dim=-1)  # shape (batch_size, gen_length)
+            return torch.sigmoid(scores.sum(dim=-1)).reshape(-1)
+        else:
+            raise ValueError("Unsupported model type")  # noqa: EM101, TRY003
 
     @staticmethod
     def _collate_fn(
