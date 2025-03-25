@@ -23,6 +23,7 @@
 # limitations under the License.
 """Reporting tools for ConfidentLLM."""
 
+from confidentllm.reporting.load_predictions_table import load_predictions_table
 from confidentllm.reporting.load_wandb_data import load_wandb_data
 
-__all__ = ["load_wandb_data"]
+__all__ = ["load_predictions_table", "load_wandb_data"]

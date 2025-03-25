@@ -27,13 +27,19 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from datasets.arrow_dataset import Dataset
 from hydra_zen import store, zen
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
 import wandb
+from confidentllm.evaluation.accuracy_rejection_curve import (
+    AUARCEvaluator,
+    AUARCResults,
+)
+from confidentllm.evaluation.types import EvaluationBatch
 from confidentllm.logging.init_wandb import initialize_wandb
-from confidentllm.reporting import load_wandb_data
+from confidentllm.reporting import load_predictions_table, load_wandb_data
 from confidentllm.scripts.setup_tools import setup_hydra_config_and_logging
 
 __all__ = ["main"]
@@ -198,37 +204,61 @@ def create_calibration_plot(data_df: pd.DataFrame) -> dict[str, Figure]:
 )
 def run_reporting() -> None:
     """Run the reporting process."""
-    data_df: pd.DataFrame = load_wandb_data("dialgroup-hhu/ConfidentLLM")
+    data: Dataset = load_predictions_table(
+        run_path="dialgroup-hhu/ConfidentLLM-QuestionAnswering",
+        run_name="light-lake-36",
+        table_name="results_table",
+    )
 
-    initialize_wandb(project_name="ConfidentLLM_Reporting")
-    wandb_log: dict = {}
+    data_batch: EvaluationBatch = EvaluationBatch(
+        labels=data["answer"],
+        predictions=data["prediction"],
+        confidences=data["confidence"],
+    )
+    evaluator: AUARCEvaluator = AUARCEvaluator(padding_value="-1")
+    evaluator.add_batch(data_batch)
+    results: AUARCResults = evaluator.evaluate()
 
-    # Tabulate the results
-    results_df: pd.DataFrame = tabulate_results(data_df)
-    table_dir = Path("tables")
-    table_dir.mkdir(exist_ok=True)
-    results_df.to_csv(table_dir / "results.csv")
+    accuracies, rejection_rates = results.ar_stats
+    plt.figure(figsize=(8, 6))
+    plt.plot(rejection_rates, accuracies)
+    plt.plot([0, 1], [0, 1], linestyle="--", color="black")
+    plt.xlabel("Rejection Rate")
+    plt.ylabel("Accuracy")
+    plt.title("Accuracy-Rejection Curve")
+    plt.grid(visible=True)
+    plt.show()
+    # data_df: pd.DataFrame = load_wandb_data("dialgroup-hhu/ConfidentLLM")
 
-    wandb_results_df: pd.DataFrame = pd.read_csv(table_dir / "results.csv")
-    wandb_log["results"] = wandb.Table(dataframe=wandb_results_df)
+    # # initialize_wandb(project_name="ConfidentLLM_Reporting")
+    # wandb_log: dict = {}
 
-    # Create the calibration plots
-    figures = create_calibration_plot(data_df)
+    # # Tabulate the results
+    # results_df: pd.DataFrame = tabulate_results(data_df)
+    # table_dir = Path("tables")
+    # table_dir.mkdir(exist_ok=True)
+    # results_df.to_csv(table_dir / "results.csv")
 
-    figure_dir = Path("figures")
-    figure_dir.mkdir(exist_ok=True)
-    for dataset_name, fig in figures.items():
-        _path = figure_dir / f"{dataset_name}.pdf"
-        fig.savefig(
-            _path,
-            dpi=400,
-            bbox_inches="tight",
-            pad_inches=0,
-        )
-        wandb_log[f"calibration_curve_{dataset_name}"] = wandb.Image(fig)
+    # wandb_results_df: pd.DataFrame = pd.read_csv(table_dir / "results.csv")
+    # wandb_log["results"] = wandb.Table(dataframe=wandb_results_df)
 
-    wandb.log(wandb_log)
-    wandb.finish()
+    # # Create the calibration plots
+    # figures = create_calibration_plot(data_df)
+
+    # figure_dir = Path("figures")
+    # figure_dir.mkdir(exist_ok=True)
+    # for dataset_name, fig in figures.items():
+    #     _path = figure_dir / f"{dataset_name}.pdf"
+    #     fig.savefig(
+    #         _path,
+    #         dpi=400,
+    #         bbox_inches="tight",
+    #         pad_inches=0,
+    #     )
+    #     wandb_log[f"calibration_curve_{dataset_name}"] = wandb.Image(fig)
+
+    # wandb.log(wandb_log)
+    # wandb.finish()
 
 
 def main() -> None:
