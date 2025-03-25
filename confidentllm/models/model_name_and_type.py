@@ -50,6 +50,7 @@ class ModelName(StrEnum):
     GEMMA2_9B_IT = auto()
     GEMMA2_9B = auto()
     RM_GEMMA_2B = auto()
+    GEMMA3_4B_IT = auto()
 
     # Microsoft PHI Models
     PHI2_3B = auto()

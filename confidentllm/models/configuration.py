@@ -30,31 +30,49 @@ from confidentllm.models.model_name_and_type import ModelName
 __all__ = ["get_chat_template", "get_pretrained_model_name_or_path"]
 
 PRETRAINED_MODEL_NAME_OR_PATH: dict[ModelName, str] = {
+    # GPT2 based Models
     ModelName.GPT2_137M: "openai-community/gpt2",
     ModelName.GPT2_380M: "openai-community/gpt2-medium",
     ModelName.GPT2_812M: "openai-community/gpt2-large",
     ModelName.GPT2_2B: "openai-community/gpt2-xl",
     ModelName.RM_GPT2_HARMLESS_774M: "Ray2333/gpt2-large-harmless-reward_model",
+    #
+    # Google GEMMA Models
     ModelName.GEMMA_2B_IT: "google/gemma-1.1-2b-it",
     ModelName.GEMMA2_2B_IT: "google/gemma-2-2b-it",
     ModelName.GEMMA2_9B_IT: "google/gemma-2-9b-it",
     ModelName.GEMMA2_9B: "google/gemma-2-9b",
+    ModelName.GEMMA3_4B_IT: "google/gemma-3-4b-it",
     ModelName.RM_GEMMA_2B: "weqweasdas/RM-Gemma-2B",
+    #
+    # Microsoft PHI Models
     ModelName.PHI2_3B: "microsoft/phi-2",
     ModelName.PHI3_MINI_INSTRUCT_4B: "microsoft/Phi-3-mini-128k-instruct",
     ModelName.PHI4_14B: "microsoft/phi-4",
+    #
+    # Meta-Llama Models
     ModelName.LLAMA2_7B: "meta-llama/Llama-2-7b-hf",
     ModelName.LLAMA2_7B_CHAT: "meta-llama/Llama-2-7b-chat-hf",
     ModelName.LLAMA3_8B_INSTRUCT: "meta-llama/Meta-Llama-3.1-8B-Instruct",
     ModelName.LLAMA3_8B: "meta-llama/Meta-Llama-3.1-8B",
     ModelName.LLAMA32_3B_INSTRUCT: "meta-llama/Llama-3.2-3B-Instruct",
+    #
+    # Mistral AI Models
     ModelName.MISTRAL_7B: "mistralai/Mistral-7B-v0.3",
     ModelName.MISTRAL_7B_INSTRUCT: "mistralai/Mistral-7B-Instruct-v0.3",
     ModelName.MISTRAL_NEMO_12B: "mistralai/Mistral-Nemo-Base-2407",
     ModelName.MISTRAL_NEMO_12B_INSTRUCT: "mistralai/Mistral-Nemo-Instruct-2407",
+    #
+    # Qwen Models
     ModelName.QWEN25_7B_INSTRUCT: "Qwen/Qwen2.5-7B-Instruct",
+    #
+    # DeepSeek AI Models
     ModelName.DEEPSEEK_R1_DISTILL_QWEN_7B: "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
+    #
+    # OpenAI Models
     ModelName.GPT4O_MINI: "gpt-4o-mini",
+    #
+    # VertexAI Models
     ModelName.GEMINI15_FLASH: "gemini-1.5-flash-001",
 }
 
