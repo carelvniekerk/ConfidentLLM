@@ -81,8 +81,33 @@ class ProbabilityDisparity(PredictiveProbability):
         return disparity
 
 
+class Perplexity(PredictiveProbability):
+    """Perplexity as a confidence metric."""
+
+    def __call__(
+        self,
+        next_token_ids: Tensor,
+        scores: Tensor,
+    ) -> Tensor:
+        """Perplexity as a confidence metric."""
+        next_token_probs: Tensor = super().__call__(
+            next_token_ids=next_token_ids,
+            scores=scores,
+        )
+
+        perplexity: Tensor = next_token_probs.clamp(min=1e-8).log().neg().mean()
+        perplexity = perplexity.exp().clamp(
+            min=1.0,
+            max=torch.finfo(perplexity.dtype).max,
+        )
+        perplexity = perplexity.unsqueeze(-1).repeat(1, scores.size(-2))
+
+        return perplexity
+
+
 PredictiveProbabilityConfig = builds(PredictiveProbability)
 ProbabilityDisparityConfig = builds(ProbabilityDisparity)
+PerplexityConfig = builds(Perplexity)
 
 generation_method_store = store(group="generation_method/confidence_metric")
 generation_method_store(
@@ -92,4 +117,8 @@ generation_method_store(
 generation_method_store(
     ProbabilityDisparityConfig,
     name="probability_disparity",
+)
+generation_method_store(
+    PerplexityConfig,
+    name="perplexity",
 )
