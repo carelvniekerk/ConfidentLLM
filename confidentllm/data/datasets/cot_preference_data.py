@@ -27,15 +27,23 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
-import wandb
 from datasets import Dataset
 from numpy import exp
+
+import wandb
 from wandb.apis.public.runs import Run, Runs
 
 if TYPE_CHECKING:
     from wandb.apis.public.files import File, Files
 
-__all__ = ["load_cot_preference_data"]
+__all__ = [
+    "load_cot_preference_data",
+    "Table",
+    "_cleanup_text",
+    "_load_run",
+    "_load_table",
+    "_find_project_root",
+]
 
 
 class Table(TypedDict):

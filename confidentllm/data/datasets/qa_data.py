@@ -31,104 +31,16 @@ from typing import TYPE_CHECKING, TypedDict
 from datasets import Dataset
 
 import wandb
-from wandb.apis.public.runs import Run, Runs
+from confidentllm.data.datasets.cot_preference_data import (
+    Table,
+    _cleanup_text,
+    _find_project_root,
+    _load_run,
+    _load_table,
+)
+from wandb.apis.public.runs import Run
 
-if TYPE_CHECKING:
-    from wandb.apis.public.files import File, Files
-
-# __all__ = ["load_question_answering_data"]
-
-
-class Table(TypedDict):
-    """Table type definition."""
-
-    columns: list[str]
-    data: list[list[str | float]]
-
-
-def _remove_prompt(text: str) -> str:
-    """Remove the prompt from the text."""
-    sentences: list[str] = [sentence for sentence in text.split(".") if sentence]
-    sentences = sentences[:-1]
-
-    text = ""
-    for sentence in sentences:
-        if sentence[0] == " ":
-            sentence = sentence[1:]  # noqa: PLW2901
-        if sentence[-1] == " ":
-            sentence = sentence[:-1]  # noqa: PLW2901
-        sentence = sentence.strip()  # noqa: PLW2901
-        text += sentence + ". " if sentence else ""
-
-    if not text:
-        return text
-    if text[-1] == " ":
-        text = text[:-1]
-    text += "." if text[-1] not in [".", "?", "!"] else ""
-
-    return text
-
-
-def _cleanup_text(text: str, *, remove_prompt: bool = False) -> str:
-    """Clean up the text by removing the prompt."""
-    if remove_prompt:
-        text = _remove_prompt(text)
-
-    if not text:
-        return text
-
-    if text[0] == " ":
-        text = text[1:]
-    if text[-1] == " ":
-        text = text[:-1]
-    return text.strip()
-
-
-def _load_run(path: str, run_name: str) -> Run:
-    """Load a run from the Weights and Biases API."""
-    api = wandb.Api()
-    runs: Runs = api.runs(path)
-
-    try:
-        run: Run = next(run for run in runs if run.name == run_name)
-    except StopIteration as err:
-        raise KeyError(f"Run {run_name} not found in project {path}") from err  # noqa: EM102, TRY003
-
-    return run
-
-
-def _find_project_root() -> Path:
-    """Find the root of the project."""
-    directory: Path = Path.cwd()
-    while not (directory / "pyproject.toml").exists():
-        directory = directory.parent
-
-    return directory / ".data_cache"
-
-
-def _load_table(
-    run: Run,
-    table_name: str,
-    root: Path | None = None,
-) -> Table:
-    """Load a table from a Weights and Biases run."""
-    if root is None:
-        root = _find_project_root()
-
-    files: Files = run.files()
-    table_file: File = next(file for file in files if table_name in file.name)
-
-    table_file_root: Path = root / f"{run.name}/{table_name}"
-    if not table_file_root.exists():
-        table_file.download(root=table_file_root)  # type: ignore[arg-type]
-
-    table_file_dir: Path = table_file_root / "media" / "table"
-    table_file_path: Path = next(table_file_dir.glob("*.json"))
-
-    with table_file_path.open("r") as reader:
-        table: Table = json.load(reader)
-
-    return table
+__all__ = ["load_question_answering_data"]
 
 
 def _reformat_table(
