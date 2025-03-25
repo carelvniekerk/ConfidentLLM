@@ -23,14 +23,11 @@
 # limitations under the License.
 """Dataset containing the generated answer data."""
 
-import json
 import re
-from pathlib import Path
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING
 
 from datasets import Dataset
 
-import wandb
 from confidentllm.data.datasets.cot_preference_data import (
     Table,
     _cleanup_text,
@@ -38,9 +35,13 @@ from confidentllm.data.datasets.cot_preference_data import (
     _load_run,
     _load_table,
 )
-from wandb.apis.public.runs import Run
 
-__all__ = ["load_question_answering_data"]
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from wandb.apis.public.runs import Run
+
+__all__ = ["_extract_utterances", "load_question_answering_data"]
 
 
 def _reformat_table(
@@ -50,7 +51,7 @@ def _reformat_table(
     answer_columns: list[int] = [
         idx
         for idx, column_name in enumerate(table["columns"])
-        if column_name.lower() == "answer"
+        if column_name.lower() == "reasoning"
     ]
     answer_column: int = answer_columns[0] if answer_columns else 1
 

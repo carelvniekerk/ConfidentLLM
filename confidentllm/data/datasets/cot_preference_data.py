@@ -37,12 +37,12 @@ if TYPE_CHECKING:
     from wandb.apis.public.files import File, Files
 
 __all__ = [
-    "load_cot_preference_data",
     "Table",
     "_cleanup_text",
+    "_find_project_root",
     "_load_run",
     "_load_table",
-    "_find_project_root",
+    "load_cot_preference_data",
 ]
 
 
