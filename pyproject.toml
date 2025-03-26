@@ -25,7 +25,7 @@ dependencies = [
     "tqdm >= 4.66.0",
     "types-tqdm >= 4.66.0.20240417",
     "vertexai>=1.71.1",
-    "wandb > 0.17, <= 0.17.5",
+    "wandb >= 0.18",
 ]
 
 [dependency-groups]

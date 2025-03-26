@@ -73,13 +73,12 @@ def initialize_wandb(
     """Initialize wandb."""
     wandb_path = find_project_root(Path(__file__))
 
-    # TODO: Update wandb initialisation service wait for new API to remove restriction
     wandb.init(
         project=project_name,
         dir=str(wandb_path),
         settings=wandb.Settings(
             start_method="thread",  # Note: https://docs.wandb.ai/guides/integrations/hydra#troubleshooting-multiprocessing
-            _service_wait=300,
+            x_service_wait=300,
             init_timeout=300,
         ),
     )
