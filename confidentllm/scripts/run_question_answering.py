@@ -31,11 +31,11 @@ from itertools import cycle
 from pprint import pformat
 
 import torch
-import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
+import wandb
 from confidentllm.data import datasets  # noqa: F401
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
@@ -76,6 +76,7 @@ class QARunner:
         evaluator: Evaluator,
         *,
         keep_all_generation_paths: bool = False,
+        debug_mode: bool = False,
     ) -> None:
         """Initialize the runner."""
         self.model, self.tokenizer = model.load()
@@ -83,6 +84,7 @@ class QARunner:
         self.answer_processor = answer_processor
         self.evaluator = evaluator
         self.keep_all_generation_paths = keep_all_generation_paths
+        self.debug_mode = debug_mode
 
         self.generation_method.set_model(self.model)
         self.answer_processor.set_model(self.model)
@@ -190,6 +192,15 @@ class QARunner:
             answer: Answer = (
                 answers[best_answer_idx] if self.keep_all_generation_paths else answers  # type: ignore[index, assignment]
             )
+
+            if self.debug_mode:
+                answer_message: str = "=" * 40 + "\n"
+                answer_message += f"Question: {question}\n"
+                answer_message += f"Reasoning: {answer.reasoning}\n"
+                answer_message += f"Answer: {answer.answer}\n"
+                answer_message += f"Confidence: {answer.confidence.mean().item()}\n"
+                answer_message += "=" * 40 + "\n"
+                logger.debug(answer_message)
 
             # Add the batch to the evaluator
             self.evaluator.add_batch(
