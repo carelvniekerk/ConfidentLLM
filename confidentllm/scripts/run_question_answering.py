@@ -143,6 +143,10 @@ class QARunner:
             torch.cuda.empty_cache()
             return answers
 
+        prompt = question.split("\n")[2:]
+        prompt = ", ".join(prompt)
+        prompt = f"{prompt} So the correct answer is"
+        self.answer_processor.prompt = prompt
         answer: Answer = self.answer_processor(generation_output)  # type: ignore[assignment]
         gc.collect()
         torch.cuda.empty_cache()
