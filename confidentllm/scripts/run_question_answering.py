@@ -273,6 +273,8 @@ def run_qa(  # noqa: PLR0913
     run_config: QARunConfig,
 ) -> None:
     """Run the question answering process."""
+    if run_config.debug:
+        logger.setLevel(logging.DEBUG)
     if not run_config.debug:
         init_wandb(task_name="QuestionAnswering")
     log_system_info()
@@ -286,6 +288,7 @@ def run_qa(  # noqa: PLR0913
         answer_processor=output_processor,
         evaluator=evaluator,
         keep_all_generation_paths=run_config.keep_all_generation_paths,
+        debug_mode=run_config.debug,
     )
 
     if hasattr(data, "choices"):
