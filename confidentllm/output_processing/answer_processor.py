@@ -129,7 +129,7 @@ class AnswerProcessor(OutputProcessor):
         inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             batch_text_or_text_pairs=output_text,
             return_tensors=TensorType.PYTORCH,
-            # padding=PaddingStrategy.MAX_LENGTH,
+            padding=PaddingStrategy.MAX_LENGTH,
             truncation=True,
             max_length=max_context_length,
         )
