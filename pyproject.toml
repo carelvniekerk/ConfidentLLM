@@ -1,6 +1,6 @@
 [project]
 name = "confidentllm"
-version = "0.5.0"
+version = "0.6.0"
 description = "Evaluate the confidence of various LLM models using different confidence methods and generation techniques."
 authors = [{ name = "Carel van Niekerk", email = "cvanniekerk@hhu.de" }]
 readme = "README.md"
@@ -18,7 +18,6 @@ dependencies = [
     "peft >= 0.15",
     "pydantic >= 2.8.2",
     "python-dotenv>=1.0.1",
-    "sentencepiece >= 0.2.0",
     "torch >= 2.2.0",
     "transformers >= 4.40",
     "trl >= 0.12.0",
@@ -56,11 +55,11 @@ filterwarnings = "error::RuntimeWarning"
 # Configuration for Ruff (Python linter and formatter)
 [tool.ruff]
 extend = "~/.config/ruff/config.toml"
-target-version = "py312"
+target-version = "py313"
 
 # Configuration for Mypy (Python static type checker)
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.13"
 
 [[tool.mypy.overrides]]
 module = [
