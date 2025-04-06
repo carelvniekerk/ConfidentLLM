@@ -29,7 +29,7 @@ from pathlib import Path
 from typing import Callable
 
 from hydra_zen import store
-from transformers import PreTrainedModel
+from transformers.modeling_utils import PreTrainedModel
 from trl import PPOConfig, PPOTrainer
 
 from confidentllm.data import rl_preprocessing

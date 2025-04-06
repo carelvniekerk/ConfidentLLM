@@ -27,7 +27,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from torch import Tensor
-from transformers import PreTrainedModel, PreTrainedTokenizer
+from transformers.modeling_utils import PreTrainedModel
+from transformers.tokenization_utils import PreTrainedTokenizer
 
 from confidentllm.confidence_metrics import ConfidenceMetric
 

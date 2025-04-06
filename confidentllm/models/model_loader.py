@@ -35,14 +35,14 @@ from hydra_zen import store
 from hydra_zen.third_party.pydantic import pydantic_parser
 from peft.auto import AutoPeftModelForCausalLM, AutoPeftModelForSequenceClassification
 from peft.mixed_model import PeftMixedModel
-from transformers import (
+from transformers.modeling_utils import PreTrainedModel
+from transformers.models.auto.modeling_auto import (
     AutoModel,
     AutoModelForCausalLM,
     AutoModelForSequenceClassification,
-    AutoTokenizer,
-    PreTrainedModel,
-    PreTrainedTokenizer,
 )
+from transformers.models.auto.tokenization_auto import AutoTokenizer
+from transformers.tokenization_utils import PreTrainedTokenizer
 
 from confidentllm.hydra_tools import builds
 from confidentllm.models.api_models.openai import ChatGPTModel
@@ -152,13 +152,13 @@ class ModelLoader:
             self.model_class: AutoModel = (
                 AutoModelForCausalLM
                 if not self.use_peft_model_class
-                else AutoPeftModelForCausalLM
-            )  # type: ignore[assignment] # All auto models are of type AutoModel
+                else AutoPeftModelForCausalLM  # type: ignore[assignment] # All auto models are of type AutoModel
+            )
         elif self.model_type == ModelType.SEQUENCE_CLS:
             self.model_class = (
                 AutoModelForSequenceClassification
                 if not self.use_peft_model_class
-                else AutoPeftModelForSequenceClassification
+                else AutoPeftModelForSequenceClassification  # type: ignore[assignment] # All auto models are of type AutoModel
             )  # type: ignore[assignment]
         elif self.model_type == ModelType.OPENAI:
             self.model_class = ChatGPTModel  # type: ignore[assignment]
@@ -213,7 +213,7 @@ class ModelLoader:
             model: PeftMixedModel | PreTrainedModel = self.model_class(
                 model_name=self.pretrained_model_name_or_path,
                 api_key=os.getenv(api_key_key),
-            )  # type: ignore[call-arg]
+            )  # type: ignore[operator]
         else:
             model = self.model_loader(
                 pretrained_model_name_or_path=self.pretrained_model_name_or_path,
@@ -241,7 +241,7 @@ class ModelLoader:
         if (
             self.lora.active or self.use_peft_model_class
         ) and self.model_mode == ModelMode.EVAL:
-            model = model.merge_and_unload()  # type: ignore[assignment]
+            model = model.merge_and_unload()  # type: ignore[operator]
 
         if self.model_type in API_MODELS:
             tokenizer: PreTrainedTokenizer = None  # type: ignore[assignment]
@@ -259,16 +259,16 @@ class ModelLoader:
             tokenizer.pad_token_id = tokenizer.eos_token_id
             tokenizer.pad_token = tokenizer.eos_token
 
-        if tokenizer is not None and model.config.pad_token_id is None:  # type: ignore[attr-defined]
-            model.config.pad_token_id = tokenizer.pad_token_id  # type: ignore[attr-defined]
-            model.config.pad_token = tokenizer.pad_token  # type: ignore[attr-defined]
+        if tokenizer is not None and model.config.pad_token_id is None:  # type: ignore[union-attr]
+            model.config.pad_token_id = tokenizer.pad_token_id  # type: ignore[union-attr]
+            model.config.pad_token = tokenizer.pad_token  # type: ignore[union-attr]
 
         if self.model_type not in API_MODELS:
             self._log_model_info(model)
             model = model.to(self.device)  # type: ignore[arg-type]
             model.model_type = self.model_type  # type: ignore[attr-defined]
 
-        return model, tokenizer  # type: ignore[arg-type]
+        return model, tokenizer  # type: ignore[return-value]
 
 
 # Add default model loader to the store

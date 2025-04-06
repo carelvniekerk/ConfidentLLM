@@ -27,7 +27,7 @@ from pprint import pformat
 
 from datasets import Dataset
 from hydra_zen import store, zen
-from transformers import PreTrainedModel
+from transformers.modeling_utils import PreTrainedModel
 
 from confidentllm.models import ModelLoader
 from confidentllm.models.model_name_and_type import ModelMode

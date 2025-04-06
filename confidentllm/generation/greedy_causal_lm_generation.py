@@ -27,9 +27,9 @@ from typing import TYPE_CHECKING
 
 import torch
 from hydra_zen import store
-from transformers import BatchEncoding, TensorType
-from transformers.generation import GenerateDecoderOnlyOutput
-from transformers.tokenization_utils_base import PaddingStrategy
+from transformers.generation.utils import GenerateDecoderOnlyOutput
+from transformers.tokenization_utils_base import BatchEncoding
+from transformers.utils.generic import TensorType  # PaddingStrategy
 
 from confidentllm.conversations.create_chat import create_conversation
 from confidentllm.generation.types import (
@@ -87,7 +87,7 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
             # padding=PaddingStrategy.MAX_LENGTH,
             truncation=True,
             max_length=max_context_length,
-        )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
+        )  # type: ignore[assignment] # When using return dict a type BatchEncoding is returned
 
         with torch.no_grad():
             generation_output: GenerateDecoderOnlyOutput = self.model.generate(
@@ -100,7 +100,7 @@ class GreedyCausalLMGenerationMethod(CausalLMGenerationMethod):
                 return_dict_in_generate=True,
                 pad_token_id=self.tokenizer.pad_token_id,
                 eos_token_id=self.tokenizer.eos_token_id,
-            )  # type: ignore[reportAssignmentType] # When using return dict a type GenerateDecoderOnlyOutput is returned
+            )  # type: ignore[assignment] # When using return dict a type GenerateDecoderOnlyOutput is returned
 
         if generation_output.logits is None:
             msg = "The logits are not set."

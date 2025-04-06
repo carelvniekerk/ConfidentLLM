@@ -29,13 +29,11 @@ from typing import Callable
 
 import torch
 from datasets import Dataset
-from transformers import (
-    PreTrainedModel,
-    PreTrainedTokenizer,
-    SchedulerType,
-    Trainer,
-    TrainingArguments,
-)
+from transformers.modeling_utils import PreTrainedModel
+from transformers.tokenization_utils import PreTrainedTokenizer
+from transformers.trainer import Trainer
+from transformers.trainer_utils import SchedulerType
+from transformers.training_args import TrainingArguments
 
 from confidentllm.train.loss_functions import LossFunction
 

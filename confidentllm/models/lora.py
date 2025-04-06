@@ -35,7 +35,7 @@ from peft import (
 )
 from peft.mixed_model import PeftMixedModel
 from peft.utils.peft_types import TaskType
-from transformers import PreTrainedModel
+from transformers.modeling_utils import PreTrainedModel
 
 from confidentllm.hydra_tools import builds
 
@@ -105,7 +105,7 @@ class LoRAConfig:
             return model
         config = self._get_lora_config_object()
         self._log_lora_config(config)
-        return get_peft_model(model=model, peft_config=config)  # type: ignore[return-type]
+        return get_peft_model(model=model, peft_config=config)  # type: ignore[return-value, arg-type]
 
 
 HydraLoRAConfig = builds(LoRAConfig)

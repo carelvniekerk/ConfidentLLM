@@ -28,9 +28,11 @@ from dataclasses import dataclass
 from typing import Callable, Protocol, Unpack
 
 import torch
-from transformers import BatchEncoding, PreTrainedModel, PreTrainedTokenizer, TensorType
-from transformers.generation import GenerateDecoderOnlyOutput
-from transformers.tokenization_utils_base import PaddingStrategy
+from transformers.generation.utils import GenerateDecoderOnlyOutput
+from transformers.modeling_utils import PreTrainedModel
+from transformers.tokenization_utils import PreTrainedTokenizer
+from transformers.tokenization_utils_base import BatchEncoding
+from transformers.utils.generic import PaddingStrategy, TensorType
 
 from confidentllm.generation.types import GenerationOutput
 from confidentllm.output_processing.answer_processor import Answer, AnswerProcessor
@@ -107,7 +109,7 @@ class VerbalisedConfidenceGenerator:
                 max_new_tokens=self.max_answer_generation_length,
                 return_dict_in_generate=True,
                 pad_token_id=self.tokenizer.pad_token_id,
-            )  # type: ignore[reportAssignmentType]
+            )  # type: ignore[assignment]
 
         confidence_term_token_ids: torch.Tensor = confidence_output.sequences[
             :,
