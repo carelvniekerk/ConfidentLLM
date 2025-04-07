@@ -1,4 +1,4 @@
-# coding=utf-8  # noqa: A005
+# coding=utf-8
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk
@@ -27,7 +27,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import TypedDict, Unpack
 
-from transformers import PreTrainedModel, PreTrainedTokenizer
+from transformers.modeling_utils import PreTrainedModel
+from transformers.tokenization_utils import PreTrainedTokenizer
 
 from confidentllm.generation.types import GenerationOutput
 

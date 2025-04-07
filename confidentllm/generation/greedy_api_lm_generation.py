@@ -71,7 +71,7 @@ class GreedyAPILMGenerationMethod(CausalLMGenerationMethod):
             conversation=conversation,
             max_new_tokens=self.max_generation_length,
             temperature=self.temperature,
-        )  # type: ignore[reportAssignmentType]
+        )  # type: ignore[assignment]
         generation_scores = torch.zeros(
             size=(len(generation_output), 1),
             dtype=torch.float32,

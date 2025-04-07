@@ -59,7 +59,7 @@ class UncertaintyAwareCLMLoss(ComputeLossFunction):
         """
         # Shift labels and logits to align
         labels = labels[:, 1:]
-        logits: torch.Tensor = outputs.logits[:, :-1, :]
+        logits: torch.Tensor = outputs.logits[:, :-1, :]  # type: ignore[index]
         ignore_indices: torch.Tensor = labels == ignore_index
         labels[ignore_indices] = 0
 

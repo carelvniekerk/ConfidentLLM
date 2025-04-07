@@ -24,8 +24,9 @@
 """Tokenization and data preparation for training a reward model."""
 
 import torch
-from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
-from transformers.tokenization_utils_base import PaddingStrategy
+from transformers.tokenization_utils import PreTrainedTokenizer
+from transformers.tokenization_utils_base import BatchEncoding
+from transformers.utils.generic import PaddingStrategy, TensorType
 
 from confidentllm.conversations.types import (
     ChatConversation,

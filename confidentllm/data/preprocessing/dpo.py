@@ -23,8 +23,8 @@
 # limitations under the License.
 """Tokenization and data preparation for dpo training."""
 
-from transformers import PreTrainedTokenizer, TensorType
-from transformers.tokenization_utils_base import PaddingStrategy
+from transformers.tokenization_utils import PreTrainedTokenizer
+from transformers.utils.generic import PaddingStrategy, TensorType
 
 from confidentllm.conversations.create_chat import create_conversation
 from confidentllm.conversations.types import ChatConversation
@@ -57,7 +57,7 @@ def dpo_preprocessing(
         padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
         truncation=True,
         max_length=max_prompt_length,
-    )
+    )  # type: ignore[assignment]
 
     preferred_responses: list[str] = [
         conversation[-1].content for conversation in preferred_conversations.messages

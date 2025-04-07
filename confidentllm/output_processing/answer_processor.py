@@ -31,9 +31,9 @@ from functools import cached_property
 from typing import Unpack
 
 import torch
-from transformers import BatchEncoding, TensorType
-from transformers.generation import GenerateDecoderOnlyOutput
-from transformers.tokenization_utils_base import PaddingStrategy
+from transformers.generation.utils import GenerateDecoderOnlyOutput
+from transformers.tokenization_utils_base import BatchEncoding
+from transformers.utils.generic import TensorType  # PaddiungStrategy
 
 from confidentllm.generation.types import (
     GenerationOutput,
@@ -133,7 +133,7 @@ class AnswerProcessor(OutputProcessor):
             truncation=True,
             max_length=max_context_length,
         )
-        inputs.to(self.model.device)
+        inputs.to(self.model.device)  # type: ignore[attr-defined]
 
         with torch.no_grad():
             answer_output: GenerateDecoderOnlyOutput = self.model.generate(
@@ -142,7 +142,7 @@ class AnswerProcessor(OutputProcessor):
                 max_new_tokens=self.max_answer_generation_length,
                 return_dict_in_generate=True,
                 pad_token_id=self.tokenizer.pad_token_id,
-            )  # type: ignore[reportAssignmentType]
+            )  # type: ignore[assignment]
 
         answer_tokens: list[list[int]] = (
             answer_output.sequences[:, inputs.input_ids[0].size(-1) :]

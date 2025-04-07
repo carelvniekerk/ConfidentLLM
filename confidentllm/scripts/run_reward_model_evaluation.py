@@ -33,8 +33,8 @@ from datasets import Dataset
 from hydra_zen import store, zen
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import BatchEncoding, TensorType
-from transformers.tokenization_utils_base import PaddingStrategy
+from transformers.tokenization_utils_base import BatchEncoding
+from transformers.utils.generic import PaddingStrategy, TensorType
 
 import wandb
 from confidentllm import data  # noqa: F401
@@ -113,7 +113,7 @@ class RewardModelEvalRunner:
             truncation=True,
             padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type]
             max_length=self.max_length,
-        )  # type: ignore[reportAssignmentType] # When using return dict a type BatchEncoding is returned
+        )  # type: ignore[assignment] # When using return dict a type BatchEncoding is returned
         inputs = inputs.to(self.model.device)
 
         with torch.no_grad():

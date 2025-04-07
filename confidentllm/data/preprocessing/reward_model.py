@@ -23,12 +23,12 @@
 # limitations under the License.
 """Tokenization and data preparation for training a reward model."""
 
-from itertools import cycle
 from typing import TYPE_CHECKING
 
 import torch
-from transformers import BatchEncoding, PreTrainedTokenizer, TensorType
-from transformers.tokenization_utils_base import PaddingStrategy
+from transformers.tokenization_utils import PreTrainedTokenizer
+from transformers.tokenization_utils_base import BatchEncoding
+from transformers.utils.generic import PaddingStrategy, TensorType
 
 from confidentllm.conversations.create_chat import create_conversation
 

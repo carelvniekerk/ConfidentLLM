@@ -25,17 +25,16 @@
 
 import gc
 import logging
-from copy import copy
 from dataclasses import dataclass
 from itertools import cycle
 from pprint import pformat
 
 import torch
-import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
+import wandb
 from confidentllm.data import datasets  # noqa: F401
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.generation import CausalLMGenerationMethod

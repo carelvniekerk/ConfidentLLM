@@ -26,7 +26,7 @@
 from pathlib import Path
 
 from hydra_zen import make_custom_builds_fn
-from hydra_zen.typing._builds_overloads import FullBuilds
+from hydra_zen.typing._builds_overloads import FullBuilds  # type: ignore[access]
 from omegaconf.dictconfig import DictConfig
 
 __all__ = [
