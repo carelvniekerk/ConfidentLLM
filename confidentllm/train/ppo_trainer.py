@@ -142,7 +142,7 @@ class PPORLTrainer(BaseModelTrainer):
             center_rewards_coefficient (float, optional): The coefficient for centering
                 the rewards. Default is None.
 
-        """
+        """  # noqa: E501
         super().__init__(
             eval_strategy=eval_strategy,
             eval_steps=eval_steps,
@@ -189,7 +189,7 @@ class PPORLTrainer(BaseModelTrainer):
                 "Normalising rewards requires a batch size of at least "
                 "{MIN_NORMALISATION_BATCH_SIZE}. Setting normalise_rewards to False."
             )
-            logging.warning(msg)
+            logging.warning(msg)  # noqa: LOG015
 
     @property
     def _trainer_config(self) -> PPOConfig:
