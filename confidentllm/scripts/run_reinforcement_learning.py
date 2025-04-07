@@ -135,7 +135,7 @@ def main() -> None:
         "train_data.name",
         "model.pretrained_model_name_or_path",
         "trainer.seed",
-        "reward_model.name",
+        "reward_model.pretrained_model_name_or_path",
     ]
 
     setup_hydra_config_and_logging(
