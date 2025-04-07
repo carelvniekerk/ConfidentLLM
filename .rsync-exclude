@@ -3,6 +3,9 @@ multirun
 hpc_jobs
 outputs
 
+# Data cache
+.data_cache
+
 # VS Code settings
 .vscode
 
