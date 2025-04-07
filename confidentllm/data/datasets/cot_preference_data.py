@@ -27,9 +27,10 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
-import wandb
 from datasets import Dataset
 from numpy import exp
+
+import wandb
 from wandb.apis.public.runs import Run, Runs
 
 if TYPE_CHECKING:
@@ -52,17 +53,14 @@ def _remove_prompt(text: str) -> str:
 
     text = ""
     for sentence in sentences:
-        if sentence[0] == " ":
-            sentence = sentence[1:]  # noqa: PLW2901
-        if sentence[-1] == " ":
-            sentence = sentence[:-1]  # noqa: PLW2901
+        sentence = sentence.removeprefix(" ")  # noqa: PLW2901
+        sentence = sentence.removesuffix(" ")  # noqa: PLW2901
         sentence = sentence.strip()  # noqa: PLW2901
         text += sentence + ". " if sentence else ""
 
     if not text:
         return text
-    if text[-1] == " ":
-        text = text[:-1]
+    text = text.removesuffix(" ")
     text += "." if text[-1] not in [".", "?", "!"] else ""
 
     return text
