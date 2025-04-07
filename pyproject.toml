@@ -73,6 +73,7 @@ module = [
     "transformers",
     "transformers.*",
     "trl",
+    "trl.*",
     "vertexai",
     "vertexai.*",
 ]

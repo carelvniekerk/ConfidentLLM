@@ -35,6 +35,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers.tokenization_utils_base import BatchEncoding
 from transformers.utils.generic import PaddingStrategy, TensorType
+from trl.trainer.utils import selective_log_softmax
 
 import wandb
 from confidentllm import data  # noqa: F401
@@ -120,21 +121,10 @@ class RewardModelEvalRunner:
             scores: torch.Tensor = self.model(**inputs).logits.detach()
 
         if self.model.model_type == ModelType.SEQUENCE_CLS:
-            return torch.sigmoid(scores).reshape(-1)
+            return scores.reshape(-1)
         elif self.model.model_type == ModelType.CAUSAL_LM:  # noqa: RET505
-            # Use torch.gather to extract the logits of the response tokens
-            scores = torch.gather(
-                input=torch.softmax(
-                    input=scores,
-                    dim=-1,
-                ),  # tensor of shape (batch_size, gen_length, vocab_size)
-                dim=-1,  # we are selecting along the vocab dimension
-                index=inputs.input_ids.unsqueeze(
-                    dim=-1,
-                ),  # shape (batch_size, gen_length, 1)
-            ).squeeze(dim=-1)  # shape (batch_size, gen_length)
-            scores = (scores * inputs.attention_mask).sum(dim=-1)  # shape (batch_size)
-            scores /= inputs.attention_mask.sum(dim=-1)  # shape (batch_size)
+            scores = selective_log_softmax(logits=scores, index=inputs.input_ids)
+            scores = (scores * inputs.attention_mask).sum(dim=-1)
             return scores.reshape(-1)
         else:
             raise ValueError("Unsupported model type")  # noqa: EM101, TRY003
@@ -199,8 +189,7 @@ class RewardModelEvalRunner:
             labels: list[int] = [1] * len(predictions)
             # Get the confidences (difference between preferred and rejected scores)
             confidences: list[float] = (
-                (torch.sigmoid(preferred_scores) - torch.sigmoid(rejected_scores))
-                .abs()
+                torch.sigmoid((preferred_scores - rejected_scores).abs())
                 .reshape(-1)
                 .tolist()
             )
