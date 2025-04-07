@@ -17,6 +17,8 @@ hydra_plugins
 # Binary files
 *.pkl
 *.bin
+*.safetensors
+.pth
 
 # Python cache
 *__pycache__*
