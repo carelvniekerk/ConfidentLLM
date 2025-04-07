@@ -9,6 +9,9 @@ outputs
 # VS Code settings
 .vscode
 
+# Environment variables and secrets
+.env
+
 # UV environment
 .venv
 uv.lock
