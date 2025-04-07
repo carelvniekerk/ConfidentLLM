@@ -57,14 +57,14 @@ logger = get_logger()
         {"trainer": "ppo"},
     ],
 )
-def run_training(
+def run_reinforcement_learning(
     train_data: Dataset,
     eval_data: Dataset,
     model: ModelLoader,
     reward_model: ModelLoader,
     trainer: BaseModelTrainer,
 ) -> None:
-    """Run the question answering process."""
+    """Run the reinforcement learning process."""
     init_wandb(task_name="ReinforcementLearning")
     log_system_info()
     set_seed(trainer.seed)
@@ -127,14 +127,15 @@ def run_training(
 
 
 def main() -> None:
-    """Run the question answering process."""
-    run_function = zen(run_training)
+    """Run the reinforcement learning process."""
+    run_function = zen(run_reinforcement_learning)
 
     config_keys = [
         "resolve_target_name:${trainer}",
         "train_data.name",
         "model.pretrained_model_name_or_path",
         "trainer.seed",
+        "reward_model.name",
     ]
 
     setup_hydra_config_and_logging(
