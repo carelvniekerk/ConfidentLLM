@@ -56,6 +56,7 @@ PRETRAINED_MODEL_NAME_OR_PATH: dict[ModelName, str] = {
     ModelName.LLAMA3_8B_INSTRUCT: "meta-llama/Meta-Llama-3.1-8B-Instruct",
     ModelName.LLAMA3_8B: "meta-llama/Meta-Llama-3.1-8B",
     ModelName.LLAMA32_3B_INSTRUCT: "meta-llama/Llama-3.2-3B-Instruct",
+    ModelName.URM_LLAMA31_8B: "LxzGordon/URM-LLaMa-3.1-8B",
     #
     # Mistral AI Models
     ModelName.MISTRAL_7B: "mistralai/Mistral-7B-v0.3",

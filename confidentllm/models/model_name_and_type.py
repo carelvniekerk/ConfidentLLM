@@ -63,6 +63,7 @@ class ModelName(StrEnum):
     LLAMA3_8B_INSTRUCT = auto()
     LLAMA3_8B = auto()
     LLAMA32_3B_INSTRUCT = auto()
+    URM_LLAMA31_8B = auto()
 
     # Mistral Models
     MISTRAL_7B = auto()
