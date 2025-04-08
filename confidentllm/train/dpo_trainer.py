@@ -189,7 +189,7 @@ class DPOTrainer(BaseModelTrainer):
                 weighting is applied and the loss is the same as the DPO loss. The
                 paper recommends `rpo_alpha=1.0`. Default is None.
 
-        """
+        """  # noqa: RUF002
         super().__init__(
             eval_strategy=eval_strategy,
             eval_steps=eval_steps,

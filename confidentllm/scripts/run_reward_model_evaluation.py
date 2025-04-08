@@ -31,6 +31,7 @@ from typing import TYPE_CHECKING
 import torch
 from datasets import Dataset
 from hydra_zen import store, zen
+from torch.nn.functional import logsigmoid as log_sigmoid
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers.tokenization_utils_base import BatchEncoding
@@ -121,11 +122,13 @@ class RewardModelEvalRunner:
             scores: torch.Tensor = self.model(**inputs).logits.detach()
 
         if self.model.model_type == ModelType.SEQUENCE_CLS:
-            return scores.reshape(-1)
+            return log_sigmoid(scores.reshape(-1))
         elif self.model.model_type == ModelType.CAUSAL_LM:  # noqa: RET505
             scores = selective_log_softmax(logits=scores, index=inputs.input_ids)
             scores = (scores * inputs.attention_mask).sum(dim=-1)
+            scores /= inputs.attention_mask.sum(dim=-1)
             return scores.reshape(-1)
+            # return scores[:, -1].reshape(-1)
         else:
             raise ValueError("Unsupported model type")  # noqa: EM101, TRY003
 
@@ -178,8 +181,8 @@ class RewardModelEvalRunner:
                 responses=rejected_responses,
             )
 
-            preferred_scores_list.append(preferred_scores)
-            rejected_scores_list.append(rejected_scores)
+            preferred_scores_list.append(preferred_scores.exp())
+            rejected_scores_list.append(rejected_scores.exp())
 
             # Get the predictions (1 if preferred is better, 0 if rejected is better)
             predictions: list[int] = (
@@ -189,9 +192,7 @@ class RewardModelEvalRunner:
             labels: list[int] = [1] * len(predictions)
             # Get the confidences (difference between preferred and rejected scores)
             confidences: list[float] = (
-                torch.sigmoid((preferred_scores - rejected_scores).abs())
-                .reshape(-1)
-                .tolist()
+                (preferred_scores - rejected_scores).abs().exp().reshape(-1).tolist()
             )
 
             questions = questions if questions else [""] * len(preferred_responses)
