@@ -187,9 +187,9 @@ class PPORLTrainer(BaseModelTrainer):
             self.normalise_rewards = False
             msg: str = (
                 "Normalising rewards requires a batch size of at least "
-                "{MIN_NORMALISATION_BATCH_SIZE}. Setting normalise_rewards to False."
+                f"{MIN_NORMALISATION_BATCH_SIZE}. Setting normalise_rewards to False."
             )
-            logging.warning(msg)  # noqa: LOG015
+            logging.warning(msg)
 
     @property
     def _trainer_config(self) -> PPOConfig:
