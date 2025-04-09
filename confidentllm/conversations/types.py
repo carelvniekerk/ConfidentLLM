@@ -1,4 +1,4 @@
-# coding=utf-8  # noqa: A005
+# coding=utf-8
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk

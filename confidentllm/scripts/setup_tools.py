@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
 # Author: Carel van Niekerk, Benjamin Ruppik
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
@@ -202,7 +202,7 @@ def get_logger() -> logging.Logger:
     logger: logging.Logger = logging.getLogger("__main__")
 
     # Get the transformer logger and propagate its logs to the Hydra root.
-    transformers_logger: logging.Logger = transformers.logging.get_logger()
+    transformers_logger: logging.Logger = transformers.utils.logging.get_logger()
     transformers_logger.handlers = []
     transformers_logger.propagate = True
 
@@ -216,7 +216,7 @@ def log_system_info() -> None:
     except Exception:  # noqa: BLE001 - We want to proceed no matter what the error is
         hostname = "unknown"
 
-    logging.info(
+    logging.info(  # noqa: LOG015
         msg=f"Running on {hostname = }",  # noqa: G004 - low overhead
     )
 

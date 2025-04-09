@@ -38,7 +38,6 @@ default-groups = []
 download-and-sync = "confidentllm.scripts:download_and_sync"
 question-answering = "confidentllm.scripts:question_answering"
 reinforcement-learning = "confidentllm.scripts:reinforcement_learning"
-reporting = "confidentllm.scripts:reporting"
 reward-model-evaluation = "confidentllm.scripts:reward_model_evaluation"
 train = "confidentllm.scripts:train"
 tests = "pytest:main"

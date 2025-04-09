@@ -28,7 +28,6 @@ from confidentllm.scripts.run_question_answering import main as question_answeri
 from confidentllm.scripts.run_reinforcement_learning import (
     main as reinforcement_learning,
 )
-from confidentllm.scripts.run_reporting import main as reporting
 from confidentllm.scripts.run_reward_model_evaluation import (
     main as reward_model_evaluation,
 )
@@ -38,7 +37,6 @@ __all__ = [
     "download_and_sync",
     "question_answering",
     "reinforcement_learning",
-    "reporting",
     "reward_model_evaluation",
     "train",
 ]

@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------------
 # Project: ConfidenceLLM
 # Author: Carel van Niekerk
-# Year: 2024
+# Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
 # --------------------------------------------------------------------------------
