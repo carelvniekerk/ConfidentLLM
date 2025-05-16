@@ -13,6 +13,7 @@ hydra_plugins
 
 # Data cache
 .data_cache
+reward_example*.pdf
 
 # Binary files
 *.pkl
