@@ -1,17 +1,16 @@
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
-import numpy as np
+
+response_intro = "Response:"
 
 # Prompt and response tokens
-prompt_text = (
+prompt_text_0 = (
     "Prompt: A hardware store sold 10 graphics cards, 14 hard drives, 8 CPUs, and 4 pairs of RAM in one week. "
     "The graphics cards cost $600 each, hard drives cost $80 each, CPUs cost $200 each, and RAM cost $60 for each pair. "
     "How much money did the store earn this week?"
 )
 
-response_intro = "Response:"
-
-response_tokens = [
+response_tokens_0 = [
     "Let's",
     "break",
     "down",
@@ -88,7 +87,7 @@ response_tokens = [
 ]
 
 # Updated rewards: more sporadic, with high reward for reasoning and answer tokens
-rewards = [
+rewards_0 = [
     -0.10,
     -0.05,
     -0.02,
@@ -164,7 +163,9 @@ rewards = [
     0.95,
 ]
 
-response_tokens = [
+prompt_text_1 = "Prompt: James initially spent $3000. He returned a TV ($700) and a bike ($500), reducing the cost to $1800. He sold another bike for 80% of its cost, but since it cost more, he didn’t recover the full $500. Then he bought a toaster for $100, bringing the total to $2100."
+
+response_tokens_1 = [
     "He",
     "is",
     "out",
@@ -223,7 +224,7 @@ response_tokens = [
     "$2100.",
 ]
 
-rewards = [
+rewards_1 = [
     0.20,
     0.20,
     0.20,
@@ -275,9 +276,16 @@ rewards = [
     -0.18,
     -0.20,
     -0.20,  # Tapering off
+    -0.18,
+    -0.18,
+    -0.10,
+    0.03,
+    0.6,
 ]
 
-response_tokens = [
+prompt_text_2 = "Prompt: A magician was selling magic card decks for 2 dollars each. If he started with 5 decks and by the end of the day he had 3 left, how much money did he earn?"
+
+response_tokens_2 = [
     "I",
     "need",
     "to",
@@ -382,7 +390,7 @@ response_tokens = [
 ]
 
 # Define reward values
-rewards = [
+rewards_2 = [
     0.2,
     0.22,
     0.23,
@@ -486,15 +494,19 @@ rewards = [
     1.0,
 ]
 
-response_tokens = [
+prompt_text_3 = "Prompt: Nancy uploaded 41 pictures to Facebook. She put 37 pics into one album and put the rest into 2 different albums. How many pictures were in each album?"
+
+response_tokens_3 = [
     "2",
 ]
 
-rewards = [
+rewards_3 = [
     0.42,
 ]
 
-response_tokens = [
+prompt_text_4 = "Prompt: There are 64 students trying out for the school's trivia teams. If 36 of them didn't get picked for the team and the rest were put into 4 groups, how many students would be in each group?"
+
+response_tokens_4 = [
     "Here's",
     "how",
     "to",
@@ -553,7 +565,7 @@ response_tokens = [
     "group.",
 ]
 
-rewards = [
+rewards_4 = [
     0.22,
     0.25,
     0.24,
@@ -617,22 +629,43 @@ norm = mcolors.Normalize(vmin=-1, vmax=1)
 cmap = plt.get_cmap("gist_rainbow")
 
 # Create figure
-fig, ax = plt.subplots(figsize=(16, 2))
+fig, ax = plt.subplots(figsize=(16, 11))
 ax.axis("off")
 
-# Plot prompt tokens like response tokens (in black)
-prompt_tokens = prompt_text.split()
 x = 0.01
 y = 1.0
-line_height = 0.15
-word_size = 0.008
+line_height = 0.023
+word_size = 0.011
+fontsize = 16
+
+for token in ["Example 1:"]:
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+        fontweight="bold",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Plot prompt tokens like response tokens (in black)
+x = 0.01
+y -= line_height
+prompt_tokens = prompt_text_0.split()
 
 for token in prompt_tokens:
     ax.text(
         x,
         y,
         token + " ",
-        fontsize=12,
+        fontsize=fontsize,
         color="black",
         ha="left",
         va="top",
@@ -651,7 +684,7 @@ for token in response_intro.split():
         x,
         y,
         token + " ",
-        fontsize=12,
+        fontsize=fontsize,
         color="black",
         ha="left",
         va="top",
@@ -665,13 +698,331 @@ for token in response_intro.split():
 # Draw tokens with colors
 x = 0.01
 y -= line_height
-for token, reward in zip(response_tokens, rewards):
+for token, reward in zip(response_tokens_0, rewards_0):
     color = cmap(norm(reward))
     ax.text(
         x,
         y,
         token + " ",
-        fontsize=12,
+        fontsize=fontsize,
+        color=color,
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+x = 0.01
+y -= line_height * 2
+for token in ["Example 2:"]:
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+        fontweight="bold",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Plot prompt tokens like response tokens (in black)
+x = 0.01
+y -= line_height
+prompt_tokens = prompt_text_1.split()
+
+for token in prompt_tokens:
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Add response intro
+x = 0.01
+y -= line_height
+for token in response_intro.split():
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Draw tokens with colors
+x = 0.01
+y -= line_height
+for token, reward in zip(response_tokens_1, rewards_1):
+    color = cmap(norm(reward))
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color=color,
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+
+x = 0.01
+y -= line_height * 2
+for token in ["Example 3:"]:
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+        fontweight="bold",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Plot prompt tokens like response tokens (in black)
+x = 0.01
+y -= line_height
+prompt_tokens = prompt_text_2.split()
+
+for token in prompt_tokens:
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Add response intro
+x = 0.01
+y -= line_height
+for token in response_intro.split():
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Draw tokens with colors
+x = 0.01
+y -= line_height
+for token, reward in zip(response_tokens_2, rewards_2):
+    color = cmap(norm(reward))
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color=color,
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+
+x = 0.01
+y -= line_height * 2
+for token in ["Example 4:"]:
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+        fontweight="bold",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Plot prompt tokens like response tokens (in black)
+x = 0.01
+y -= line_height
+prompt_tokens = prompt_text_3.split()
+
+for token in prompt_tokens:
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Add response intro
+x = 0.01
+y -= line_height
+for token in response_intro.split():
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Draw tokens with colors
+x = 0.01
+y -= line_height
+for token, reward in zip(response_tokens_3, rewards_3):
+    color = cmap(norm(reward))
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color=color,
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+x = 0.01
+y -= line_height * 2
+for token in ["Example 5:"]:
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+        fontweight="bold",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Plot prompt tokens like response tokens (in black)
+x = 0.01
+y -= line_height
+prompt_tokens = prompt_text_4.split()
+
+for token in prompt_tokens:
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Add response intro
+x = 0.01
+y -= line_height
+for token in response_intro.split():
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
+        color="black",
+        ha="left",
+        va="top",
+        fontname="Times New Roman",
+    )
+    x += word_size * len(token)
+    if x > 0.95:
+        x = 0.01
+        y -= line_height
+
+# Draw tokens with colors
+x = 0.01
+y -= line_height
+for token, reward in zip(response_tokens_4, rewards_4):
+    color = cmap(norm(reward))
+    ax.text(
+        x,
+        y,
+        token + " ",
+        fontsize=fontsize,
         color=color,
         ha="left",
         va="top",
@@ -686,7 +1037,7 @@ for token, reward in zip(response_tokens, rewards):
 sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])
 cbar = plt.colorbar(sm, orientation="horizontal", ax=ax, pad=0.02)
-cbar.set_label("Reward Value", fontsize=12)
+cbar.set_label("Reward Value", fontsize=fontsize)
 
 plt.tight_layout()
 plt.savefig("reward_example.pdf", dpi=300, bbox_inches="tight")
