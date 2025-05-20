@@ -1036,7 +1036,7 @@ for token, reward in zip(response_tokens_4, rewards_4):
 # Colorbar legend
 sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])
-cbar = plt.colorbar(sm, orientation="horizontal", ax=ax, pad=0.02)
+cbar = plt.colorbar(sm, orientation="horizontal", ax=ax, pad=0.02, shrink=0.5)
 cbar.set_label("Reward Value", fontsize=fontsize)
 
 plt.tight_layout()
