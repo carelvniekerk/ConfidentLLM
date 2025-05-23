@@ -142,7 +142,7 @@ class AnswerProcessor(OutputProcessor):
                 max_new_tokens=self.max_answer_generation_length,
                 return_dict_in_generate=True,
                 pad_token_id=self.tokenizer.pad_token_id,
-            )  # type: ignore[assignment]
+            )  # type: ignore[assignment, operator]
 
         answer_tokens: list[list[int]] = (
             answer_output.sequences[:, inputs.input_ids[0].size(-1) :]

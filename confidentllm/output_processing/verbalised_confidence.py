@@ -109,7 +109,7 @@ class VerbalisedConfidenceGenerator:
                 max_new_tokens=self.max_answer_generation_length,
                 return_dict_in_generate=True,
                 pad_token_id=self.tokenizer.pad_token_id,
-            )  # type: ignore[assignment]
+            )  # type: ignore[assignment, operator]
 
         confidence_term_token_ids: torch.Tensor = confidence_output.sequences[
             :,

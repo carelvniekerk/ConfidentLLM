@@ -102,7 +102,7 @@ class BeamSearchCausalLMGenerationMethod(CausalLMGenerationMethod):
                 output_logits=True,
                 return_dict_in_generate=True,
                 pad_token_id=self.tokenizer.pad_token_id,
-            )  # type: ignore[assignment] # When using return dict a type GenerateDecoderOnlyOutput is returned
+            )  # type: ignore[assignment, operator] # When using return dict a type GenerateDecoderOnlyOutput is returned
 
         if generation_output.logits is None:
             msg = "The logits are not set."
