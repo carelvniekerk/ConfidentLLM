@@ -1,7 +1,7 @@
 [project]
 name = "confidentllm"
-version = "0.6.0"
-description = "Evaluate the confidence of various LLM models using different confidence methods and generation techniques."
+version = "1.0.0"
+description = "A framework for evaluating and improving large language model confidence using Reinforcement Learning from Self-Feedback (RLSF)."
 authors = [{ name = "Carel van Niekerk", email = "cvanniekerk@hhu.de" }]
 readme = "README.md"
 requires-python = ">=3.12"
