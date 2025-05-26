@@ -77,21 +77,21 @@ download-and-sync \
     
     Example command for evaluating the Phi-2 model on the GSM8K dataset:
     ```bash
-    uv run question-answering model.pretrained_model_name_or_path=PHI2_3B data=gsm8k data.split=test
+    uv run question-answering model.pretrained_model_name_or_path=PHI2_3B data=gsm8k
     ```
 
   - **CoT Prompting**:
     
     Example command for evaluating the Phi-2 model on the GSM8K dataset with CoT prompting:
     ```bash
-    uv run question-answering model.pretrained_model_name_or_path=PHI2_3B data=gsm8k data.split=test generation_method.prompt="Please solve the math problem step by step."
+    uv run question-answering model.pretrained_model_name_or_path=PHI2_3B data=gsm8k output_processor.prompt="Please solve the math problem step by step."
     ```
   
   - **CoT Decoding**:
     
     Example command for evaluating the Phi-2 model on the GSM8K dataset with CoT decoding:
     ```bash
-    uv run question-answering model.pretrained_model_name_or_path=PHI2_3B data=gsm8k data.split=test generation_method=cot_decoding generation_method.num_beams=10 run_config.keep_all_generation_paths=True
+    uv run question-answering model.pretrained_model_name_or_path=PHI2_3B data=gsm8k generation_method=cot_decoding generation_method.num_beams=10 run_config.keep_all_generation_paths=True
     ```
     Setting `run_config.keep_all_generation_paths=True` allows you to keep all generated paths for further analysis and RLSF training.
   
