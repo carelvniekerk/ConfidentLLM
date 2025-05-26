@@ -11,7 +11,7 @@ This codebase implements the experiments from our EMNLP 2025 submission:
 
 ### Installation
 
-We recommend installing using [`uv`](https://docs.astral.sh/uv/):
+We recommend installing using [`uv`](https://docs.astral.sh/uv/). UV can be easily installed using `brew install uv` or `curl -LsSf https://astral.sh/uv/install.sh | sh`. After installing UV, you can install the ConfidentLLM codebase with:
 
 ```bash
 uv sync
