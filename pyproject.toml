@@ -34,7 +34,6 @@ question-answering = "confidentllm.scripts:question_answering"
 reinforcement-learning = "confidentllm.scripts:reinforcement_learning"
 reward-model-evaluation = "confidentllm.scripts:reward_model_evaluation"
 train = "confidentllm.scripts:train"
-tests = "pytest:main"
 
 [build-system]
 requires = ["hatchling"]
