@@ -74,30 +74,35 @@ download-and-sync \
 
 - **Evaluation on different tasks**:
   - **Greedy Decoding**:
-    
+
     Example command for evaluating the Phi-2 model on the GSM8K dataset:
+
     ```bash
     uv run question-answering model.pretrained_model_name_or_path=PHI2_3B data=gsm8k
     ```
 
   - **CoT Prompting**:
-    
+
     Example command for evaluating the Phi-2 model on the GSM8K dataset with CoT prompting:
+
     ```bash
     uv run question-answering model.pretrained_model_name_or_path=PHI2_3B data=gsm8k output_processor.prompt="Please solve the math problem step by step."
     ```
   
   - **CoT Decoding**:
-    
+
     Example command for evaluating the Phi-2 model on the GSM8K dataset with CoT decoding:
+
     ```bash
     uv run question-answering model.pretrained_model_name_or_path=PHI2_3B data=gsm8k generation_method=cot_decoding generation_method.num_beams=10 run_config.keep_all_generation_paths=True
     ```
+
     Setting `run_config.keep_all_generation_paths=True` allows you to keep all generated paths for further analysis and RLSF training.
   
 - **Reward Model Training**:
 
   Example command for training a reward model using the Phi-2 model on the preference pairs created in a run called `example_run`:
+
   ```bash
   uv run train model=train_sequence_cls model.lora=sequence_cls model.pretrained_model_name_or_path=PHI2_3B data=cot_preference train_data.run_name=example_run trainer=reward_model
   ```
@@ -105,6 +110,7 @@ download-and-sync \
 - **Reward Model Evaluation**:
 
   Example command for evaluating the reward model on the RewardBench dataset:
+
   ```bash
   uv run reward-model-evaluation model.pretrained_model_name_or_path="PHI2_3B/or/path/to/trained/reward/model"
   ```
@@ -112,6 +118,7 @@ download-and-sync \
 - **RLSF Training**:
   
   Example command for fine tuning the Phi-2 model using RLSF with the reward model trained in the previous step:
+
   ```bash
   uv run reinforcement-learning model.pretrained_model_name_or_path=PHI2_3B reward_model.pretrained_model_name_or_path="/path/to/trained/reward/model/or/PHI2_3B/for/testing" train_data=gsm8k test_data=gsm8k
   ```
@@ -119,6 +126,7 @@ download-and-sync \
 - **DPO Training**:
 
   Example command for training a model using DPO with the Phi-2 model:
+
   ```bash
   uv run train model.pretrained_model_name_or_path=PHI2_3B data=cot_preference train_data.run_name=example_run trainer=dpo
   ```
