@@ -104,7 +104,7 @@ download-and-sync \
   Example command for training a reward model using the Phi-2 model on the preference pairs created in a run called `example_run`:
 
   ```bash
-  uv run train model=train_sequence_cls model.lora=sequence_cls model.pretrained_model_name_or_path=PHI2_3B data=cot_preference train_data.run_name=example_run trainer=reward_model
+  uv run train model=train_sequence_cls model/lora=sequence_cls model.pretrained_model_name_or_path=PHI2_3B train_data=cot_preference train_data.run_name=example_run eval_data=cot_preference eval_data.run_name=example_run trainer=reward_model
   ```
 
 - **Reward Model Evaluation**:
@@ -120,7 +120,7 @@ download-and-sync \
   Example command for fine tuning the Phi-2 model using RLSF with the reward model trained in the previous step:
 
   ```bash
-  uv run reinforcement-learning model.pretrained_model_name_or_path=PHI2_3B reward_model.pretrained_model_name_or_path="/path/to/trained/reward/model/or/PHI2_3B/for/testing" train_data=gsm8k test_data=gsm8k
+  uv run reinforcement-learning model.pretrained_model_name_or_path=PHI2_3B reward_model.pretrained_model_name_or_path="/path/to/trained/reward/model/or/PHI2_3B/for/testing" train_data=gsm8k eval_data=gsm8k
   ```
 
 - **DPO Training**:
@@ -128,7 +128,7 @@ download-and-sync \
   Example command for training a model using DPO with the Phi-2 model:
 
   ```bash
-  uv run train model.pretrained_model_name_or_path=PHI2_3B data=cot_preference train_data.run_name=example_run trainer=dpo
+  uv run train model.pretrained_model_name_or_path=PHI2_3B train_data=cot_preference train_data.run_name=example_run eval_data=cot_preference eval_data.run_name=example_run trainer=dpo
   ```
 
 Further hyperparameters are easily accessible, for example changing the number of epochs for training or changing the parameters of the PPO algorithm can easily be done via `trainer.param_name=value` arguments.
