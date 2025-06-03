@@ -91,6 +91,7 @@ class ModelType(StrEnum):
     SEQUENCE_CLS = auto()
     OPENAI = auto()
     VERTEXAI = auto()
+    QUANTILE_REGRESSION = auto()
 
 
 class ModelMode(StrEnum):

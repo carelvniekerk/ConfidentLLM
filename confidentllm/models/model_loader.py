@@ -51,6 +51,10 @@ from confidentllm.models.configuration import (
     get_chat_template,
     get_pretrained_model_name_or_path,
 )
+from confidentllm.models.custom_models import (
+    PreTrainedModelForQuantileRegression,
+    QuantileRegressionConfig,
+)
 from confidentllm.models.lora import LoRAConfig, NoLoRAConfig
 from confidentllm.models.model_name_and_type import (
     ModelDataTypes,
@@ -164,6 +168,8 @@ class ModelLoader:
             self.model_class = ChatGPTModel  # type: ignore[assignment]
         elif self.model_type == ModelType.VERTEXAI:
             self.model_class = GeminiModel  # type: ignore[assignment]
+        elif self.model_type == ModelType.QUANTILE_REGRESSION:
+            self.model_class = PreTrainedModelForQuantileRegression  # type: ignore[assignment]
         else:
             raise ValueError(f"Invalid model type: {self.model_type}")  # noqa: EM102, TRY003
 
@@ -214,6 +220,16 @@ class ModelLoader:
                 model_name=self.pretrained_model_name_or_path,
                 api_key=os.getenv(api_key_key),
             )  # type: ignore[operator]
+        elif self.model_type == ModelType.QUANTILE_REGRESSION and any(
+            member.value == self.pretrained_model_name_or_path for member in ModelName
+        ):
+            config = QuantileRegressionConfig(
+                base_model_name_or_path=self.pretrained_model_name_or_path,  # type: ignore[arg-type]
+            )
+            model = PreTrainedModelForQuantileRegression(
+                base_model_name_or_path=self.pretrained_model_name_or_path,
+                config=config,
+            )
         else:
             model = self.model_loader(
                 pretrained_model_name_or_path=self.pretrained_model_name_or_path,
