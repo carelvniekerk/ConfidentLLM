@@ -64,7 +64,9 @@ python_version = "3.13"
 module = [
     "datasets",
     "datasets.*",
+    "dotenv",
     "hydra_zen",
+    "hydra_zen.*",
     "peft",
     "peft.*",
     "pyarrow.*",
