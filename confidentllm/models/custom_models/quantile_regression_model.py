@@ -48,6 +48,11 @@ class PreTrainedModelForQuantileRegression(PreTrainedModel):
             pretrained_model_name_or_path=self.config.base_model_name_or_path,
         )  # type: ignore[misc] # Overwriting the base model with a specific one
 
+        # TODO: Add support for base model fine tuning via LoRA.
+        if self.config.freeze_base_model:
+            for param in self.base_pretrained_model.parameters():
+                param.requires_grad = False
+
         self.regressor = Linear(
             in_features=self.base_pretrained_model.config.hidden_size,
             out_features=len(self.config.quantiles),
