@@ -328,6 +328,20 @@ VertexAIModelConfig = ModelLoaderConfig(
     model_type=ModelType.VERTEXAI,
 )
 
+QuantileRegressionModelConfig = ModelLoaderConfig(
+    pretrained_model_name_or_path=ModelName.GPT2_137M,
+    model_type=ModelType.QUANTILE_REGRESSION,
+    model_mode=ModelMode.EVAL,
+    lora=NoLoRAConfig,  # type: ignore[arg-type]
+)
+
+TrainQuantileRegressionModelConfig = ModelLoaderConfig(
+    pretrained_model_name_or_path=ModelName.GPT2_137M,
+    model_type=ModelType.QUANTILE_REGRESSION,
+    model_mode=ModelMode.TRAIN,
+    lora=NoLoRAConfig,  # type: ignore[arg-type]
+)
+
 store(CausalLMModelConfig, name="causal_lm", group="model")
 store(TrainCausalLMModelConfig, name="train_causal_lm", group="model")
 store(TrainSequenceCLSModelConfig, name="train_sequence_cls", group="reward_model")
@@ -336,3 +350,9 @@ store(TrainSequenceCLSModelConfig, name="train_sequence_cls", group="model")
 store(SequenceCLSModelConfig, name="sequence_cls", group="model")
 store(VertexAIModelConfig, name="vertex_ai", group="model")
 store(OpenAIModelConfig, name="openai", group="model")
+store(QuantileRegressionModelConfig, name="quantile_regression", group="model")
+store(
+    TrainQuantileRegressionModelConfig,
+    name="train_quantile_regression",
+    group="model",
+)

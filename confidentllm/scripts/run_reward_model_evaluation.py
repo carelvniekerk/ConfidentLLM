@@ -29,6 +29,7 @@ from pprint import pformat
 from typing import TYPE_CHECKING
 
 import torch
+import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from torch.nn.functional import logsigmoid as log_sigmoid
@@ -38,7 +39,6 @@ from transformers.tokenization_utils_base import BatchEncoding
 from transformers.utils.generic import PaddingStrategy, TensorType
 from trl.trainer.utils import selective_log_softmax
 
-import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.conversations.create_chat import create_conversation
 from confidentllm.evaluation import EvaluationBatch, Evaluator
