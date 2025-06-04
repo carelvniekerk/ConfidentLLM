@@ -21,15 +21,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Trainer for supervised finetuning."""
+"""Trainer for instruction finetuning."""
 
 from pathlib import Path
 from typing import Callable
 
 from hydra_zen import store
-from transformers import Trainer, TrainingArguments
+from trl import SFTConfig, SFTTrainer
 
-from confidentllm.data import sft_preprocessing
+from confidentllm.data import instruction_preprocessing
 from confidentllm.generation.types import (
     ModelNotSetError,
     TokenizerNotSetError,
@@ -42,11 +42,11 @@ from confidentllm.train.types import (
     LoggingLevel,
 )
 
-__all__ = ["SupervisedFinetuningTrainer"]
+__all__ = ["InstructionFinetuningTrainer"]
 
 
-class SupervisedFinetuningTrainer(BaseModelTrainer):
-    """Trainer for supervised finetuning."""
+class InstructionFinetuningTrainer(BaseModelTrainer):
+    """Trainer for instruction finetuning."""
 
     def __init__(  # noqa: PLR0913
         self,
@@ -75,6 +75,7 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
         label_smoothing_factor: float = 0.0,
         bf16: bool = False,
         fp16: bool = False,
+        max_length: int = 256,
     ) -> None:
         """Configure the model trainer.
 
@@ -119,6 +120,8 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
                 Default is 0.0.
             bf16 (bool, optional): Use bfloat16 precision. Default is False.
             fp16 (bool, optional): Use fp16 precision. Default is False.
+            max_length (int, optional): The maximum length of the generated text.
+                Default is 256.
 
         """
         super().__init__(
@@ -148,9 +151,12 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
             fp16=fp16,
         )
 
+        self.max_length = max_length
+        self.completion_only_loss: bool = True
+
     @property
-    def _trainer_config(self) -> TrainingArguments:
-        config = TrainingArguments(
+    def _trainer_config(self) -> SFTConfig:
+        config = SFTConfig(
             output_dir=str(Path.cwd()),
             eval_strategy=self.eval_strategy.value,
             eval_steps=self.eval_steps,
@@ -179,13 +185,15 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
             label_smoothing_factor=self.label_smoothing_factor,
             bf16=self.bf16,
             fp16=self.fp16,
+            max_seq_length=self.max_length,
+            completion_only_loss=self.completion_only_loss,
         )
         return config
 
     @property
     def preprocessing_function(self) -> Callable[[dict], dict]:
         """Preprocessing function for the dataset."""
-        return sft_preprocessing
+        return instruction_preprocessing
 
     def _set_trainer(self) -> None:
         if self.model is None:
@@ -202,7 +210,7 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
 
         self.tokenizer.padding_side = "right"
 
-        self.trainer: Trainer = Trainer(
+        self.trainer: SFTTrainer = SFTTrainer(
             model=self.model,
             processing_class=self.tokenizer,
             args=self._trainer_config,
@@ -213,7 +221,7 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
         self.trainer.compute_loss_func = LOSS_FUNCTIONS.get(self.loss_function, None)
 
 
-SupervisedFinetuningTrainerConfig = builds(SupervisedFinetuningTrainer)
+InstructionFinetuningTrainerConfig = builds(InstructionFinetuningTrainer)
 
-default_config = SupervisedFinetuningTrainerConfig()
-store(default_config, group="trainer", name="supervised_finetuning")
+default_config = InstructionFinetuningTrainerConfig()
+store(default_config, group="trainer", name="instruction_finetuning")

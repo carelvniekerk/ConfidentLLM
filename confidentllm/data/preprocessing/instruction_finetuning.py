@@ -1,6 +1,6 @@
 # coding=utf-8
 # --------------------------------------------------------------------------------
-# Project: ConfidenceLLM
+# Project: ConfidentLLM
 # Author: Carel van Niekerk
 # Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
@@ -21,20 +21,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Init file for data preprocessing module."""
+"""Tokenization and data preparation for supervised finetuning."""
 
-from confidentllm.data.preprocessing.dpo import dpo_preprocessing
-from confidentllm.data.preprocessing.instruction_finetuning import (
-    instruction_preprocessing,
-)
-from confidentllm.data.preprocessing.reinforcement_learning import rl_preprocessing
-from confidentllm.data.preprocessing.reward_model import reward_model_preprocessing
-from confidentllm.data.preprocessing.supervised_finetuning import sft_preprocessing
+from typing import TYPE_CHECKING
 
-__all__ = [
-    "dpo_preprocessing",
-    "instruction_preprocessing",
-    "reward_model_preprocessing",
-    "rl_preprocessing",
-    "sft_preprocessing",
-]
+from confidentllm.conversations.create_chat import create_conversation
+
+if TYPE_CHECKING:
+    from confidentllm.conversations.types import ChatConversation
+
+__all__ = ["instruction_preprocessing"]
+
+
+def instruction_preprocessing(
+    data: dict[str, list[str]],
+) -> dict[str, list[list[dict[str, str]]]]:
+    """Tokenize the input strings and return the tokenized data."""
+    answer_key: str = "preferred_response"
+    answer_key = "long_format_answer" if answer_key not in data else answer_key
+    answer_key = "answer" if answer_key not in data else answer_key
+
+    conversations: ChatConversation = create_conversation(
+        responses=data[answer_key],
+        questions=data.get("question"),
+    )
+
+    return {"messages": list(conversations)}

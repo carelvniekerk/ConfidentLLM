@@ -26,6 +26,7 @@
 from confidentllm.data import datasets  # noqa: F401
 from confidentllm.data.preprocessing import (
     dpo_preprocessing,
+    instruction_preprocessing,
     reward_model_preprocessing,
     rl_preprocessing,
     sft_preprocessing,
@@ -33,6 +34,7 @@ from confidentllm.data.preprocessing import (
 
 __all__: list[str] = [
     "dpo_preprocessing",
+    "instruction_preprocessing",
     "reward_model_preprocessing",
     "rl_preprocessing",
     "sft_preprocessing",
