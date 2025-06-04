@@ -152,6 +152,7 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
         )
 
         self.max_length = max_length
+        self.completion_only_loss: bool = True
 
     @property
     def _trainer_config(self) -> SFTConfig:
@@ -185,6 +186,7 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
             bf16=self.bf16,
             fp16=self.fp16,
             max_seq_length=self.max_length,
+            completion_only_loss=self.completion_only_loss,
         )
         return config
 
