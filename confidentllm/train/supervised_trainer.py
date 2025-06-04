@@ -27,7 +27,8 @@ from pathlib import Path
 from typing import Callable
 
 from hydra_zen import store
-from transformers import Trainer, TrainingArguments
+from transformers.trainer import Trainer
+from transformers.training_args import TrainingArguments
 
 from confidentllm.data import sft_preprocessing
 from confidentllm.generation.types import (
