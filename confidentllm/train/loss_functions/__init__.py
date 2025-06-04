@@ -23,6 +23,7 @@
 # limitations under the License.
 """Initialise loss functions module."""
 
+from confidentllm.train.loss_functions.huber_quantile_loss import HuberQuantileLoss
 from confidentllm.train.loss_functions.types import ComputeLossFunction, LossFunction
 from confidentllm.train.loss_functions.uncertainty_aware_clm import (
     UncertaintyAwareCLMLoss,
@@ -34,4 +35,5 @@ __all__ = ["LOSS_FUNCTIONS", "ComputeLossFunction", "LossFunction"]
 LOSS_FUNCTIONS: dict[LossFunction, ComputeLossFunction | None] = {
     LossFunction.DEFAULT: None,
     LossFunction.UA_CLM: UncertaintyAwareCLMLoss(),  # type: ignore[dict-item] # Uncertainty-aware CLM loss is a ComputeLossFunction
+    LossFunction.HUBER_QUANTILE: HuberQuantileLoss(),  # type: ignore[dict-item] # Huber quantile loss is a ComputeLossFunction
 }

@@ -37,6 +37,7 @@ class LossFunction(StrEnum):
 
     DEFAULT = auto()
     UA_CLM = auto()
+    HUBER_QUANTILE = auto()
 
 
 class ComputeLossFunction(ABC):
