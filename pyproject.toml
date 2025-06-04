@@ -27,12 +27,6 @@ dependencies = [
     "wandb >= 0.18",
 ]
 
-[dependency-groups]
-dev = ["pytest >= 8", "pytest-cov >= 6"]
-
-[tool.uv]
-default-groups = []
-
 # Script entry points for various tasks (e.g. question answering)
 [project.scripts]
 download-and-sync = "confidentllm.scripts:download_and_sync"
@@ -40,16 +34,10 @@ question-answering = "confidentllm.scripts:question_answering"
 reinforcement-learning = "confidentllm.scripts:reinforcement_learning"
 reward-model-evaluation = "confidentllm.scripts:reward_model_evaluation"
 train = "confidentllm.scripts:train"
-tests = "pytest:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-# Configuration for Pytest
-[tool.pytest.ini_options]
-addopts = "--cov confidentllm --verbose --cov-report=term-missing"
-filterwarnings = "error::RuntimeWarning"
 
 # Configuration for Ruff (Python linter and formatter)
 [tool.ruff]
