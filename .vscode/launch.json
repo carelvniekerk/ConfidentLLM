@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        // Configuration for Question-Answering task
         {
             "name": "Mathematical Reasoning",
             "type": "debugpy",
@@ -11,21 +12,35 @@
             "console": "integratedTerminal",
             "python": "${command:python.interpreterPath}",
             "cwd": "${workspaceFolder}",
-            "program": ".venv/bin/mathematical-reasoning",
+            "program": ".venv/bin/question-answering",
             "args": [
-                "data=gsm8k",
-                "model.pretrained_model_name_or_path=PHI2"
+                "data=${input:Dataset}",
+                "model.pretrained_model_name_or_path=${input:Model}",
             ],
         },
+    ],
+    "inputs": [
         {
-            "name": "Reporting",
-            "type": "debugpy",
-            "request": "launch",
-            "console": "integratedTerminal",
-            "python": "${command:python.interpreterPath}",
-            "cwd": "${workspaceFolder}",
-            "program": ".venv/bin/reporting",
-            "args": [],
+            "id": "Model",
+            "type": "pickString",
+            "description": "Choose a model",
+            "options": [
+                "GPT2_137M",
+                "GEMMA2_2B_IT",
+                "PHI2_3B",
+                "DEEPSEEK_R1_DISTILL_QWEN_7B"
+            ],
+            "default": "GPT2_137M"
         },
+        {
+            "id": "Dataset",
+            "type": "pickString",
+            "description": "Choose a dataset",
+            "options": [
+                "gsm8k",
+                "multiarith"
+            ],
+            "default": "gsm8k"
+        }
     ]
 }
