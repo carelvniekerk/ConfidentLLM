@@ -25,7 +25,7 @@
 
 import torch
 from torch.nn import Linear
-from transformers.modeling_outputs import BaseModelOutput
+from transformers.modeling_outputs import BaseModelOutput, SequenceClassifierOutput
 from transformers.modeling_utils import PreTrainedModel
 from transformers.models.auto.modeling_auto import AutoModel
 
@@ -64,7 +64,7 @@ class PreTrainedModelForQuantileRegression(PreTrainedModel):
         input_ids: torch.Tensor,
         attention_mask: torch.Tensor | None = None,
         **kwargs,  # noqa: ANN003
-    ) -> BaseModelOutput:
+    ) -> SequenceClassifierOutput:
         """Forward pass for the quantile regression model.
 
         Args:
@@ -85,6 +85,10 @@ class PreTrainedModelForQuantileRegression(PreTrainedModel):
             return_dict=True,
             **kwargs,
         )
-        quantile_outputs: torch.Tensor = self.regressor(outputs.hidden_states[-1])  # type: ignore[index] # Hidden states is not None when output_hidden_states=True
-        outputs.quantiles = quantile_outputs
-        return outputs
+        quantile_outputs: torch.FloatTensor = self.regressor(outputs.hidden_states[-1])  # type: ignore[index] # Hidden states is not None when output_hidden_states=True
+
+        return SequenceClassifierOutput(
+            logits=quantile_outputs,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
+        )
