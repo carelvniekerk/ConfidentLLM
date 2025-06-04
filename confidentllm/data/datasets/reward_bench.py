@@ -27,7 +27,7 @@ from enum import StrEnum
 from functools import partial
 from typing import Callable
 
-from datasets import Dataset, load_dataset, Features, Value
+from datasets import Dataset, Features, Value, load_dataset
 
 from confidentllm.data.types import DatasetSplit
 
@@ -101,7 +101,7 @@ def _map_reward_bench_data(examples: dict[str, list[str]]) -> dict[str, list[str
 
 def load_reward_bench_data(
     split: DatasetSplit = DatasetSplit.TEST,  # noqa: ARG001
-    transformation_batch_size: int = 512,  # noqa: ARG001
+    transformation_batch_size: int = 512,
     name: str = "reward_bench",
     *,
     use_cache: bool = True,
