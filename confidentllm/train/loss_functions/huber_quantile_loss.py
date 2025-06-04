@@ -96,7 +96,8 @@ class HuberQuantileLoss(ComputeLossFunction):
             other=self.huber_k * (torch.abs(errors) - 0.5 * self.huber_k),
         )
         rho: torch.Tensor = torch.abs(
-            (errors < 0).float() - self.quantiles.unsqueeze(0).unsqueeze(0),
+            (errors < 0).float()
+            - self.quantiles.unsqueeze(0).unsqueeze(0).to(outputs.logits.device),  # type: ignore[union-attr]
         )
         loss: torch.Tensor = rho * huber_loss
 

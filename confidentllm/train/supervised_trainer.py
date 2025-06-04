@@ -23,6 +23,7 @@
 # limitations under the License.
 """Trainer for supervised finetuning."""
 
+from functools import partial
 from pathlib import Path
 from typing import Callable
 
@@ -76,6 +77,7 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
         label_smoothing_factor: float = 0.0,
         bf16: bool = False,
         fp16: bool = False,
+        max_length: int = 256,
     ) -> None:
         """Configure the model trainer.
 
@@ -120,6 +122,8 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
                 Default is 0.0.
             bf16 (bool, optional): Use bfloat16 precision. Default is False.
             fp16 (bool, optional): Use fp16 precision. Default is False.
+            max_length (int, optional): The maximum length of the generated text.
+                Default is 256.
 
         """
         super().__init__(
@@ -148,6 +152,8 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
             bf16=bf16,
             fp16=fp16,
         )
+
+        self.max_length = max_length
 
     @property
     def _trainer_config(self) -> TrainingArguments:
@@ -186,7 +192,14 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
     @property
     def preprocessing_function(self) -> Callable[[dict], dict]:
         """Preprocessing function for the dataset."""
-        return sft_preprocessing
+        if self.tokenizer is None:
+            raise TokenizerNotSetError(self.tokenizer)
+
+        return partial(
+            sft_preprocessing,
+            tokenizer=self.tokenizer,
+            max_length=self.max_length,
+        )
 
     def _set_trainer(self) -> None:
         if self.model is None:

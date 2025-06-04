@@ -27,10 +27,12 @@ from confidentllm.train.dpo_trainer import DPOTrainer
 from confidentllm.train.instruction_trainer import InstructionFinetuningTrainer
 from confidentllm.train.ppo_trainer import PPORLTrainer
 from confidentllm.train.reward_model_trainer import RewardModelTrainer
+from confidentllm.train.supervised_trainer import SupervisedFinetuningTrainer
 
 __all__ = [
     "DPOTrainer",
     "InstructionFinetuningTrainer",
     "PPORLTrainer",
     "RewardModelTrainer",
+    "SupervisedFinetuningTrainer",
 ]
