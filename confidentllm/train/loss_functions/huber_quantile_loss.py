@@ -103,7 +103,8 @@ class HuberQuantileLoss(ComputeLossFunction):
 
         # Padding
         loss[labels == ignore_index] = 0.0
-        loss = loss.sum(dim=-1) / (labels != ignore_index).float().sum(dim=-1)
+        loss = loss.sum(dim=-1)
+        loss = loss.sum(dim=-1) / (labels[:, :, 0] != ignore_index).float().sum(dim=-1)
         # Average over the batch
-        loss = loss.mean(dim=-1).mean()
+        loss = loss.mean()
         return loss
