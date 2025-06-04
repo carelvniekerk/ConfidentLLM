@@ -48,6 +48,7 @@ from confidentllm.hydra_tools import builds
 from confidentllm.models.api_models.openai import ChatGPTModel
 from confidentllm.models.api_models.vertexai import GeminiModel
 from confidentllm.models.configuration import (
+    PRETRAINED_MODEL_NAME_OR_PATH,
     get_chat_template,
     get_pretrained_model_name_or_path,
 )
@@ -221,7 +222,8 @@ class ModelLoader:
                 api_key=os.getenv(api_key_key),
             )  # type: ignore[operator]
         elif self.model_type == ModelType.QUANTILE_REGRESSION and any(
-            member.value == self.pretrained_model_name_or_path for member in ModelName
+            value == self.pretrained_model_name_or_path
+            for value in PRETRAINED_MODEL_NAME_OR_PATH.values()
         ):
             config = QuantileRegressionConfig(
                 base_model_name_or_path=self.pretrained_model_name_or_path,  # type: ignore[arg-type]
