@@ -34,13 +34,19 @@ __all__ = ["HuberQuantileLoss"]
 class HuberQuantileLoss(ComputeLossFunction):
     """Huber quantile regression loss."""
 
-    def __init__(self, huber_k: float = 0.001, quantiles: list[float] | None = None):
+    def __init__(
+        self,
+        huber_k: float = 0.001,
+        quantiles: list[float] | None = None,
+    ) -> None:
         """Initialize the Huber quantile loss function.
 
         Args:
         ----
             huber_k (float): The Huber k value.
                 Default is 0.001.
+            quantiles (list[float], optional): The quantiles to use.
+                Default is [0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95].
 
         """
         super().__init__()
