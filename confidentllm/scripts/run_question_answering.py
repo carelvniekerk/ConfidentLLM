@@ -30,11 +30,11 @@ from itertools import cycle
 from pprint import pformat
 
 import torch
-import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
+import wandb
 from confidentllm.data import datasets  # noqa: F401
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
