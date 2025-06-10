@@ -27,6 +27,7 @@ from functools import partial
 from pathlib import Path
 from typing import Callable
 
+import torch
 from hydra_zen import store
 from transformers.trainer import Trainer
 from transformers.training_args import TrainingArguments
@@ -225,6 +226,13 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
         )
 
         self.trainer.compute_loss_func = LOSS_FUNCTIONS.get(self.loss_function, None)
+
+        # Set the quantiles for quantile regression if applicable
+        if self.model.config.model_type == "quantile_regression":
+            self.trainer.compute_loss_func.quantiles = torch.tensor(  # type: ignore[attr-defined] # For quantile loss function the quantiles are set
+                self.model.config.quantiles,
+                dtype=torch.float32,
+            )
 
 
 SupervisedFinetuningTrainerConfig = builds(SupervisedFinetuningTrainer)
