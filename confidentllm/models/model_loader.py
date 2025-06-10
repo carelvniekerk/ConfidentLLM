@@ -33,6 +33,7 @@ import torch
 from dotenv import load_dotenv
 from hydra_zen import store
 from hydra_zen.third_party.pydantic import pydantic_parser
+from omegaconf import ListConfig
 from peft.auto import AutoPeftModelForCausalLM, AutoPeftModelForSequenceClassification
 from peft.mixed_model import PeftMixedModel
 from transformers.modeling_utils import PreTrainedModel
@@ -96,6 +97,7 @@ class ModelLoader:
         data_type: ModelDataTypes = ModelDataTypes.BFLOAT16,
         model_mode: ModelMode = ModelMode.EVAL,
         lora: LoRAConfig = NoLoRAConfig,  # type: ignore[assignment]
+        **kwargs: object,
     ) -> None:
         """Initialize the model loader."""
         if (
@@ -125,6 +127,8 @@ class ModelLoader:
         self.model_type: ModelType = model_type
         self.model_mode: ModelMode = model_mode
         self.lora: LoRAConfig = lora
+
+        self.model_kwargs: dict[str, str | int | float | list[float]] = kwargs  # type: ignore[assignment] # Only kwargs of type str, int, float, or list[float] are allowed
 
         self.use_peft_model_class: bool = False
         self._get_model_class()
@@ -225,8 +229,17 @@ class ModelLoader:
             value == self.pretrained_model_name_or_path
             for value in PRETRAINED_MODEL_NAME_OR_PATH.values()
         ):
+            quantiles: list[float] | ListConfig = self.model_kwargs.get("quantiles")  # type: ignore[assignment]
+            if isinstance(quantiles, ListConfig):
+                quantiles = list(quantiles)
+
             config = QuantileRegressionConfig(
                 base_model_name_or_path=self.pretrained_model_name_or_path,  # type: ignore[arg-type]
+                quantiles=quantiles,
+                huber_k=self.model_kwargs.get(
+                    "huber_k",  # type: ignore[arg-type]
+                    0.001,
+                ),
             )
             model = PreTrainedModelForQuantileRegression(
                 base_model_name_or_path=self.pretrained_model_name_or_path,
