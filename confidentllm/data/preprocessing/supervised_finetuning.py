@@ -56,7 +56,7 @@ def sft_preprocessing(
 
     inputs: BatchEncoding = tokenizer.apply_chat_template(
         conversation=list(conversations),
-        add_generation_prompt=True,
+        add_generation_prompt=False,
         return_tensors=TensorType.PYTORCH,
         return_dict=True,
         padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
