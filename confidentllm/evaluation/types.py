@@ -50,7 +50,7 @@ class EvaluationBatch:
     """Class for evaluation batch."""
 
     labels: list[str | float] = field(default_factory=list)
-    predictions: list[str | float] = field(default_factory=list)
+    predictions: list[str | float | list[float]] = field(default_factory=list)
     confidences: list[float] = field(default_factory=list)
 
     def __add__(self, other: "EvaluationBatch") -> "EvaluationBatch":
