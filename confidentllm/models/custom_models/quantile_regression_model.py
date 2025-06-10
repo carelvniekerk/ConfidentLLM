@@ -32,6 +32,10 @@ from transformers.models.auto.modeling_auto import AutoModel
 from confidentllm.models.custom_models.quantile_regression_config import (
     QuantileRegressionConfig,
 )
+from confidentllm.models.custom_models.types import (
+    ACTIVATION_FUNCTIONS,
+    ActivationFunction,
+)
 
 __all__: list[str] = ["PreTrainedModelForQuantileRegression"]
 
@@ -53,9 +57,18 @@ class PreTrainedModelForQuantileRegression(PreTrainedModel):
             for param in self.base_pretrained_model.parameters():
                 param.requires_grad = False
 
-        self.regressor = Linear(
+        self.hidden_layer: torch.nn.Module = Linear(
             in_features=self.base_pretrained_model.config.hidden_size,
+            out_features=self.config.hidden_size,
+        )
+        self.regressor: torch.nn.Module = Linear(
+            in_features=self.config.hidden_size,
             out_features=len(self.config.quantiles),
+        )
+        self.output_activation_function: torch.nn.Module | None = (
+            ACTIVATION_FUNCTIONS.get(
+                ActivationFunction[self.config.output_activation_function],
+            )
         )
         self.init_weights()
 
@@ -85,10 +98,22 @@ class PreTrainedModelForQuantileRegression(PreTrainedModel):
             return_dict=True,
             **kwargs,
         )
-        quantile_outputs: torch.FloatTensor = self.regressor(outputs.hidden_states[-1])  # type: ignore[index] # Hidden states is not None when output_hidden_states=True
+        hidden_states: torch.FloatTensor = self.hidden_layer(
+            outputs.hidden_states[-1],  # type: ignore[index] # Hidden states is not None when output_hidden_states=True
+        )
+        quantile_outputs: torch.Tensor = self.regressor(hidden_states)
+
+        # Enforce monotonicity of quantile outputs
+        quantile_outputs = torch.cumsum(
+            input=quantile_outputs,
+            dim=-1,
+        )
+
+        if self.output_activation_function is not None:
+            quantile_outputs = self.output_activation_function(quantile_outputs)
 
         return SequenceClassifierOutput(
-            logits=quantile_outputs,
+            logits=quantile_outputs,  # type: ignore[arg-type]
             hidden_states=outputs.hidden_states,
             attentions=outputs.attentions,
         )
