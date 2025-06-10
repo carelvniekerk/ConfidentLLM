@@ -25,6 +25,8 @@
 
 from transformers.configuration_utils import PretrainedConfig
 
+from confidentllm.models.custom_models.types import ActivationFunction
+
 __all__: list[str] = ["QuantileRegressionConfig"]
 
 
@@ -36,7 +38,9 @@ class QuantileRegressionConfig(PretrainedConfig):
     def __init__(
         self,
         base_model_name_or_path: str = "",
+        hidden_size: int = 128,
         quantiles: list[float] | None = None,
+        output_activation_function: ActivationFunction = ActivationFunction.SIGMOID,
         *,
         freeze_base_model: bool = True,
         **kwargs,  # noqa: ANN003
@@ -46,9 +50,14 @@ class QuantileRegressionConfig(PretrainedConfig):
         Args:
         ----
             base_model_name_or_path: The base model name or path.
+            hidden_size: The size of the hidden layers in the model.
+                    Defaults to 128.
             quantiles: A list of quantiles to predict.
                     Defaults to [0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95].
-            freeze_base_model: Whether to freeze the base model parameters. Defaults to True.
+            output_activation_function: The activation function for the output layer.
+                    Defaults to ActivationFunction.SIGMOID.
+            freeze_base_model: Whether to freeze the base model parameters.
+                    Defaults to True.
             **kwargs: Additional keyword arguments for the configuration.
 
         Raises:
@@ -60,6 +69,8 @@ class QuantileRegressionConfig(PretrainedConfig):
         super().__init__(**kwargs)
 
         self.base_model_name_or_path: str = base_model_name_or_path
+        self.hidden_size: int = hidden_size
+        self.output_activation_function: str = output_activation_function.name
         self.freeze_base_model: bool = freeze_base_model
 
         if quantiles is None:
