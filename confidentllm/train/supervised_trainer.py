@@ -29,7 +29,9 @@ from typing import Callable
 
 import torch
 from hydra_zen import store
+from transformers.modeling_outputs import SequenceClassifierOutput
 from transformers.trainer import Trainer
+from transformers.trainer_utils import EvalPrediction
 from transformers.training_args import TrainingArguments
 
 from confidentllm.data import sft_preprocessing
@@ -38,7 +40,11 @@ from confidentllm.generation.types import (
     TokenizerNotSetError,
 )
 from confidentllm.hydra_tools import builds
-from confidentllm.train.loss_functions import LOSS_FUNCTIONS, LossFunction
+from confidentllm.train.loss_functions import (
+    LOSS_FUNCTIONS,
+    ComputeLossFunction,
+    LossFunction,
+)
 from confidentllm.train.types import (
     BaseModelTrainer,
     IntervalStrategy,
@@ -46,6 +52,36 @@ from confidentllm.train.types import (
 )
 
 __all__ = ["SupervisedFinetuningTrainer"]
+
+
+def _compute_eval_metrics(
+    predictions: EvalPrediction,
+    *,
+    compute_result: bool = False,  # noqa: ARG001
+    loss_func: ComputeLossFunction,
+) -> dict[str, float]:
+    """Compute evaluation metrics.
+
+    Args:
+        loss_func (ComputeLossFunction): The loss function to use for computing metrics.
+        predictions (EvalPrediction): The predictions from the model.
+        compute_result (bool, optional): Whether to compute the result.
+                Default is False.
+
+    Returns:
+        dict[str, float]: A dictionary containing the computed metrics.
+
+    """
+    outputs = SequenceClassifierOutput(
+        logits=torch.tensor(predictions.predictions[0], dtype=torch.float32),  # type: ignore[arg-type]
+    )
+
+    loss: torch.Tensor = loss_func(
+        outputs=outputs,  # type: ignore[arg-type]
+        labels=torch.tensor(predictions.label_ids, dtype=torch.float32),  # type: ignore[arg-type]
+    )
+
+    return {"loss": loss.item()}
 
 
 class SupervisedFinetuningTrainer(BaseModelTrainer):
@@ -233,6 +269,14 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
                 self.model.config.quantiles,
                 dtype=torch.float32,
             )
+
+        # Add the loss as an evaluation metric if a loss function is set
+        if self.trainer.compute_loss_func is not None:
+            self.trainer.compute_metrics = partial(
+                _compute_eval_metrics,
+                loss_func=self.trainer.compute_loss_func,
+            )
+            self.trainer.label_names = ["labels"]
 
 
 SupervisedFinetuningTrainerConfig = builds(SupervisedFinetuningTrainer)
