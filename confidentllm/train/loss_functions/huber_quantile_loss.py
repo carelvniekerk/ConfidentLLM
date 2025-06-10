@@ -89,9 +89,7 @@ class HuberQuantileLoss(ComputeLossFunction):
             raise ValueError("The outputs must contain logits.")  # noqa: EM101, TRY003
         # Repeat labels to match the number of quantiles and the sequence length
         num_quantiles: int = outputs.logits.size(-1)
-        sequence_length: int = outputs.logits.size(-2)
 
-        labels = labels.reshape(-1, 1).repeat(1, sequence_length)
         labels = labels.unsqueeze(-1).repeat(1, 1, num_quantiles)
 
         # Calculate the Huber quantile loss

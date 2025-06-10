@@ -42,6 +42,7 @@ def sft_preprocessing(
     data: dict[str, list[str]],
     tokenizer: PreTrainedTokenizer,
     max_length: int,
+    ignore_index: int = -100,
 ) -> dict[str, torch.Tensor]:
     """Tokenize the input strings and return the tokenized data."""
     answer_key: str = "preferred_response"
@@ -73,6 +74,9 @@ def sft_preprocessing(
         dtype=torch.float32,
     )
 
-    output_dict["label"] = labels.reshape(-1)
+    labels = labels.reshape(-1, 1).repeat(1, inputs.input_ids.shape[1])
+    labels[inputs.attention_mask == 0] = ignore_index
+
+    output_dict["label"] = labels
 
     return output_dict

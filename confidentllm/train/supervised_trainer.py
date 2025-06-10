@@ -232,6 +232,8 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
         if self.tokenizer is None:
             raise TokenizerNotSetError(self.tokenizer)
 
+        self.tokenizer.padding_side = "right"
+
         return partial(
             sft_preprocessing,
             tokenizer=self.tokenizer,
