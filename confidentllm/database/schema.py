@@ -117,7 +117,8 @@ class Prediction(Base):
     observation_id: Mapped[observation_foreign_key] = mapped_column(init=False)
     model_name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
     prediction_type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
-    prediction_value: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    prediction_value: Mapped[str | None]  # type: ignore[misc] # The value is inferred from the type annotation
+    prediction_values: Mapped[list[float] | None]  # type: ignore[misc] # The value is inferred from the type annotation
     confidence_score: Mapped[float | None]  # type: ignore[misc] # The value is inferred from the type annotation
 
     observation: Mapped["Observation"] = relationship(back_populates="predictions")  # type: ignore[misc] # The value is inferred from the type annotation
