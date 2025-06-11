@@ -25,7 +25,7 @@
 
 from datetime import UTC, datetime
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import JSON, ForeignKey
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -46,6 +46,9 @@ int_primary_key = Annotated[int, mapped_column(primary_key=True)]
 now_datetime = Annotated[datetime, mapped_column(default=datetime.now(UTC))]
 dataset_foreign_key = Annotated[int, mapped_column(ForeignKey("datasets.id"))]
 observation_foreign_key = Annotated[int, mapped_column(ForeignKey("observations.id"))]
+str_list = Annotated[list[str], mapped_column(JSON)]
+int_list = Annotated[list[int], mapped_column(JSON)]
+float_list = Annotated[list[float], mapped_column(JSON)]
 
 
 class Dataset(Base):
@@ -89,8 +92,8 @@ class Tokenization(Base):
     id: Mapped[int_primary_key] = mapped_column(init=False)
     observation_id: Mapped[observation_foreign_key] = mapped_column(init=False)
     tokenizer_name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
-    tokens: Mapped[list[str]]  # type: ignore[misc] # The value is inferred from the type annotation
-    token_ids: Mapped[list[int]]  # type: ignore[misc] # The value is inferred from the type annotation
+    tokens: Mapped[str_list]  # type: ignore[misc] # The value is inferred from the type annotation
+    token_ids: Mapped[int_list]  # type: ignore[misc] # The value is inferred from the type annotation
 
     observation: Mapped["Observation"] = relationship(back_populates="tokenizations")  # type: ignore[misc] # The value is inferred from the type annotation
 
@@ -118,7 +121,7 @@ class Prediction(Base):
     model_name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
     prediction_type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
     prediction_value: Mapped[str | None]  # type: ignore[misc] # The value is inferred from the type annotation
-    prediction_values: Mapped[list[float] | None]  # type: ignore[misc] # The value is inferred from the type annotation
+    prediction_values: Mapped[float_list | None]  # type: ignore[misc] # The value is inferred from the type annotation
     confidence_score: Mapped[float | None]  # type: ignore[misc] # The value is inferred from the type annotation
 
     observation: Mapped["Observation"] = relationship(back_populates="predictions")  # type: ignore[misc] # The value is inferred from the type annotation
