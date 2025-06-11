@@ -17,6 +17,8 @@ We recommend installing using [`uv`](https://docs.astral.sh/uv/). UV can be easi
 uv sync
 ```
 
+Note: To install the sqlalchemy extension for mypy, identify the mypy python interpreter eg. `/opt/homebrew/Cellar/mypy/1.16.0/libexec/bin/python` and install mypy-extensions and sqlalchemy using this interpreter.
+
 ### Models Used
 
 - **Gemma 2 2B** – used for both reward model training and RL fine-tuning

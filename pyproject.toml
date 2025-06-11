@@ -1,6 +1,6 @@
 [project]
 name = "confidentllm"
-version = "1.0.0"
+version = "1.0.1"
 description = "A framework for evaluating and improving large language model confidence using Reinforcement Learning from Self-Feedback (RLSF)."
 authors = [{ name = "Carel van Niekerk", email = "cvanniekerk@hhu.de" }]
 readme = "README.md"
@@ -17,7 +17,8 @@ dependencies = [
     "pandas-stubs >= 2.2.2.240807",
     "peft >= 0.15",
     "pydantic >= 2.8.2",
-    "python-dotenv>=1.0.1",
+    "python-dotenv >= 1.0.1",
+    "sqlalchemy >= 2.0.41",
     "torch >= 2.4.0",
     "transformers >= 4.51",
     "trl >= 0.12.0",
@@ -47,6 +48,7 @@ target-version = "py313"
 # Configuration for Mypy (Python static type checker)
 [tool.mypy]
 python_version = "3.13"
+plugins = ["sqlalchemy.ext.mypy.plugin"]
 
 [[tool.mypy.overrides]]
 module = [
