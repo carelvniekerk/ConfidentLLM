@@ -48,7 +48,6 @@ target-version = "py313"
 # Configuration for Mypy (Python static type checker)
 [tool.mypy]
 python_version = "3.13"
-plugins = ["sqlalchemy.ext.mypy.plugin"]
 
 [[tool.mypy.overrides]]
 module = [
