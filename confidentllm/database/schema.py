@@ -25,121 +25,99 @@
 
 from datetime import UTC, datetime
 
-from sqlalchemy import (
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    MappedAsDataclass,
+    mapped_column,
+    relationship,
 )
-from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing_extensions import Annotated
 
 __all__ = ["Base"]
 
-Base: DeclarativeMeta = declarative_base()
+
+class Base(MappedAsDataclass, DeclarativeBase):
+    """Base class for all database models."""
+
+
+int_primary_key = Annotated[int, mapped_column(primary_key=True)]
+now_datetime = Annotated[datetime, mapped_column(default=datetime.now(UTC))]
+dataset_foreign_key = Annotated[int, mapped_column(ForeignKey("datasets.id"))]
+observation_foreign_key = Annotated[int, mapped_column(ForeignKey("observations.id"))]
 
 
 class Dataset(Base):
     """Datasets Table to store metadata about datasets."""
 
     __tablename__: str = "datasets"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String, nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(UTC))
 
-    observations: Mapped[list["Observation"]] = relationship(
-        argument="Observation",
-        back_populates="dataset",
-        uselist=True,
-    )
+    id: Mapped[int_primary_key] = mapped_column(init=False)
+    name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    description: Mapped[str | None]  # type: ignore[misc] # The value is inferred from the type annotation
+    citation: Mapped[str | None]  # type: ignore[misc] # The value is inferred from the type annotation
+    homepage: Mapped[str | None]  # type: ignore[misc] # The value is inferred from the type annotation
+    license: Mapped[str | None]  # type: ignore[misc] # The value is inferred from the type annotation
+    created_at: Mapped[now_datetime] = mapped_column(init=False)
+
+    observations: Mapped[list["Observation"]] = relationship(back_populates="dataset")  # type: ignore[misc] # The value is inferred from the type annotation
 
 
 class Observation(Base):
     """Observations Table to store individual sentences and their metadata."""
 
     __tablename__: str = "observations"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    dataset_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("datasets.id"),
-        nullable=False,
-    )
-    sentence: Mapped[str] = mapped_column(Text, nullable=False)
 
-    dataset: Mapped["Dataset"] = relationship(
-        "Dataset",
-        back_populates="observations",
-    )
-    tokenizations: Mapped[list["Tokenization"]] = relationship(
-        "Tokenization",
+    id: Mapped[int_primary_key] = mapped_column(init=False)
+    dataset_id: Mapped[dataset_foreign_key] = mapped_column(init=False)
+    sentence: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+
+    dataset: Mapped["Dataset"] = relationship(back_populates="observations")  # type: ignore[misc] # The value is inferred from the type annotation
+    tokenizations: Mapped[list["Tokenization"]] = relationship(  # type: ignore[misc] # The value is inferred from the type annotation
         back_populates="observation",
     )
-    labels: Mapped[list["Label"]] = relationship(
-        "Label",
-        back_populates="observation",
-    )
-    predictions: Mapped[list["Prediction"]] = relationship(
-        "Prediction",
-        back_populates="observation",
-    )
+    labels: Mapped[list["Label"]] = relationship(back_populates="observation")  # type: ignore[misc] # The value is inferred from the type annotation
+    predictions: Mapped[list["Prediction"]] = relationship(back_populates="observation")  # type: ignore[misc] # The value is inferred from the type annotation
 
 
 class Tokenization(Base):
     """Tokenizations Table to store tokenized representations of sentences."""
 
     __tablename__: str = "tokenizations"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    observation_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("observations.id"),
-        nullable=False,
-    )
-    tokenizer_name: Mapped[str] = mapped_column(String, nullable=False)
-    tokens: Mapped[str] = mapped_column(Text, nullable=False)
 
-    observation: Mapped["Observation"] = relationship(
-        "Observation",
-        back_populates="tokenizations",
-    )
+    id: Mapped[int_primary_key] = mapped_column(init=False)
+    observation_id: Mapped[observation_foreign_key] = mapped_column(init=False)
+    tokenizer_name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    tokens: Mapped[list[str]]  # type: ignore[misc] # The value is inferred from the type annotation
+    token_ids: Mapped[list[int]]  # type: ignore[misc] # The value is inferred from the type annotation
+
+    observation: Mapped["Observation"] = relationship(back_populates="tokenizations")  # type: ignore[misc] # The value is inferred from the type annotation
 
 
 class Label(Base):
     """Labels Table to store labels associated with observations."""
 
     __tablename__: str = "labels"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    observation_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("observations.id"),
-        nullable=False,
-    )
-    label_type: Mapped[str] = mapped_column(String, nullable=False)
-    label_value: Mapped[str] = mapped_column(String, nullable=False)
 
-    observation: Mapped["Observation"] = relationship(
-        "Observation",
-        back_populates="labels",
-    )
+    id: Mapped[int_primary_key] = mapped_column(init=False)
+    observation_id: Mapped[observation_foreign_key] = mapped_column(init=False)
+    label_type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    label_value: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+
+    observation: Mapped["Observation"] = relationship(back_populates="labels")  # type: ignore[misc] # The value is inferred from the type annotation
 
 
 class Prediction(Base):
     """Predictions Table to store model predictions for observations."""
 
     __tablename__: str = "predictions"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    observation_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("observations.id"),
-        nullable=False,
-    )
-    model_name: Mapped[str] = mapped_column(String, nullable=False)
-    prediction_value: Mapped[str] = mapped_column(String, nullable=False)
-    confidence_score: Mapped[float] = mapped_column(Float, nullable=True)
 
-    observation: Mapped["Observation"] = relationship(
-        "Observation",
-        back_populates="predictions",
-    )
+    id: Mapped[int_primary_key] = mapped_column(init=False)
+    observation_id: Mapped[observation_foreign_key] = mapped_column(init=False)
+    model_name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    prediction_type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    prediction_value: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    confidence_score: Mapped[float | None]  # type: ignore[misc] # The value is inferred from the type annotation
+
+    observation: Mapped["Observation"] = relationship(back_populates="predictions")  # type: ignore[misc] # The value is inferred from the type annotation
