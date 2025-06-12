@@ -65,13 +65,16 @@ class Dataset(Base):
 
     id: Mapped[int_primary_key] = mapped_column(init=False)
     name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
-    description: Mapped[str | None]  # type: ignore[misc] # The value is inferred from the type annotation
-    citation: Mapped[str | None]  # type: ignore[misc] # The value is inferred from the type annotation
-    homepage: Mapped[str | None]  # type: ignore[misc] # The value is inferred from the type annotation
-    license: Mapped[str | None]  # type: ignore[misc] # The value is inferred from the type annotation
+    description: Mapped[str | None] = mapped_column(default=None)
+    citation: Mapped[str | None] = mapped_column(default=None)
+    homepage: Mapped[str | None] = mapped_column(default=None)
+    license: Mapped[str | None] = mapped_column(default=None)
     created_at: Mapped[now_datetime] = mapped_column(init=False)
 
-    observations: Mapped[list["Observation"]] = relationship(back_populates="dataset")  # type: ignore[misc] # The value is inferred from the type annotation
+    observations: Mapped[list["Observation"]] = relationship(
+        back_populates="dataset",
+        default_factory=list,
+    )
 
 
 class Observation(Base):
@@ -84,11 +87,18 @@ class Observation(Base):
     sentence: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
 
     dataset: Mapped["Dataset"] = relationship(back_populates="observations")  # type: ignore[misc] # The value is inferred from the type annotation
-    tokenizations: Mapped[list["Tokenization"]] = relationship(  # type: ignore[misc] # The value is inferred from the type annotation
+    tokenizations: Mapped[list["Tokenization"]] = relationship(
         back_populates="observation",
+        default_factory=list,
     )
-    labels: Mapped[list["Label"]] = relationship(back_populates="observation")  # type: ignore[misc] # The value is inferred from the type annotation
-    predictions: Mapped[list["Prediction"]] = relationship(back_populates="observation")  # type: ignore[misc] # The value is inferred from the type annotation
+    labels: Mapped[list["Label"]] = relationship(
+        back_populates="observation",
+        default_factory=list,
+    )
+    predictions: Mapped[list["Prediction"]] = relationship(
+        back_populates="observation",
+        default_factory=list,
+    )
 
 
 class Tokenization(Base):
@@ -127,8 +137,8 @@ class Prediction(Base):
     observation_id: Mapped[observation_foreign_key] = mapped_column(init=False)
     model_name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
     prediction_type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
-    prediction_value: Mapped[str | None]  # type: ignore[misc] # The value is inferred from the type annotation
-    prediction_values: Mapped[float_list | None]  # type: ignore[misc] # The value is inferred from the type annotation
-    confidence_score: Mapped[float | None]  # type: ignore[misc] # The value is inferred from the type annotation
+    prediction_value: Mapped[str | None] = mapped_column(default=None)
+    prediction_values: Mapped[float_list | None] = mapped_column(default=None)
+    confidence_score: Mapped[float | None] = mapped_column(default=None)
 
     observation: Mapped["Observation"] = relationship(back_populates="predictions")  # type: ignore[misc] # The value is inferred from the type annotation

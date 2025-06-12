@@ -40,7 +40,8 @@ class QuantileRegressionConfig(PretrainedConfig):
         base_model_name_or_path: str = "",
         hidden_size: int = 128,
         quantiles: list[float] | None = None,
-        output_activation_function: ActivationFunction = ActivationFunction.SIGMOID,
+        output_activation_function: ActivationFunction
+        | str = ActivationFunction.SIGMOID,
         *,
         freeze_base_model: bool = True,
         **kwargs,  # noqa: ANN003
@@ -67,6 +68,9 @@ class QuantileRegressionConfig(PretrainedConfig):
 
         """  # noqa: E501
         super().__init__(**kwargs)
+
+        if isinstance(output_activation_function, str):
+            output_activation_function = ActivationFunction[output_activation_function]
 
         self.base_model_name_or_path: str = base_model_name_or_path
         self.hidden_size: int = hidden_size

@@ -35,7 +35,9 @@ from confidentllm.database.schema import (
 )
 from confidentllm.database.session import get_session
 
-DEFAULT_DATABASE_PATH: Path = Path("database/confidentllm.db")
+DEFAULT_DATABASE_PATH: Path = (
+    Path(__file__).parent.parent.parent / "database" / "confidentllm.db"
+)
 
 __all__ = [
     "DEFAULT_DATABASE_PATH",
