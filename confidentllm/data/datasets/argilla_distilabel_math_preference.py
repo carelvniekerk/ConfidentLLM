@@ -93,6 +93,7 @@ def load_argilla_math_data(
     )  # type: ignore[reportAssignmentType]
 
     # Add metadata to the dataset
+    data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name
     data._info.description = (  # noqa: SLF001 # Adding description to dataset
         "The Argilla distilabel-math-preference-dpo dataset, developed by Argilla "
         "using the Distilabel framework, comprises approximately 2,418 entries. Each "

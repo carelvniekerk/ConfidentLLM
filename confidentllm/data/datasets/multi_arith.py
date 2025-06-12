@@ -77,6 +77,7 @@ def load_multi_arith_data(
     )  # type: ignore[reportAssignmentType]
 
     # Add metadata to the dataset
+    data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name
     data._info.description = (  # noqa: SLF001 # Provide description for the dataset
         "The Multi-Arith dataset contains elementary arithmetic problems with multiple"
         " operations, such as addition, subtraction, multiplication, and division, "

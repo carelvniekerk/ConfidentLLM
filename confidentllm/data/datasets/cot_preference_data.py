@@ -289,6 +289,7 @@ def load_cot_preference_data(  # noqa: PLR0913
         ranking_threshold=ranking_threshold,
     )
 
+    text_dataset._info.dataset_name = run_name  # noqa: SLF001 # Adding dataset name
     text_dataset._info.description = (  # noqa: SLF001 # Adding description to dataset
         f"CoT decoding based preference data for {initial_dataset_name}. "
         f"The data was obtained using {generation_method_description}."

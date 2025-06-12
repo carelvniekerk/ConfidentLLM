@@ -113,6 +113,7 @@ def load_openbook_qa_data(
     )  # type: ignore[assignment]
 
     # Add metadata to the dataset
+    data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name
     data._info.description = (  # noqa: SLF001 # Adding description to dataset
         "OpenBookQA aims to promote research in advanced question-answering, probing a "
         "deeper understanding of both the topic (with salient facts summarized as an "

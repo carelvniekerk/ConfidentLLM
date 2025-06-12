@@ -65,6 +65,7 @@ def load_gsm8k_data(
     )  # type: ignore[reportAssignmentType]
 
     # Add metadata to the dataset
+    data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name
     data._info.description = (  # noqa: SLF001 # Adding description to dataset
         "GSM8K (Grade School Math 8K) is a dataset of 8.5K high quality linguistically "
         "diverse grade school math word problems. The dataset was created to support "

@@ -143,6 +143,7 @@ def load_arc_data(
     )  # type: ignore[reportAssignmentType]
 
     # Add metadata to the dataset
+    data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name
     data._info.description = (  # noqa: SLF001 # Adding description to dataset
         "A new dataset of 7,787 genuine grade-school level, multiple-choice science "
         "questions, assembled to encourage research in advanced question-answering. "

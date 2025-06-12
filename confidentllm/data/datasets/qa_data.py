@@ -28,9 +28,8 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
-from datasets import Dataset
-
 import wandb
+from datasets import Dataset
 from wandb.apis.public.runs import Run, Runs
 
 if TYPE_CHECKING:
@@ -266,6 +265,7 @@ def load_question_answering_data(
     table: Table = _load_table(run=run, table_name=table_name)
     text_dataset: Dataset = _process_data(table=table)
 
+    text_dataset._info.dataset_name = run_name  # noqa: SLF001 # Adding dataset name
     text_dataset._info.description = (  # noqa: SLF001 # Adding description to dataset
         f"Answer generation data for {initial_dataset_name}. "
         f"The data was obtained using {generation_method_description}."

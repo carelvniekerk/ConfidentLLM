@@ -128,6 +128,7 @@ def load_reward_bench_data(
     )  # type: ignore[reportAssignmentType]
 
     # Add metadata to the dataset
+    data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name
     data._info.description = (  # noqa: SLF001 # Adding description to dataset
         "The RewardBench evaluation dataset assesses reward models across five "
         "categories: Chat, which includes both easy (e.g., AlpacaEval-easy, "
