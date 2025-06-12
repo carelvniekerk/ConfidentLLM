@@ -53,6 +53,7 @@ int_primary_key = Annotated[int, mapped_column(primary_key=True)]
 now_datetime = Annotated[datetime, mapped_column(default=datetime.now(UTC))]
 dataset_foreign_key = Annotated[int, mapped_column(ForeignKey("datasets.id"))]
 observation_foreign_key = Annotated[int, mapped_column(ForeignKey("observations.id"))]
+tokenization_foreign_key = Annotated[int, mapped_column(ForeignKey("tokenizations.id"))]
 str_list = Annotated[list[str], mapped_column(JSON)]
 int_list = Annotated[list[int], mapped_column(JSON)]
 float_list = Annotated[list[float], mapped_column(JSON)]
@@ -144,12 +145,16 @@ class Prediction(Base):
 
     id: Mapped[int_primary_key] = mapped_column(init=False)
     observation_id: Mapped[observation_foreign_key] = mapped_column(init=False)
+    tokenization_id: Mapped[tokenization_foreign_key] = mapped_column(init=False)
     model_name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
     prediction_type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
     prediction_value: Mapped[str | None] = mapped_column(default=None)
     prediction_values: Mapped[float_list | None] = mapped_column(default=None)
     confidence_score: Mapped[float | None] = mapped_column(default=None)
 
+    tokenization: Mapped["Tokenization"] = relationship(
+        default=None,
+    )
     observation: Mapped["Observation"] = relationship(
         back_populates="predictions",
         default=None,

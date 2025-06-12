@@ -30,7 +30,6 @@ from pprint import pformat
 from typing import TYPE_CHECKING
 
 import torch
-import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from torch.utils.data import DataLoader
@@ -38,6 +37,7 @@ from tqdm import tqdm
 from transformers.tokenization_utils_base import BatchEncoding
 from transformers.utils.generic import PaddingStrategy, TensorType
 
+import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.conversations.create_chat import create_conversation
 from confidentllm.database import (
@@ -195,6 +195,7 @@ class QuantileRegressionEvalRunner:
         for batch in tqdm(dataloader, desc="Evaluating Responses"):
             questions: list[str] = batch.get("question")
             responses: list[str] = batch.get("response", [])
+            labels: list[float] = batch.get("response_confidence", [])
 
             quantiles: list[dict[str, dict[str, float | list[float]]]] = (
                 self._predict_quantiles(
@@ -203,9 +204,53 @@ class QuantileRegressionEvalRunner:
                 )
             )
 
-            # Store the results in the database
-            print(quantiles)
-            break
+            for idx, question in enumerate(questions):
+                sentence: str = question
+                sentence += responses[idx] if responses else ""
+
+                observation: Observation = Observation(
+                    sentence=sentence,
+                    dataset=dataset_entry,
+                )
+
+                token_ids: list[int] = [
+                    token_info["token_id"]  # type: ignore[misc]
+                    for token_info in quantiles[idx].values()
+                ]  # type: ignore[union-attr]
+                tokens: list[str] = list(quantiles[idx].keys())
+
+                tokenization = Tokenization(
+                    tokenizer_name=self.tokenizer.name_or_path,
+                    tokens=tokens,
+                    token_ids=token_ids,
+                    observation=observation,
+                )
+
+                label = Label(
+                    label_type="confidence",
+                    label_value=str(labels[idx]) if labels else "",
+                    observation=observation,
+                )
+
+                quantile_predictions: list[list[float]] = [
+                    token_info["quantiles"]  # type: ignore[misc]
+                    for token_info in quantiles[idx].values()
+                ]
+
+                prediction = Prediction(
+                    model_name=self.model.name_or_path,
+                    prediction_type="quantile_scores",
+                    prediction_values=quantile_predictions,  # type: ignore[arg-type]
+                    observation=observation,
+                    tokenization=tokenization,
+                )
+
+                with get_session(self.db_path) as session:
+                    session.add(observation)
+                    session.add(tokenization)
+                    session.add(label)
+                    session.add(prediction)
+                    session.commit()
 
 
 @store(
