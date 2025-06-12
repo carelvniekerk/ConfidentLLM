@@ -22,3 +22,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Database module for ConfidentLLM."""
+
+from confidentllm.database.create_db import create_database
+
+__all__ = ["create_database"]

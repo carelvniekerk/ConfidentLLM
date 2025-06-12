@@ -29,6 +29,8 @@ from sqlalchemy import create_engine
 
 from confidentllm.database.schema import Base
 
+__all__ = ["create_database"]
+
 
 def create_database(db_path: Path) -> None:
     """Create a SQLite database at the specified path."""
@@ -42,7 +44,3 @@ def create_database(db_path: Path) -> None:
     Base.metadata.create_all(engine)
 
     print(f"Database created at {db_path}")
-
-
-if __name__ == "__main__":
-    create_database(Path("confidentllm/database/confidentllm.db"))
