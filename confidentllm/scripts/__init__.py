@@ -23,15 +23,15 @@
 # limitations under the License.
 """Execcution scripts for different tasks."""
 
-from confidentllm.scripts.run_download_and_sync import main as download_and_sync
-from confidentllm.scripts.run_question_answering import main as question_answering
-from confidentllm.scripts.run_reinforcement_learning import (
+from confidentllm.scripts.download_and_sync import main as download_and_sync
+from confidentllm.scripts.question_answering import main as question_answering
+from confidentllm.scripts.reinforcement_learning import (
     main as reinforcement_learning,
 )
-from confidentllm.scripts.run_reward_model_evaluation import (
+from confidentllm.scripts.reward_model_evaluation import (
     main as reward_model_evaluation,
 )
-from confidentllm.scripts.run_training import main as train
+from confidentllm.scripts.training import main as train
 
 __all__ = [
     "download_and_sync",
