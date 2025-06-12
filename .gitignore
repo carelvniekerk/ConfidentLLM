@@ -13,6 +13,7 @@ hydra_plugins
 
 # Data cache
 .data_cache
+database
 
 # Binary files
 *.pkl
