@@ -31,6 +31,7 @@ dependencies = [
 # Script entry points for various tasks (e.g. question answering)
 [project.scripts]
 download-and-sync = "confidentllm.scripts:download_and_sync"
+quantile-regression-evaluation = "confidentllm.scripts:quantile_regression_evaluation"
 question-answering = "confidentllm.scripts:question_answering"
 reinforcement-learning = "confidentllm.scripts:reinforcement_learning"
 reward-model-evaluation = "confidentllm.scripts:reward_model_evaluation"
