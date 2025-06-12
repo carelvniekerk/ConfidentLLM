@@ -30,6 +30,7 @@ from pprint import pformat
 from typing import TYPE_CHECKING
 
 import torch
+import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from torch.utils.data import DataLoader
@@ -37,7 +38,6 @@ from tqdm import tqdm
 from transformers.tokenization_utils_base import BatchEncoding
 from transformers.utils.generic import PaddingStrategy, TensorType
 
-import wandb
 from confidentllm import data  # noqa: F401
 from confidentllm.conversations.create_chat import create_conversation
 from confidentllm.database import (
@@ -181,7 +181,7 @@ class QuantileRegressionEvalRunner:
         )
 
         dataset_entry: DBDataset = DBDataset(
-            name="TODO: Add dataset name",
+            name=data.info.dataset_name,  # type: ignore[arg-type] # Dataset name is set
             description=data.info.description,
             citation=data.info.citation,
             homepage=data.info.homepage,
