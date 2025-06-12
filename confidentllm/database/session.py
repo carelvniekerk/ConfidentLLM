@@ -21,28 +21,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Create a SQLite database for the ConfidentLLM project."""
+"""Database session management for ConfidentLLM."""
 
-import logging
+from contextlib import contextmanager
 from pathlib import Path
+from typing import Generator
 
 from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
-from confidentllm.database.schema import Base
-
-logger = logging.getLogger("__main__")
-__all__ = ["create_database"]
+__all__ = ["get_session"]
 
 
-def create_database(db_path: Path) -> None:
-    """Create a SQLite database at the specified path."""
-    # Ensure the directory exists
-    db_path.parent.mkdir(parents=True, exist_ok=True)
-
+@contextmanager
+def get_session(db_path: Path) -> Generator[Session]:
+    """Create a new SQLAlchemy session for the database at the specified path."""
     engine: Engine = create_engine(f"sqlite:///{db_path}")
+    session_maker: sessionmaker = sessionmaker(bind=engine)
+    session: Session = session_maker()
 
     try:
-        Base.metadata.create_all(engine)
-        logger.info(f"Database created at '{db_path}'")  # noqa: G004
+        yield session
     finally:
+        session.close()
         engine.dispose()

@@ -86,7 +86,10 @@ class Observation(Base):
     dataset_id: Mapped[dataset_foreign_key] = mapped_column(init=False)
     sentence: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
 
-    dataset: Mapped["Dataset"] = relationship(back_populates="observations")  # type: ignore[misc] # The value is inferred from the type annotation
+    dataset: Mapped["Dataset"] = relationship(
+        back_populates="observations",
+        default=None,
+    )
     tokenizations: Mapped[list["Tokenization"]] = relationship(
         back_populates="observation",
         default_factory=list,
@@ -112,7 +115,10 @@ class Tokenization(Base):
     tokens: Mapped[str_list]  # type: ignore[misc] # The value is inferred from the type annotation
     token_ids: Mapped[int_list]  # type: ignore[misc] # The value is inferred from the type annotation
 
-    observation: Mapped["Observation"] = relationship(back_populates="tokenizations")  # type: ignore[misc] # The value is inferred from the type annotation
+    observation: Mapped["Observation"] = relationship(
+        back_populates="tokenizations",
+        default=None,
+    )
 
 
 class Label(Base):
@@ -125,7 +131,10 @@ class Label(Base):
     label_type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
     label_value: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
 
-    observation: Mapped["Observation"] = relationship(back_populates="labels")  # type: ignore[misc] # The value is inferred from the type annotation
+    observation: Mapped["Observation"] = relationship(
+        back_populates="labels",
+        default=None,
+    )
 
 
 class Prediction(Base):
@@ -141,4 +150,7 @@ class Prediction(Base):
     prediction_values: Mapped[float_list | None] = mapped_column(default=None)
     confidence_score: Mapped[float | None] = mapped_column(default=None)
 
-    observation: Mapped["Observation"] = relationship(back_populates="predictions")  # type: ignore[misc] # The value is inferred from the type annotation
+    observation: Mapped["Observation"] = relationship(
+        back_populates="predictions",
+        default=None,
+    )
