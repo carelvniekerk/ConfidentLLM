@@ -25,7 +25,7 @@
 
 from pathlib import Path
 
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine
 
 from confidentllm.database.schema import Base
 
@@ -37,10 +37,10 @@ def create_database(db_path: Path) -> None:
     # Ensure the directory exists
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Create the SQLite engine
-    engine = create_engine(f"sqlite:///{db_path}")
+    engine: Engine = create_engine(f"sqlite:///{db_path}")
 
-    # Create all tables in the database
-    Base.metadata.create_all(engine)
-
-    print(f"Database created at {db_path}")
+    try:
+        Base.metadata.create_all(engine)
+        print(f"Database created at {db_path}")
+    finally:
+        engine.dispose()

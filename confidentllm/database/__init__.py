@@ -23,6 +23,27 @@
 # limitations under the License.
 """Database module for ConfidentLLM."""
 
-from confidentllm.database.create_db import create_database
+from pathlib import Path
 
-__all__ = ["create_database"]
+from confidentllm.database.create_db import create_database
+from confidentllm.database.schema import (
+    Dataset,
+    Label,
+    Observation,
+    Prediction,
+    Tokenization,
+)
+from confidentllm.database.session import get_session
+
+DEFAULT_DATABASE_PATH: Path = Path("database/confidentllm.db")
+
+__all__ = [
+    "DEFAULT_DATABASE_PATH",
+    "Dataset",
+    "Label",
+    "Observation",
+    "Prediction",
+    "Tokenization",
+    "create_database",
+    "get_session",
+]

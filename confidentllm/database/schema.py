@@ -35,7 +35,14 @@ from sqlalchemy.orm import (
 )
 from typing_extensions import Annotated
 
-__all__ = ["Base"]
+__all__ = [
+    "Base",
+    "Dataset",
+    "Label",
+    "Observation",
+    "Prediction",
+    "Tokenization",
+]
 
 
 class Base(MappedAsDataclass, DeclarativeBase):
