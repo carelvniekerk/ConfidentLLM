@@ -43,14 +43,16 @@ from confidentllm.conversations.create_chat import create_conversation
 from confidentllm.database import (
     DEFAULT_DATABASE_PATH,
     Label,
+    Model,
     Observation,
     Prediction,
-    Tokenization,
+    Token,
+    Tokenizer,
     create_database,
     get_session,
 )
 from confidentllm.database import Dataset as DBDataset
-from confidentllm.evaluation import EvaluationBatch, Evaluator
+from confidentllm.evaluation import Evaluator
 from confidentllm.models import ModelLoader
 from confidentllm.scripts.setup_tools import (
     init_wandb,
@@ -188,8 +190,16 @@ class QuantileRegressionEvalRunner:
             license=data.info.license,
         )  # type: ignore[call-arg]
 
+        tokenizer = Tokenizer(
+            name=self.tokenizer.name_or_path,
+        )
+
+        model = Model(name=self.model.name_or_path, tokenizer=tokenizer)
+
         with get_session(self.db_path) as session:
             session.add(dataset_entry)
+            session.add(tokenizer)
+            session.add(model)
             session.commit()
 
         for batch in tqdm(dataloader, desc="Evaluating Responses"):
@@ -219,37 +229,48 @@ class QuantileRegressionEvalRunner:
                 ]  # type: ignore[union-attr]
                 tokens: list[str] = list(quantiles[idx].keys())
 
-                tokenization = Tokenization(
-                    tokenizer_name=self.tokenizer.name_or_path,
-                    tokens=tokens,
-                    token_ids=token_ids,
-                    observation=observation,
-                )
-
-                label = Label(
-                    label_type="confidence",
-                    label_value=str(labels[idx]) if labels else "",
-                    observation=observation,
-                )
-
-                quantile_predictions: list[list[float]] = [
-                    token_info["quantiles"]  # type: ignore[misc]
-                    for token_info in quantiles[idx].values()
+                db_tokens: list[Token] = [
+                    Token(
+                        position=pos,
+                        text=token,
+                        token_id=token_id,
+                        is_final=(pos == len(tokens) - 1),
+                        observation=observation,
+                        tokenizer=tokenizer,
+                    )
+                    for pos, token, token_id in zip(
+                        range(len(tokens)),
+                        tokens,
+                        token_ids,
+                        strict=True,
+                    )
                 ]
 
-                prediction = Prediction(
-                    model_name=self.model.name_or_path,
-                    prediction_type="quantile_scores",
-                    prediction_values=quantile_predictions,  # type: ignore[arg-type]
-                    observation=observation,
-                    tokenization=tokenization,
+                label: Label = Label(
+                    type="confidence",
+                    value=labels[idx] if labels else "",
+                    token=db_tokens[-1],
                 )
+
+                predictions: list[Prediction] = [
+                    Prediction(
+                        type="quantile",
+                        value=quantile_info["quantiles"],  # type: ignore[arg-type]
+                        token=db_token,
+                        model=model,
+                    )
+                    for db_token, quantile_info in zip(
+                        db_tokens,
+                        quantiles[idx].values(),
+                        strict=True,
+                    )
+                ]
 
                 with get_session(self.db_path) as session:
                     session.add(observation)
-                    session.add(tokenization)
+                    [session.add(token) for token in db_tokens]  # type: ignore[func-returns-value]
                     session.add(label)
-                    session.add(prediction)
+                    [session.add(prediction) for prediction in predictions]  # type: ignore[func-returns-value]
                     session.commit()
 
 

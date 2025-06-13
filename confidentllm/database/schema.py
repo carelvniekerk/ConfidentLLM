@@ -169,7 +169,6 @@ class Model(Base):
 
     id: Mapped[int_primary_key] = mapped_column(init=False)
     name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
-    path: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
     tokenizer_id: Mapped[tokenizer_foreign_key] = mapped_column(init=False)
     training_details: Mapped[str | None] = mapped_column(default=None)
     wandb_run_url: Mapped[str | None] = mapped_column(default=None)
@@ -218,7 +217,7 @@ class Label(Base):
     id: Mapped[int_primary_key] = mapped_column(init=False)
     token_id: Mapped[token_foreign_key] = mapped_column(init=False)
     type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
-    value: Mapped[list[str | float]] = mapped_column(JSON)  # type: ignore[misc] # The value is inferred from the type annotation
+    value: Mapped[str | float]  # type: ignore[misc] # The value is inferred from the type annotation
     created_at: Mapped[now_datetime] = mapped_column(init=False)
     updated_at: Mapped[now_datetime] = mapped_column(init=False)
 
