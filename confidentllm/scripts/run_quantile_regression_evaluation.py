@@ -248,7 +248,7 @@ class QuantileRegressionEvalRunner:
 
                 label: Label = Label(
                     type="confidence",
-                    value=labels[idx] if labels else "",
+                    value=str(labels[idx]) if labels else "",
                     token=db_tokens[-1],
                 )
 

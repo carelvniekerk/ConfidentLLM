@@ -99,14 +99,6 @@ class Observation(Base):
         back_populates="observation",
         default_factory=list,
     )
-    labels: Mapped[list["Label"]] = relationship(
-        back_populates="observation",
-        default_factory=list,
-    )
-    predictions: Mapped[list["Prediction"]] = relationship(
-        back_populates="observation",
-        default_factory=list,
-    )
 
 
 class Token(Base):
@@ -217,7 +209,7 @@ class Label(Base):
     id: Mapped[int_primary_key] = mapped_column(init=False)
     token_id: Mapped[token_foreign_key] = mapped_column(init=False)
     type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
-    value: Mapped[str | float]  # type: ignore[misc] # The value is inferred from the type annotation
+    value: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
     created_at: Mapped[now_datetime] = mapped_column(init=False)
     updated_at: Mapped[now_datetime] = mapped_column(init=False)
 
