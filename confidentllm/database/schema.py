@@ -39,9 +39,11 @@ __all__ = [
     "Base",
     "Dataset",
     "Label",
+    "Model",
     "Observation",
     "Prediction",
-    "Tokenization",
+    "Token",
+    "Tokenizer",
 ]
 
 
@@ -53,7 +55,9 @@ int_primary_key = Annotated[int, mapped_column(primary_key=True)]
 now_datetime = Annotated[datetime, mapped_column(default=datetime.now(UTC))]
 dataset_foreign_key = Annotated[int, mapped_column(ForeignKey("datasets.id"))]
 observation_foreign_key = Annotated[int, mapped_column(ForeignKey("observations.id"))]
-tokenization_foreign_key = Annotated[int, mapped_column(ForeignKey("tokenizations.id"))]
+token_foreign_key = Annotated[int, mapped_column(ForeignKey("tokens.id"))]
+tokenizer_foreign_key = Annotated[int, mapped_column(ForeignKey("tokenizers.id"))]
+model_foreign_key = Annotated[int, mapped_column(ForeignKey("models.id"))]
 str_list = Annotated[list[str], mapped_column(JSON)]
 int_list = Annotated[list[int], mapped_column(JSON)]
 float_list = Annotated[list[float], mapped_column(JSON)]
@@ -91,7 +95,7 @@ class Observation(Base):
         back_populates="observations",
         default=None,
     )
-    tokenizations: Mapped[list["Tokenization"]] = relationship(
+    tokens: Mapped[list["Token"]] = relationship(
         back_populates="observation",
         default_factory=list,
     )
@@ -105,57 +109,120 @@ class Observation(Base):
     )
 
 
-class Tokenization(Base):
-    """Tokenizations Table to store tokenized representations of sentences."""
+class Token(Base):
+    """Tokens Table to store individual tokens for each observation."""
 
-    __tablename__: str = "tokenizations"
+    __tablename__: str = "tokens"
 
     id: Mapped[int_primary_key] = mapped_column(init=False)
     observation_id: Mapped[observation_foreign_key] = mapped_column(init=False)
-    tokenizer_name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
-    tokens: Mapped[str_list]  # type: ignore[misc] # The value is inferred from the type annotation
-    token_ids: Mapped[int_list]  # type: ignore[misc] # The value is inferred from the type annotation
+    tokenizer_id: Mapped[tokenizer_foreign_key] = mapped_column(init=False)
+    position: Mapped[int]  # type: ignore[misc] # The value is inferred from the type annotation
+    text: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    token_id: Mapped[int]  # type: ignore[misc] # The value is inferred from the type annotation
+    is_final: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[now_datetime] = mapped_column(init=False)
+    updated_at: Mapped[now_datetime] = mapped_column(init=False)
 
     observation: Mapped["Observation"] = relationship(
-        back_populates="tokenizations",
+        back_populates="tokens",
+        default=None,
+    )
+    tokenizer: Mapped["Tokenizer"] = relationship(
+        back_populates="tokens",
+        default=None,
+    )
+    predictions: Mapped[list["Prediction"]] = relationship(
+        back_populates="token",
+        default_factory=list,
+    )
+    labels: Mapped[list["Label"]] = relationship(
+        back_populates="token",
+        default_factory=list,
+    )
+
+
+class Tokenizer(Base):
+    """Tokenizers Table to store metadata about tokenizers."""
+
+    __tablename__: str = "tokenizers"
+
+    id: Mapped[int_primary_key] = mapped_column(init=False)
+    name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    created_at: Mapped[now_datetime] = mapped_column(init=False)
+    updated_at: Mapped[now_datetime] = mapped_column(init=False)
+
+    models: Mapped[list["Model"]] = relationship(
+        back_populates="tokenizer",
+        default_factory=list,
+    )
+    tokens: Mapped[list["Token"]] = relationship(
+        back_populates="tokenizer",
+        default_factory=list,
+    )
+
+
+class Model(Base):
+    """Models Table to store metadata about models."""
+
+    __tablename__: str = "models"
+
+    id: Mapped[int_primary_key] = mapped_column(init=False)
+    name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    path: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    tokenizer_id: Mapped[tokenizer_foreign_key] = mapped_column(init=False)
+    training_details: Mapped[str | None] = mapped_column(default=None)
+    wandb_run_url: Mapped[str | None] = mapped_column(default=None)
+    created_at: Mapped[now_datetime] = mapped_column(init=False)
+    updated_at: Mapped[now_datetime] = mapped_column(init=False)
+
+    tokenizer: Mapped["Tokenizer"] = relationship(
+        back_populates="models",
+        default=None,
+    )
+    predictions: Mapped[list["Prediction"]] = relationship(
+        back_populates="model",
+        default_factory=list,
+    )
+
+
+class Prediction(Base):
+    """Predictions Table to store model predictions for tokens."""
+
+    __tablename__: str = "predictions"
+
+    id: Mapped[int_primary_key] = mapped_column(init=False)
+    token_id: Mapped[token_foreign_key] = mapped_column(init=False)
+    model_id: Mapped[model_foreign_key] = mapped_column(init=False)
+    type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    value: Mapped[list[str | float]] = mapped_column(JSON)  # type: ignore[misc] # The value is inferred from the type annotation
+    wandb_run_url: Mapped[str | None] = mapped_column(default=None)
+    created_at: Mapped[now_datetime] = mapped_column(init=False)
+    updated_at: Mapped[now_datetime] = mapped_column(init=False)
+
+    token: Mapped["Token"] = relationship(
+        back_populates="predictions",
+        default=None,
+    )
+    model: Mapped["Model"] = relationship(
+        back_populates="predictions",
         default=None,
     )
 
 
 class Label(Base):
-    """Labels Table to store labels associated with observations."""
+    """Labels Table to store labels associated with tokens."""
 
     __tablename__: str = "labels"
 
     id: Mapped[int_primary_key] = mapped_column(init=False)
-    observation_id: Mapped[observation_foreign_key] = mapped_column(init=False)
-    label_type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
-    label_value: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    token_id: Mapped[token_foreign_key] = mapped_column(init=False)
+    type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
+    value: Mapped[list[str | float]] = mapped_column(JSON)  # type: ignore[misc] # The value is inferred from the type annotation
+    created_at: Mapped[now_datetime] = mapped_column(init=False)
+    updated_at: Mapped[now_datetime] = mapped_column(init=False)
 
-    observation: Mapped["Observation"] = relationship(
+    token: Mapped["Token"] = relationship(
         back_populates="labels",
-        default=None,
-    )
-
-
-class Prediction(Base):
-    """Predictions Table to store model predictions for observations."""
-
-    __tablename__: str = "predictions"
-
-    id: Mapped[int_primary_key] = mapped_column(init=False)
-    observation_id: Mapped[observation_foreign_key] = mapped_column(init=False)
-    tokenization_id: Mapped[tokenization_foreign_key] = mapped_column(init=False)
-    model_name: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
-    prediction_type: Mapped[str]  # type: ignore[misc] # The value is inferred from the type annotation
-    prediction_value: Mapped[str | None] = mapped_column(default=None)
-    prediction_values: Mapped[float_list | None] = mapped_column(default=None)
-    confidence_score: Mapped[float | None] = mapped_column(default=None)
-
-    tokenization: Mapped["Tokenization"] = relationship(
-        default=None,
-    )
-    observation: Mapped["Observation"] = relationship(
-        back_populates="predictions",
         default=None,
     )

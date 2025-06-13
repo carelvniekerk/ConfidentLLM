@@ -29,9 +29,11 @@ from confidentllm.database.create_db import create_database
 from confidentllm.database.schema import (
     Dataset,
     Label,
+    Model,
     Observation,
     Prediction,
-    Tokenization,
+    Token,
+    Tokenizer,
 )
 from confidentllm.database.session import get_session
 
@@ -43,9 +45,11 @@ __all__ = [
     "DEFAULT_DATABASE_PATH",
     "Dataset",
     "Label",
+    "Model",
     "Observation",
     "Prediction",
-    "Tokenization",
+    "Token",
+    "Tokenizer",
     "create_database",
     "get_session",
 ]
