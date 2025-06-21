@@ -6,9 +6,10 @@
         "matangover.mypy",
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "charliermarsh.ruff"
+        "charliermarsh.ruff",
+        "qwtel.sqlite-viewer",
     ],
     "unwantedRecommendations": [
-        "ms-toolsai.jupyter"
+        "ms-toolsai.jupyter",
     ]
 }
