@@ -216,7 +216,7 @@ def log_system_info() -> None:
     except Exception:  # noqa: BLE001 - We want to proceed no matter what the error is
         hostname = "unknown"
 
-    logging.info(  # noqa: LOG015
+    logging.info(
         msg=f"Running on {hostname = }",  # noqa: G004 - low overhead
     )
 
