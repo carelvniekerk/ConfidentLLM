@@ -1,6 +1,6 @@
 [project]
 name = "confidentllm"
-version = "1.0.0"
+version = "1.0.1"
 description = "A framework for evaluating and improving large language model confidence using Reinforcement Learning from Self-Feedback (RLSF)."
 authors = [{ name = "Carel van Niekerk", email = "cvanniekerk@hhu.de" }]
 readme = "README.md"
@@ -17,7 +17,8 @@ dependencies = [
     "pandas-stubs >= 2.2.2.240807",
     "peft >= 0.15",
     "pydantic >= 2.8.2",
-    "python-dotenv>=1.0.1",
+    "python-dotenv >= 1.0.1",
+    "sqlalchemy >= 2.0.41",
     "torch >= 2.4.0",
     "transformers >= 4.51",
     "trl >= 0.12.0",
@@ -30,6 +31,7 @@ dependencies = [
 # Script entry points for various tasks (e.g. question answering)
 [project.scripts]
 download-and-sync = "confidentllm.scripts:download_and_sync"
+quantile-regression-evaluation = "confidentllm.scripts:quantile_regression_evaluation"
 question-answering = "confidentllm.scripts:question_answering"
 reinforcement-learning = "confidentllm.scripts:reinforcement_learning"
 reward-model-evaluation = "confidentllm.scripts:reward_model_evaluation"
@@ -52,7 +54,9 @@ python_version = "3.13"
 module = [
     "datasets",
     "datasets.*",
+    "dotenv",
     "hydra_zen",
+    "hydra_zen.*",
     "peft",
     "peft.*",
     "pyarrow.*",
