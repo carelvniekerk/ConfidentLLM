@@ -49,9 +49,6 @@ from confidentllm.logging import (
     initialize_wandb,
     setup_exception_logging,
 )
-from hydra_plugins.hpc_submission_launcher import (
-    register_plugin as register_hpc_submission_launcher_plugin,
-)
 
 __all__ = [
     "get_logger",
@@ -62,7 +59,14 @@ __all__ = [
 ]
 logger = logging.getLogger("__main__")
 
-register_hpc_submission_launcher_plugin()
+try:
+    from hydra_plugins.hpc_submission_launcher import (
+        register_plugin as register_hpc_submission_launcher_plugin,
+    )
+
+    register_hpc_submission_launcher_plugin()
+except ModuleNotFoundError:
+    logger.warning("HPC submission launcher plugin not found.")
 
 OmegaConf.register_new_resolver("resolve_generation_method", resolve_generation_method)
 OmegaConf.register_new_resolver("resolve_output_processor", resolve_output_processor)
@@ -216,7 +220,7 @@ def log_system_info() -> None:
     except Exception:  # noqa: BLE001 - We want to proceed no matter what the error is
         hostname = "unknown"
 
-    logging.info(  # noqa: LOG015
+    logging.info(
         msg=f"Running on {hostname = }",  # noqa: G004 - low overhead
     )
 

@@ -30,11 +30,11 @@ from itertools import cycle
 from pprint import pformat
 
 import torch
+import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
-import wandb
 from confidentllm.data import datasets  # noqa: F401
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
@@ -307,7 +307,7 @@ def main() -> None:
     setup_hydra_config_and_logging(
         job_name="question_answering",
         config_keys=config_keys,
-        add_hpc_launcher=True,
+        add_hpc_launcher=False,
     )
 
     # Generate the CLI for run_extraction

@@ -107,7 +107,7 @@ def main() -> None:
 
     setup_hydra_config_and_logging(
         job_name="training",
-        add_hpc_launcher=True,
+        add_hpc_launcher=False,
         config_keys=config_keys,
     )
 
