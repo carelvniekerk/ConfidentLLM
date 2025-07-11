@@ -13,6 +13,8 @@ hydra_plugins
 
 # Data cache
 .data_cache
+database
+!/confidentllm/database/
 
 # Binary files
 *.pkl

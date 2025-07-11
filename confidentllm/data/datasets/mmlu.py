@@ -187,6 +187,7 @@ def load_mmlu_data(
     )  # type: ignore[reportAssignmentType]
 
     # Add metadata to the dataset
+    data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name
     data._info.description = (  # noqa: SLF001 # Adding description to dataset
         "MMLU is a Massive Multitask test consisting of multiple-choice questions from "
         "various branches of knowledge. The test spans subjects in the humanities, "

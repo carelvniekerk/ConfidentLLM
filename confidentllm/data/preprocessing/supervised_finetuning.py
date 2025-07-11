@@ -25,6 +25,11 @@
 
 from typing import TYPE_CHECKING
 
+import torch
+from transformers.tokenization_utils import PreTrainedTokenizer
+from transformers.tokenization_utils_base import BatchEncoding
+from transformers.utils.generic import PaddingStrategy, TensorType
+
 from confidentllm.conversations.create_chat import create_conversation
 
 if TYPE_CHECKING:
@@ -35,7 +40,10 @@ __all__ = ["sft_preprocessing"]
 
 def sft_preprocessing(
     data: dict[str, list[str]],
-) -> dict[str, list[list[dict[str, str]]]]:
+    tokenizer: PreTrainedTokenizer,
+    max_length: int,
+    ignore_index: int = -100,
+) -> dict[str, torch.Tensor]:
     """Tokenize the input strings and return the tokenized data."""
     answer_key: str = "preferred_response"
     answer_key = "long_format_answer" if answer_key not in data else answer_key
@@ -46,4 +54,29 @@ def sft_preprocessing(
         questions=data.get("question"),
     )
 
-    return {"messages": list(conversations)}
+    inputs: BatchEncoding = tokenizer.apply_chat_template(
+        conversation=list(conversations),
+        add_generation_prompt=False,
+        return_tensors=TensorType.PYTORCH,
+        return_dict=True,
+        padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
+        truncation=True,
+        max_length=max_length,
+    )  # type: ignore[assignment]
+
+    output_dict: dict[str, torch.Tensor] = {}
+
+    output_dict["input_ids"] = inputs.input_ids
+    output_dict["attention_mask"] = inputs.attention_mask
+
+    labels: torch.Tensor = torch.tensor(
+        data=data["preferred_response_confidence"],
+        dtype=torch.float32,
+    )
+
+    labels = labels.reshape(-1, 1).repeat(1, inputs.input_ids.shape[1])
+    labels[inputs.attention_mask == 0] = ignore_index
+
+    output_dict["label"] = labels
+
+    return output_dict

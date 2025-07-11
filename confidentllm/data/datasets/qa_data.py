@@ -28,17 +28,17 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
-from datasets import Dataset
-
 import wandb
+from datasets import Dataset
 from wandb.apis.public.runs import Run, Runs
 
 if TYPE_CHECKING:
     from wandb.apis.public.files import File, Files
 
-# __all__ = ["load_question_answering_data"]
+__all__ = ["load_question_answering_data"]
 
 
+# TODO: Refactor code to move wandb loaded data utils and share across multiple datasets.
 class Table(TypedDict):
     """Table type definition."""
 
@@ -133,19 +133,29 @@ def _load_table(
 
 def _reformat_table(
     table: Table,
-) -> dict[str, str]:
+) -> dict[str, dict[str, str | float]]:
     """Reformat the table data into a dictionary."""
     answer_columns: list[int] = [
         idx
         for idx, column_name in enumerate(table["columns"])
-        if column_name.lower() == "answer"
+        if column_name.lower() in ["reasoning", "answer"]
     ]
     answer_column: int = answer_columns[0] if answer_columns else 1
 
-    responses_data: dict[str, str] = {}
+    conf_columns: list[int] = [
+        idx
+        for idx, column_name in enumerate(table["columns"])
+        if column_name.lower() in ["confidence", "score"]
+    ]
+    conf_idx: int = conf_columns[0] if conf_columns else 2
+
+    responses_data: dict[str, dict[str, str | float]] = {}
     for row in table["data"]:
         question: str = row[0]  # type: ignore[assignment]
-        responses_data[question] = row[answer_column]  # type: ignore[assignment]
+        responses_data[question] = {  # type: ignore[assignment]
+            "answer": row[answer_column],
+            "confidence": row[conf_idx],
+        }
 
     return responses_data
 
@@ -172,16 +182,19 @@ def _extract_utterances(
 
 def _process_data(table: Table) -> Dataset:
     """Process the table data into a dataset."""
-    preference_data: dict[str, list[str | list[str]]] = {
+    preference_data: dict[str, list[str | list[str] | float]] = {
         "question": [],
         "preferred_response": [],
         "rejected_response": [],
+        "preferred_response_confidence": [],
+        "rejected_response_confidence": [],
     }
-    for question, response in _reformat_table(table).items():
+    for question, response_dict in _reformat_table(table).items():
         question = _cleanup_text(text=question)  # noqa: PLW2901
         if not question:
             continue
-        response = _cleanup_text(text=response)  # type: ignore[arg-type]  # noqa: PLW2901
+        confidence: float = response_dict["confidence"]  # type: ignore[assignment]
+        response: str = _cleanup_text(text=response_dict["answer"])  # type: ignore[assignment, arg-type]
         if not response:
             continue
 
@@ -191,10 +204,14 @@ def _process_data(table: Table) -> Dataset:
 
             preference_data["preferred_response"].append(responses)
             preference_data["rejected_response"].append(responses)
+            preference_data["preferred_response_confidence"].append(confidence)
+            preference_data["rejected_response_confidence"].append(confidence)
         else:
             preference_data["question"].append(question)
             preference_data["preferred_response"].append(response)
             preference_data["rejected_response"].append(response)
+            preference_data["preferred_response_confidence"].append(confidence)
+            preference_data["rejected_response_confidence"].append(confidence)
 
     if not preference_data["question"]:
         preference_data.pop("question")
@@ -248,6 +265,7 @@ def load_question_answering_data(
     table: Table = _load_table(run=run, table_name=table_name)
     text_dataset: Dataset = _process_data(table=table)
 
+    text_dataset._info.dataset_name = run_name  # noqa: SLF001 # Adding dataset name
     text_dataset._info.description = (  # noqa: SLF001 # Adding description to dataset
         f"Answer generation data for {initial_dataset_name}. "
         f"The data was obtained using {generation_method_description}."

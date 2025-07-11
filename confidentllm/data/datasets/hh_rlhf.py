@@ -155,6 +155,7 @@ def load_hh_rlhf_data(
     )
 
     # Add metadata to the dataset
+    data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name
     data._info.description = (  # noqa: SLF001 # Adding description to dataset
         "The Anthropic HH RLHF dataset consists of two main components: human "
         "preference data on helpfulness and harmlessness, and red teaming dialogue "

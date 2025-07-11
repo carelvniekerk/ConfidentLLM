@@ -113,6 +113,7 @@ def load_commonsense_qa_data(
     )  # type: ignore[reportAssignmentType]
 
     # Add metadata to the dataset
+    data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name
     data._info.description = (  # noqa: SLF001 # Adding description to dataset
         "CommonsenseQA is a new multiple-choice question answering dataset that "
         "requires different types of commonsense knowledge to predict the correct "

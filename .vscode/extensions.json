@@ -1,0 +1,15 @@
+{
+    "recommendations": [
+        "tamasfe.even-better-toml",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "matangover.mypy",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "qwtel.sqlite-viewer",
+    ],
+    "unwantedRecommendations": [
+        "ms-toolsai.jupyter",
+    ]
+}

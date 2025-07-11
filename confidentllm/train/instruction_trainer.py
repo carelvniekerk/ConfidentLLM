@@ -21,71 +21,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Trainer for supervised finetuning."""
+"""Trainer for instruction finetuning."""
 
-from functools import partial
 from pathlib import Path
 from typing import Callable
 
-import torch
 from hydra_zen import store
-from transformers.modeling_outputs import SequenceClassifierOutput
-from transformers.trainer import Trainer
-from transformers.trainer_utils import EvalPrediction
-from transformers.training_args import TrainingArguments
+from trl import SFTConfig, SFTTrainer
 
-from confidentllm.data import sft_preprocessing
+from confidentllm.data import instruction_preprocessing
 from confidentllm.generation.types import (
     ModelNotSetError,
     TokenizerNotSetError,
 )
 from confidentllm.hydra_tools import builds
-from confidentllm.train.loss_functions import (
-    LOSS_FUNCTIONS,
-    ComputeLossFunction,
-    LossFunction,
-)
+from confidentllm.train.loss_functions import LOSS_FUNCTIONS, LossFunction
 from confidentllm.train.types import (
     BaseModelTrainer,
     IntervalStrategy,
     LoggingLevel,
 )
 
-__all__ = ["SupervisedFinetuningTrainer"]
+__all__ = ["InstructionFinetuningTrainer"]
 
 
-def _compute_eval_metrics(
-    predictions: EvalPrediction,
-    *,
-    compute_result: bool = False,  # noqa: ARG001
-    loss_func: ComputeLossFunction,
-) -> dict[str, float]:
-    """Compute evaluation metrics.
-
-    Args:
-        loss_func (ComputeLossFunction): The loss function to use for computing metrics.
-        predictions (EvalPrediction): The predictions from the model.
-        compute_result (bool, optional): Whether to compute the result.
-                Default is False.
-
-    Returns:
-        dict[str, float]: A dictionary containing the computed metrics.
-
-    """
-    outputs = SequenceClassifierOutput(
-        logits=torch.tensor(predictions.predictions[0], dtype=torch.float32),  # type: ignore[arg-type]
-    )
-
-    loss: torch.Tensor = loss_func(
-        outputs=outputs,  # type: ignore[arg-type]
-        labels=torch.tensor(predictions.label_ids, dtype=torch.float32),  # type: ignore[arg-type]
-    )
-
-    return {"loss": loss.item()}
-
-
-class SupervisedFinetuningTrainer(BaseModelTrainer):
-    """Trainer for supervised finetuning."""
+class InstructionFinetuningTrainer(BaseModelTrainer):
+    """Trainer for instruction finetuning."""
 
     def __init__(  # noqa: PLR0913
         self,
@@ -191,10 +152,11 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
         )
 
         self.max_length = max_length
+        self.completion_only_loss: bool = True
 
     @property
-    def _trainer_config(self) -> TrainingArguments:
-        config = TrainingArguments(
+    def _trainer_config(self) -> SFTConfig:
+        config = SFTConfig(
             output_dir=str(Path.cwd()),
             eval_strategy=self.eval_strategy.value,
             eval_steps=self.eval_steps,
@@ -223,22 +185,15 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
             label_smoothing_factor=self.label_smoothing_factor,
             bf16=self.bf16,
             fp16=self.fp16,
+            max_seq_length=self.max_length,
+            completion_only_loss=self.completion_only_loss,
         )
         return config
 
     @property
     def preprocessing_function(self) -> Callable[[dict], dict]:
         """Preprocessing function for the dataset."""
-        if self.tokenizer is None:
-            raise TokenizerNotSetError(self.tokenizer)
-
-        self.tokenizer.padding_side = "right"
-
-        return partial(
-            sft_preprocessing,
-            tokenizer=self.tokenizer,
-            max_length=self.max_length,
-        )
+        return instruction_preprocessing
 
     def _set_trainer(self) -> None:
         if self.model is None:
@@ -255,7 +210,7 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
 
         self.tokenizer.padding_side = "right"
 
-        self.trainer: Trainer = Trainer(
+        self.trainer: SFTTrainer = SFTTrainer(
             model=self.model,
             processing_class=self.tokenizer,
             args=self._trainer_config,
@@ -265,23 +220,8 @@ class SupervisedFinetuningTrainer(BaseModelTrainer):
 
         self.trainer.compute_loss_func = LOSS_FUNCTIONS.get(self.loss_function, None)
 
-        # Set the quantiles for quantile regression if applicable
-        if self.model.config.model_type == "quantile_regression":
-            self.trainer.compute_loss_func.quantiles = torch.tensor(  # type: ignore[attr-defined] # For quantile loss function the quantiles are set
-                self.model.config.quantiles,
-                dtype=torch.float32,
-            )
 
-        # Add the loss as an evaluation metric if a loss function is set
-        if self.trainer.compute_loss_func is not None:
-            self.trainer.compute_metrics = partial(
-                _compute_eval_metrics,
-                loss_func=self.trainer.compute_loss_func,
-            )
-            self.trainer.label_names = ["labels"]
+InstructionFinetuningTrainerConfig = builds(InstructionFinetuningTrainer)
 
-
-SupervisedFinetuningTrainerConfig = builds(SupervisedFinetuningTrainer)
-
-default_config = SupervisedFinetuningTrainerConfig()
-store(default_config, group="trainer", name="supervised_finetuning")
+default_config = InstructionFinetuningTrainerConfig()
+store(default_config, group="trainer", name="instruction_finetuning")

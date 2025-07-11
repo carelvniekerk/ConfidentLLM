@@ -1,6 +1,6 @@
 # coding=utf-8
 # --------------------------------------------------------------------------------
-# Project: ConfidenceLLM
+# Project: ConfidentLLM
 # Author: Carel van Niekerk
 # Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
@@ -21,20 +21,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Init file for data preprocessing module."""
+"""Database session management for ConfidentLLM."""
 
-from confidentllm.data.preprocessing.dpo import dpo_preprocessing
-from confidentllm.data.preprocessing.instruction_finetuning import (
-    instruction_preprocessing,
-)
-from confidentllm.data.preprocessing.reinforcement_learning import rl_preprocessing
-from confidentllm.data.preprocessing.reward_model import reward_model_preprocessing
-from confidentllm.data.preprocessing.supervised_finetuning import sft_preprocessing
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Generator
 
-__all__ = [
-    "dpo_preprocessing",
-    "instruction_preprocessing",
-    "reward_model_preprocessing",
-    "rl_preprocessing",
-    "sft_preprocessing",
-]
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
+__all__ = ["get_session"]
+
+
+@contextmanager
+def get_session(db_path: Path) -> Generator[Session]:
+    """Create a new SQLAlchemy session for the database at the specified path."""
+    engine: Engine = create_engine(f"sqlite:///{db_path}")
+    session_maker: sessionmaker = sessionmaker(bind=engine)
+    session: Session = session_maker()
+
+    try:
+        yield session
+    finally:
+        session.close()
+        engine.dispose()

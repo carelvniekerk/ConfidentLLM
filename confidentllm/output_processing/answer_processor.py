@@ -33,7 +33,7 @@ from typing import Unpack
 import torch
 from transformers.generation.utils import GenerateDecoderOnlyOutput
 from transformers.tokenization_utils_base import BatchEncoding
-from transformers.utils.generic import TensorType  # PaddiungStrategy
+from transformers.utils.generic import PaddingStrategy, TensorType
 
 from confidentllm.generation.types import (
     GenerationOutput,
@@ -129,7 +129,7 @@ class AnswerProcessor(OutputProcessor):
         inputs: BatchEncoding = self.tokenizer.batch_encode_plus(
             batch_text_or_text_pairs=output_text,
             return_tensors=TensorType.PYTORCH,
-            # padding=PaddingStrategy.MAX_LENGTH,
+            padding=PaddingStrategy.MAX_LENGTH,
             truncation=True,
             max_length=max_context_length,
         )

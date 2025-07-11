@@ -50,7 +50,7 @@ logger = get_logger()
         {"model/lora": "causal_lm"},
         {"train_data": "multiarith"},
         {"eval_data": "multiarith"},
-        {"trainer": "supervised_finetuning"},
+        {"trainer": "instruction_finetuning"},
     ],
 )
 def run_training(

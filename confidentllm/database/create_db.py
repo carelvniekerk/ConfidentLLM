@@ -1,6 +1,6 @@
 # coding=utf-8
 # --------------------------------------------------------------------------------
-# Project: ConfidenceLLM
+# Project: ConfidentLLM
 # Author: Carel van Niekerk
 # Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
@@ -21,20 +21,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Init file for data preprocessing module."""
+"""Create a SQLite database for the ConfidentLLM project."""
 
-from confidentllm.data.preprocessing.dpo import dpo_preprocessing
-from confidentllm.data.preprocessing.instruction_finetuning import (
-    instruction_preprocessing,
-)
-from confidentllm.data.preprocessing.reinforcement_learning import rl_preprocessing
-from confidentllm.data.preprocessing.reward_model import reward_model_preprocessing
-from confidentllm.data.preprocessing.supervised_finetuning import sft_preprocessing
+import logging
+from pathlib import Path
 
-__all__ = [
-    "dpo_preprocessing",
-    "instruction_preprocessing",
-    "reward_model_preprocessing",
-    "rl_preprocessing",
-    "sft_preprocessing",
-]
+from sqlalchemy import Engine, create_engine
+
+from confidentllm.database.schema import Base
+
+logger = logging.getLogger("__main__")
+__all__ = ["create_database"]
+
+
+def create_database(db_path: Path) -> None:
+    """Create a SQLite database at the specified path."""
+    # Ensure the directory exists
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    engine: Engine = create_engine(f"sqlite:///{db_path}")
+
+    try:
+        Base.metadata.create_all(engine)
+        logger.info(f"Database created at '{db_path}'")  # noqa: G004
+    finally:
+        engine.dispose()

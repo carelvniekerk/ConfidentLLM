@@ -90,6 +90,8 @@ eval_data_store = store(group="eval_data")
 
 train_data_store(cot_preference_train_data, name="cot_preference")
 eval_data_store(cot_preference_train_data, name="cot_preference")
+train_data_store(question_answering_data, name="question_answering")
+eval_data_store(question_answering_data, name="question_answering")
 train_data_store(GSM8KConfig(split=DatasetSplit.TRAIN), name="gsm8k")
 eval_data_store(GSM8KConfig(split=DatasetSplit.VALIDATION), name="gsm8k")
 train_data_store(MMLUConfig(split=DatasetSplit.TRAIN), name="mmlu")

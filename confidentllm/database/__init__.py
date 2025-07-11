@@ -1,6 +1,6 @@
 # coding=utf-8
 # --------------------------------------------------------------------------------
-# Project: ConfidenceLLM
+# Project: ConfidentLLM
 # Author: Carel van Niekerk
 # Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
@@ -21,20 +21,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Init file for data preprocessing module."""
+"""Database module for ConfidentLLM."""
 
-from confidentllm.data.preprocessing.dpo import dpo_preprocessing
-from confidentllm.data.preprocessing.instruction_finetuning import (
-    instruction_preprocessing,
+from pathlib import Path
+
+from confidentllm.database.create_db import create_database
+from confidentllm.database.schema import (
+    Dataset,
+    Label,
+    Model,
+    Observation,
+    Prediction,
+    Token,
+    Tokenizer,
 )
-from confidentllm.data.preprocessing.reinforcement_learning import rl_preprocessing
-from confidentllm.data.preprocessing.reward_model import reward_model_preprocessing
-from confidentllm.data.preprocessing.supervised_finetuning import sft_preprocessing
+from confidentllm.database.session import get_session
+
+DEFAULT_DATABASE_PATH: Path = (
+    Path(__file__).parent.parent.parent / "database" / "confidentllm.db"
+)
 
 __all__ = [
-    "dpo_preprocessing",
-    "instruction_preprocessing",
-    "reward_model_preprocessing",
-    "rl_preprocessing",
-    "sft_preprocessing",
+    "DEFAULT_DATABASE_PATH",
+    "Dataset",
+    "Label",
+    "Model",
+    "Observation",
+    "Prediction",
+    "Token",
+    "Tokenizer",
+    "create_database",
+    "get_session",
 ]

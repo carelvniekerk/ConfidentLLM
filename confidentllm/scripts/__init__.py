@@ -24,6 +24,9 @@
 """Execcution scripts for different tasks."""
 
 from confidentllm.scripts.run_download_and_sync import main as download_and_sync
+from confidentllm.scripts.run_quantile_regression_evaluation import (
+    main as quantile_regression_evaluation,
+)
 from confidentllm.scripts.run_question_answering import main as question_answering
 from confidentllm.scripts.run_reinforcement_learning import (
     main as reinforcement_learning,
@@ -35,6 +38,7 @@ from confidentllm.scripts.run_training import main as train
 
 __all__ = [
     "download_and_sync",
+    "quantile_regression_evaluation",
     "question_answering",
     "reinforcement_learning",
     "reward_model_evaluation",
