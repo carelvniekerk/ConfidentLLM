@@ -26,6 +26,7 @@ dependencies = [
     "types-tqdm >= 4.66.0.20240417",
     "vertexai>=1.71.1",
     "wandb >= 0.18",
+    "alpaca-eval>=0.6.6",
 ]
 
 # Script entry points for various tasks (e.g. question answering)
