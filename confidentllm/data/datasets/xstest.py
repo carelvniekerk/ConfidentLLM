@@ -23,93 +23,26 @@
 # limitations under the License.
 """Module containing functions for loading the XSTest dataset."""
 
-from enum import Enum, StrEnum, auto
-from functools import partial
-
 from datasets import Dataset, Features, Value, load_dataset
 
-from confidentllm.data.extract_answers import create_long_format_answer, format_choices
 from confidentllm.data.types import DatasetSplit
 
 __all__ = ["load_xstest_data"]
 
 
-class XSTestAnswers(Enum):
-    """XSTest answers."""
-
-    A = auto()
-    B = auto()
-    C = auto()
-    D = auto()
-    E = auto()
-
-
-class XSTestQuestionType(StrEnum):
-    """XSTest question types."""
-
-    EASY = auto()
-    CHALLENGE = auto()
-
-
-def _get_xstest_question_type(dataset_name: str) -> XSTestQuestionType:
-    """Get the XSTest question difficulty from the dataset name.
-
-    Args:
-    ----
-        dataset_name: The name of the dataset.
-
-    Returns:
-    -------
-        The ARC question difficulty.
-
-    """
-    task_name = dataset_name.split("_", 1)[-1].lower()
-    return XSTestQuestionType(task_name)
-
-
 def _xstest_map(
     examples: dict[str, list[str | dict[str, list[str]]]],
 ) -> dict[str, list[str]]:
-    _format_choices = partial(format_choices, choices_enum=XSTestAnswers)  # type: ignore[arg-type]
-    question: list[str] = examples.get("question", [])  # type: ignore[assignment]
-    question = [
-        f"{question_str}\n{_format_choices(choices['text'])}"  # type: ignore[arg-type, index]
-        for question_str, choices in zip(
-            question,
-            examples["choices"],  # type: ignore[call-overload]
-            strict=True,
-        )
-    ]
+    question: list[str] = examples.get("prompt", [])  # type: ignore[assignment]
 
-    answer: list[str] = [
-        XSTestAnswers(int(raw_answer)).name  # type: ignore[arg-type]
-        if raw_answer.isdigit()  # type: ignore[union-attr]
-        else XSTestAnswers[raw_answer.upper()].name  # type: ignore[union-attr]
-        if raw_answer
-        else "-1"
-        for raw_answer in examples["answerKey"]
-    ]
-
-    long_format_answer: list[str] = [
-        create_long_format_answer(
-            choices=choices["text"],  # type: ignore[arg-type, index]
-            answer=XSTestAnswers(int(raw_answer)).name  # type: ignore[arg-type]
-            if raw_answer.isdigit()  # type: ignore[union-attr]
-            else raw_answer,
-            choices_enum=XSTestAnswers,  # type: ignore[arg-type]
-        )
-        for choices, raw_answer in zip(
-            examples["choices"],
-            examples["answerKey"],
-            strict=True,
-        )
-    ]
+    answer: list[str] = examples.get("label", [])  # type: ignore[assignment]
+    # TODO: Add long format answer.
 
     return {
         "id": examples["id"],  # type: ignore[dict-item]
         "question": question,
         "answer": answer,
-        "long_format_answer": long_format_answer,
+        "long_format_answer": answer,
     }
 
 
@@ -182,7 +115,6 @@ def load_xstest_data(
         ),
     )
 
-    data.choices = [XSTestAnswers(value=i + 1).name for i in range(5)]  # type: ignore[attr-defined]
     data.cached_version = use_cache  # type: ignore[attr-defined]
 
     return data

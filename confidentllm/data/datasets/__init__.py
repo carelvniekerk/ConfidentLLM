@@ -41,6 +41,7 @@ from confidentllm.data.datasets.qa_data import (
 )
 from confidentllm.data.datasets.reward_bench import load_reward_bench_data
 from confidentllm.data.datasets.union import load_union_data
+from confidentllm.data.datasets.xstest import load_xstest_data
 from confidentllm.data.types import DatasetSplit
 from confidentllm.hydra_tools import builds
 
@@ -58,6 +59,7 @@ QuestionAnsweringConfig = builds(load_question_answering_data)
 RewardBenchConfig = builds(load_reward_bench_data)
 ArgillaMathConfig = builds(load_argilla_math_data)
 UnionConfig = builds(load_union_data)
+XSTestConfig = builds(load_xstest_data)
 
 data_store = store(group="data")
 data_store(GSM8KConfig(split=DatasetSplit.TEST), name="gsm8k")
@@ -70,6 +72,7 @@ data_store(RewardBenchConfig(split=DatasetSplit.TEST), name="reward_bench")
 data_store(UnionConfig(split=DatasetSplit.TEST), name="union")
 data_store(HHRLHFConfig(split=DatasetSplit.TEST), name="hh_rlhf")
 data_store(ArgillaMathConfig(split=DatasetSplit.TRAIN), name="argilla_math")
+data_store(XSTestConfig(split=DatasetSplit.TEST), name="xstest")
 
 question_answering_data = QuestionAnsweringConfig(
     run_path="dialgroup-hhu/ConfidentLLM-QuestionAnswering",
@@ -119,3 +122,5 @@ eval_data_store(
 )
 train_data_store(ArgillaMathConfig(split=DatasetSplit.TRAIN), name="argilla_math")
 eval_data_store(ArgillaMathConfig(split=DatasetSplit.TRAIN), name="argilla_math")
+train_data_store(XSTestConfig(split=DatasetSplit.TEST), name="xstest")
+eval_data_store(XSTestConfig(split=DatasetSplit.TEST), name="xstest")
