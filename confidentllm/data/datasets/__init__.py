@@ -72,7 +72,7 @@ data_store(RewardBenchConfig(split=DatasetSplit.TEST), name="reward_bench")
 data_store(UnionConfig(split=DatasetSplit.TEST), name="union")
 data_store(HHRLHFConfig(split=DatasetSplit.TEST), name="hh_rlhf")
 data_store(ArgillaMathConfig(split=DatasetSplit.TRAIN), name="argilla_math")
-data_store(XSTestConfig(split=DatasetSplit.TEST), name="xstest")
+data_store(XSTestConfig(split=DatasetSplit.TRAIN), name="xstest")
 
 question_answering_data = QuestionAnsweringConfig(
     run_path="dialgroup-hhu/ConfidentLLM-QuestionAnswering",
@@ -122,5 +122,5 @@ eval_data_store(
 )
 train_data_store(ArgillaMathConfig(split=DatasetSplit.TRAIN), name="argilla_math")
 eval_data_store(ArgillaMathConfig(split=DatasetSplit.TRAIN), name="argilla_math")
-train_data_store(XSTestConfig(split=DatasetSplit.TEST), name="xstest")
-eval_data_store(XSTestConfig(split=DatasetSplit.TEST), name="xstest")
+train_data_store(XSTestConfig(split=DatasetSplit.TRAIN), name="xstest")
+eval_data_store(XSTestConfig(split=DatasetSplit.TRAIN), name="xstest")
