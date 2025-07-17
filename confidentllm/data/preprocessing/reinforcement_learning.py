@@ -46,7 +46,7 @@ def rl_preprocessing(
         messages=[[ChatUserMessage(question)] for question in data["question"]],
     )
 
-    inputs: BatchEncoding = tokenizer.apply_chat_template(
+    inputs: BatchEncoding = tokenizer.apply_chat_template(  # type: ignore[assignment]
         conversation=list(conversations),
         add_generation_prompt=True,
         return_tensors=TensorType.PYTORCH,
@@ -54,7 +54,7 @@ def rl_preprocessing(
         padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
         truncation=True,
         max_length=max_length,
-    )  # type: ignore[assignment]
+    )
 
     output_data: dict[str, torch.Tensor] = {
         "input_ids": inputs.input_ids,

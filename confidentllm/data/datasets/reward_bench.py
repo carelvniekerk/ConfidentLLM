@@ -122,10 +122,10 @@ def load_reward_bench_data(
         The dataset.
 
     """
-    data: Dataset = load_dataset(
+    data: Dataset = load_dataset(  # type: ignore[invalid-assignment]
         path="allenai/reward-bench",
         split="filtered",
-    )  # type: ignore[reportAssignmentType]
+    )
 
     # Add metadata to the dataset
     data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name

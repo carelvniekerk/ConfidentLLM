@@ -38,7 +38,7 @@ GSM8K_ANSWER_PATTERN = r"\n#### (.+)"
 def load_gsm8k_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
-    name: str = "GSM8K",  # noqa: ARG001,
+    name: str = "GSM8K",
     *,
     use_cache: bool = True,
     **kwargs: dict,  # noqa: ARG001
@@ -58,11 +58,11 @@ def load_gsm8k_data(
         The dataset.
 
     """
-    data: Dataset = load_dataset(
+    data: Dataset = load_dataset(  # type: ignore[assignment]
         path="openai/gsm8k",
         name="main",
         split=split,
-    )  # type: ignore[reportAssignmentType]
+    )
 
     # Add metadata to the dataset
     data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name

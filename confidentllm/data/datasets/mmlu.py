@@ -180,11 +180,11 @@ def load_mmlu_data(
         The dataset.
 
     """
-    data: Dataset = load_dataset(
+    data: Dataset = load_dataset(  # type: ignore[assignment]
         path="cais/mmlu",
         name=_get_mmlu_task(name).value,
         split=split,
-    )  # type: ignore[reportAssignmentType]
+    )
 
     # Add metadata to the dataset
     data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name

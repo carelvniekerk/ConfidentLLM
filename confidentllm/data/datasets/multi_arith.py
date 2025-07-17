@@ -50,7 +50,7 @@ def multi_arith_key_mapping(data: dict[str, list[str]]) -> dict[str, list[str]]:
 def load_multi_arith_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
-    name: str = "MultiArith",  # noqa: ARG001 - Used for creating the experiments path
+    name: str = "MultiArith",
     *,
     use_cache: bool = True,
     **kwargs: dict,  # noqa: ARG001
@@ -70,11 +70,11 @@ def load_multi_arith_data(
         The dataset.
 
     """
-    data: Dataset = load_dataset(
+    data: Dataset = load_dataset(  # type: ignore[assignment]
         path="ChilleD/MultiArith",
         name="default",
         split=split,
-    )  # type: ignore[reportAssignmentType]
+    )
 
     # Add metadata to the dataset
     data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name

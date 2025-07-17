@@ -49,7 +49,7 @@ def dpo_preprocessing(
         ],
     )
 
-    prompts: list[str] = tokenizer.apply_chat_template(
+    prompts: list[str] = tokenizer.apply_chat_template(  # type: ignore[assignment]
         conversation=list(prompt_conversations),
         add_generation_prompt=True,
         return_tensors=TensorType.PYTORCH,
@@ -57,7 +57,7 @@ def dpo_preprocessing(
         padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
         truncation=True,
         max_length=max_prompt_length,
-    )  # type: ignore[assignment]
+    )
 
     preferred_responses: list[str] = [
         conversation[-1].content for conversation in preferred_conversations.messages

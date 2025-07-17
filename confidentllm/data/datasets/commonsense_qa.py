@@ -87,7 +87,7 @@ def _commonsense_qa_map(
 def load_commonsense_qa_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
-    name: str = "CommonsenseQA",  # noqa: ARG001
+    name: str = "CommonsenseQA",
     *,
     use_cache: bool = True,
     **kwargs: dict,  # noqa: ARG001
@@ -107,10 +107,10 @@ def load_commonsense_qa_data(
         The dataset.
 
     """
-    data: Dataset = load_dataset(
+    data: Dataset = load_dataset(  # type: ignore[assignment]
         path="tau/commonsense_qa",
         split=split,
-    )  # type: ignore[reportAssignmentType]
+    )
 
     # Add metadata to the dataset
     data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name

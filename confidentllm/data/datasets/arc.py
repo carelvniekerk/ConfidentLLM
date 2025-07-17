@@ -136,11 +136,11 @@ def load_arc_data(
         The dataset.
 
     """
-    data: Dataset = load_dataset(
+    data: Dataset = load_dataset(  # type: ignore[invalid-assignment]
         path="allenai/ai2_arc",
         name=f"ARC-{_get_arc_question_type(name).name.lower().title()}",
         split=split,
-    )  # type: ignore[reportAssignmentType]
+    )
 
     # Add metadata to the dataset
     data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name

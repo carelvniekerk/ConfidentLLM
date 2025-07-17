@@ -54,7 +54,7 @@ def sft_preprocessing(
         questions=data.get("question"),
     )
 
-    inputs: BatchEncoding = tokenizer.apply_chat_template(
+    inputs: BatchEncoding = tokenizer.apply_chat_template(  # type: ignore[assignment]
         conversation=list(conversations),
         add_generation_prompt=False,
         return_tensors=TensorType.PYTORCH,
@@ -62,7 +62,7 @@ def sft_preprocessing(
         padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
         truncation=True,
         max_length=max_length,
-    )  # type: ignore[assignment]
+    )
 
     output_dict: dict[str, torch.Tensor] = {}
 

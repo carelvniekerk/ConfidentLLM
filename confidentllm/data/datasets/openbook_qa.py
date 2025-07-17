@@ -106,11 +106,11 @@ def load_openbook_qa_data(
         The dataset.
 
     """
-    data: Dataset = load_dataset(
+    data: Dataset = load_dataset(  # type: ignore[assignment]
         path="allenai/openbookqa",
         name="main",
         split=split,
-    )  # type: ignore[assignment]
+    )
 
     # Add metadata to the dataset
     data._info.dataset_name = name  # noqa: SLF001 # Adding dataset name

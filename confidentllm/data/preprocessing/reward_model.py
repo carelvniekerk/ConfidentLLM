@@ -56,7 +56,7 @@ def reward_model_preprocessing(
         questions=data.get("question"),
     )
 
-    preferred_inputs: BatchEncoding = tokenizer.apply_chat_template(
+    preferred_inputs: BatchEncoding = tokenizer.apply_chat_template(  # type: ignore[assignment]
         conversation=list(preferred_conversations),
         add_generation_prompt=False,
         return_tensors=TensorType.PYTORCH,
@@ -64,9 +64,9 @@ def reward_model_preprocessing(
         padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
         truncation=True,
         max_length=max_length,
-    )  # type: ignore[assignment]
+    )
 
-    rejected_inputs: BatchEncoding = tokenizer.apply_chat_template(
+    rejected_inputs: BatchEncoding = tokenizer.apply_chat_template(  # type: ignore[assignment]
         conversation=list(rejected_conversations),
         add_generation_prompt=False,
         return_tensors=TensorType.PYTORCH,
@@ -74,7 +74,7 @@ def reward_model_preprocessing(
         padding=PaddingStrategy.MAX_LENGTH,  # type: ignore[arg-type] # PaddingStrategy is a valid type
         truncation=True,
         max_length=max_length,
-    )  # type: ignore[assignment]
+    )
 
     output_data: dict[str, torch.Tensor] = {
         "input_ids_chosen": preferred_inputs.input_ids,
