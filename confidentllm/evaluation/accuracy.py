@@ -67,7 +67,7 @@ class AccuracyEvaluator(Evaluator):
 
         acc = np.mean(predictions == labels)
 
-        return AccuracyResults(evaluator_name="accuracy", accuracy=acc * 100.0)
+        return AccuracyResults(evaluator_name="accuracy", accuracy=acc * 100.0)  # type: ignore[argument-type]
 
 
 accuracy_config = builds(AccuracyEvaluator)

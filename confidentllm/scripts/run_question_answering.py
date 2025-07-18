@@ -30,11 +30,11 @@ from itertools import cycle
 from pprint import pformat
 
 import torch
-import wandb
 from datasets import Dataset
 from hydra_zen import store, zen
 from tqdm import tqdm
 
+import wandb
 from confidentllm.data import datasets  # noqa: F401
 from confidentllm.evaluation import EvaluationBatch, Evaluator
 from confidentllm.generation import CausalLMGenerationMethod
@@ -204,7 +204,7 @@ class QARunner:
                 question = ""
                 for speaker, utterance in zip(
                     cycle(["User", "Assistant"]),
-                    responses,
+                    responses,  # type: ignore[attribute-type] # TODO: Remove when ty fixes this type
                     strict=False,
                 ):
                     question += f"{speaker}: {utterance}\n"

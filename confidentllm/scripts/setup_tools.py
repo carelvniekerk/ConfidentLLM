@@ -119,15 +119,15 @@ def setup_hydra_config_and_logging(
     job_config: JobConf = JobConf(name=job_name, chdir=change_to_output_dir)
     logging_config: dict = create_logging_config()
 
-    run_dir: RunDir = create_run_dir(
+    run_dir: RunDir = create_run_dir(  # type: ignore[assignment]
         root_dir=Path("outputs"),
         config_keys=config_keys,
-    )  # type: ignore  # noqa: PGH003
-    sweep_dir: SweepDir = create_run_dir(
+    )
+    sweep_dir: SweepDir = create_run_dir(  # type: ignore[assignment]
         root_dir=Path("multirun") if not add_hpc_launcher else Path("hpc_jobs"),
         config_keys=config_keys,
         is_sweep=True,
-    )  # type: ignore  # noqa: PGH003
+    )
 
     if add_hpc_launcher:
         hydra_defaults: list[str | dict[str, str | None]] = [
@@ -202,7 +202,7 @@ def get_logger() -> logging.Logger:
     logger: logging.Logger = logging.getLogger("__main__")
 
     # Get the transformer logger and propagate its logs to the Hydra root.
-    transformers_logger: logging.Logger = transformers.utils.logging.get_logger()
+    transformers_logger: logging.Logger = transformers.utils.logging.get_logger()  # type: ignore[unresolved-attribute] # TODO: Remove when ty bug is fixed
     transformers_logger.handlers = []
     transformers_logger.propagate = True
 

@@ -131,15 +131,15 @@ def load_hh_rlhf_data(
         _find_project_root() / "hh_rlhf" / task.value / split.value.lower()
     )
     if use_cache and cache_path.exists():
-        data: Dataset = Dataset.load_from_disk(cache_path)
+        data = Dataset.load_from_disk(cache_path)
         data.cached_version = use_cache  # type: ignore[attr-defined]
         return data
 
-    data = load_dataset(
+    data: Dataset = load_dataset(  # type: ignore[assignment]
         path="Anthropic/hh-rlhf",
         data_dir=task.value,
         split=split.value,
-    )  # type: ignore[return-type]
+    )
     data = data.map(
         function=_map_hh_rlhf_data,
         batched=True,
