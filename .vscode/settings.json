@@ -35,7 +35,6 @@
     "github.copilot.nextEditSuggestions.enabled": true,
     //
     // Python related settings
-    "python.analysis.typeCheckingMode": "basic",
     "[python]": {
         "diffEditor.ignoreTrimWhitespace": false,
         "editor.formatOnType": true,
@@ -44,11 +43,4 @@
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.defaultFoldingRangeProvider": "charliermarsh.ruff"
     },
-    "mypy.extraArguments": [
-        "--explicit-package-bases"
-    ],
-    "python.analysis.inlayHints.callArgumentNames": "all",
-    "python.analysis.inlayHints.functionReturnTypes": true,
-    "python.analysis.inlayHints.pytestParameters": true,
-    "python.analysis.inlayHints.variableTypes": true,
 }
