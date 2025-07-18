@@ -40,32 +40,3 @@ train = "confidentllm.scripts:train"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-# Configuration for Ruff (Python linter and formatter)
-[tool.ruff]
-extend = "~/.config/ruff/config.toml"
-target-version = "py313"
-
-# Configuration for Mypy (Python static type checker)
-[tool.mypy]
-python_version = "3.13"
-
-[[tool.mypy.overrides]]
-module = [
-    "datasets",
-    "datasets.*",
-    "dotenv",
-    "hydra_zen",
-    "hydra_zen.*",
-    "peft",
-    "peft.*",
-    "pyarrow.*",
-    "torch",
-    "transformers",
-    "transformers.*",
-    "trl",
-    "trl.*",
-    "vertexai",
-    "vertexai.*",
-]
-ignore_missing_imports = true
