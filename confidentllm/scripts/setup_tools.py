@@ -36,6 +36,9 @@ import torch
 import transformers
 from git import Repo
 from hydra.conf import HydraConf, JobConf, RunDir, SweepDir
+from hydra_plugins.hpc_submission_launcher import (
+    register_plugin as register_hpc_submission_launcher_plugin,
+)
 from hydra_zen import store
 from omegaconf import DictConfig, OmegaConf
 
@@ -48,9 +51,6 @@ from confidentllm.logging import (
     create_logging_config,
     initialize_wandb,
     setup_exception_logging,
-)
-from hydra_plugins.hpc_submission_launcher import (
-    register_plugin as register_hpc_submission_launcher_plugin,
 )
 
 __all__ = [
