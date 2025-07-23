@@ -51,7 +51,6 @@ def _xstest_map(
 
     answer: list[str] = examples.get("label", [])  # type: ignore[assignment]
     # TODO: Add long format answer.
-
     return {
         "id": examples["id"],  # type: ignore[dict-item]
         "question": question,

@@ -170,7 +170,7 @@ class DPOTrainer(BaseModelTrainer):
             update_ref_model (bool, optional): When set to `True`, the reference model
                 is synchronized with the active model every `ref_model_sync_steps`
                 steps, using the `ref_model_mixup_alpha` parameter. This synchronization
-                originites from the [TR-DPO](https://huggingface.co/papers/2404.09656)
+                originates from the [TR-DPO](https://huggingface.co/papers/2404.09656)
                 paper. Default is False.
             ref_model_mixup_alpha (float, optional): α parameter from the
                 [TR-DPO](https://huggingface.co/papers/2404.09656) paper, which controls
@@ -219,7 +219,7 @@ class DPOTrainer(BaseModelTrainer):
         self.max_length = max_length
         self.max_prompt_length = max_prompt_length
         self.loss_beta = loss_beta
-        self.loss_function = loss_function  # type: ignore[assignment] # DPO has its own selection of loss funtions
+        self.loss_function = loss_function  # type: ignore[assignment] # DPO has its own selection of loss functions
         self.use_weighting = use_weighting
         self.divergence_type = FDivergenceType.REVERSE_KL
         self.divergence_alpha_coefficient = divergence_alpha_coefficient

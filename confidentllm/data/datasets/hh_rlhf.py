@@ -165,9 +165,9 @@ def load_hh_rlhf_data(
         "intended for supervised fine-tuning of dialogue agents due to potential "
         "risks. The red teaming data, from Red Teaming Language Models to Reduce Harms,"
         " contains transcripts of adversarial interactions where human testers attempt "
-        "to elicit harmful behavior from AI assistants, annotated with success ratings "
-        "and harmlessness scores. This dataset aims to aid research in reducing AI harm"
-        ", though it includes sensitive content that may be distressing."
+        "to elicit harmful behaviour from AI assistants, annotated with success ratings"
+        " and harmlessness scores. This dataset aims to aid research in reducing AI "
+        "harm, though it includes sensitive content that may be distressing."
     )
     data._info.citation = (  # noqa: SLF001 # Adding citation to dataset
         "@misc{bai2022traininghelpfulharmlessassistant,\n\ttitle={Training a Helpful "

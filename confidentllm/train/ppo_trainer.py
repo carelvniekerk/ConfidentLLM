@@ -139,7 +139,7 @@ class PPORLTrainer(BaseModelTrainer):
                 Default is 256.
             use_preference_margin (bool, optional): Use the preference margin.
                 Default is True.
-            center_rewards_coefficient (float, optional): The coefficient for centering
+            center_rewards_coefficient (float, optional): The coefficient for centring
                 the rewards. Default is None.
 
         """  # noqa: E501

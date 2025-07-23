@@ -56,7 +56,7 @@ class PredictiveProbability(ConfidenceMetric):
 
 
 class ProbabilityDisparity(PredictiveProbability):
-    """Disparity between the probabiilties of the two most likely tokens."""
+    """Disparity between the probabilities of the two most likely tokens."""
 
     def __call__(
         self,

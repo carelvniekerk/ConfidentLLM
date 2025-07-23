@@ -1,6 +1,6 @@
 [project]
 name = "confidentllm"
-version = "1.0.1"
+version = "1.1.0"
 description = "A framework for evaluating and improving large language model confidence using Reinforcement Learning from Self-Feedback (RLSF)."
 authors = [{ name = "Carel van Niekerk", email = "cvanniekerk@hhu.de" }]
 readme = "README.md"

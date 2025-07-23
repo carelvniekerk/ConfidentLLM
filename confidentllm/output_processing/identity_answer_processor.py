@@ -91,7 +91,7 @@ class IdentityAnswerProcessor(AnswerProcessor):
             generation_output.generation_scores.detach().cpu().tolist()
         )
 
-        # Remove stop tokens from the generated repsonse/reasoning and the answer tokens
+        # Remove stop tokens from the generated response/reasoning and the answer tokens
         # for improved answer span extraction
         clean_generated_response_tokens: list[list[int]] = []
         clean_generated_response_token_probabilities: list[list[float]] = []

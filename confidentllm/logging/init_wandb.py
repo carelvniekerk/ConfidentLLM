@@ -25,9 +25,8 @@
 
 from pathlib import Path
 
-from omegaconf import DictConfig, OmegaConf
-
 import wandb
+from omegaconf import DictConfig, OmegaConf
 
 __all__ = ["initialize_wandb"]
 

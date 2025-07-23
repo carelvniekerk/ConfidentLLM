@@ -131,7 +131,7 @@ download-and-sync \
   uv run train model.pretrained_model_name_or_path=PHI2_3B train_data=cot_preference train_data.run_name=example_run eval_data=cot_preference eval_data.run_name=example_run trainer=dpo
   ```
 
-Further hyperparameters are easily accessible, for example changing the number of epochs for training or changing the parameters of the PPO algorithm can easily be done via `trainer.param_name=value` arguments.
+Further hyperparameter are easily accessible, for example changing the number of epochs for training or changing the parameters of the PPO algorithm can easily be done via `trainer.param_name=value` arguments.
 
 ## License
 

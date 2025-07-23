@@ -55,7 +55,6 @@ def _preprocess_argilla_math_data(
     ]
 
     # TODO: Extract answers for evaluation
-
     return {
         "question": questions,
         "preferred_response": preferred_responses,
@@ -67,7 +66,7 @@ def _preprocess_argilla_math_data(
 def load_argilla_math_data(
     split: DatasetSplit = DatasetSplit.TRAIN,
     transformation_batch_size: int = 2048,
-    name: str = "ArgillaMathPreference",  # noqa: ARG001,
+    name: str = "ArgillaMathPreference",
     *,
     use_cache: bool = True,
     **kwargs: dict,  # noqa: ARG001

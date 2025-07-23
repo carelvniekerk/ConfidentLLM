@@ -30,7 +30,7 @@ from typing import Literal
 
 from hydra_zen import store
 from peft import (
-    LoraConfig,  # type: ignore[import] # LoraConfig is publically available in peft
+    LoraConfig,  # type: ignore[import] # LoraConfig is publicly available in peft
     get_peft_model,
 )
 from peft.mixed_model import PeftMixedModel

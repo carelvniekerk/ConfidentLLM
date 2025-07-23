@@ -164,7 +164,7 @@ class AnswerProcessor(OutputProcessor):
             generation_output.generation_scores.detach().cpu().tolist()
         )
 
-        # Remove stop tokens from the generated repsonse/reasoning and the answer tokens
+        # Remove stop tokens from the generated response/reasoning and the answer tokens
         # for improved answer span extraction
         clean_generated_response_tokens: list[list[int]] = []
         clean_generated_response_token_probabilities: list[list[float]] = []
@@ -257,7 +257,7 @@ class AnswerProcessor(OutputProcessor):
 
     @cached_property
     def _ignore_tokens(self) -> list[int]:
-        """Get the tokens to ignore during answer extraction and mathing."""
+        """Get the tokens to ignore during answer extraction and matching."""
         if self.tokenizer is None:
             raise TokenizerNotSetError(self.tokenizer)
 

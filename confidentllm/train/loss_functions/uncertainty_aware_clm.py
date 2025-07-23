@@ -32,7 +32,7 @@ __all__ = ["UncertaintyAwareCLMLoss"]
 
 
 class UncertaintyAwareCLMLoss(ComputeLossFunction):
-    """Uncertainty-aware loss for causal language modeling."""
+    """Uncertainty-aware loss for causal language modelling."""
 
     def __call__(
         self,
@@ -41,7 +41,7 @@ class UncertaintyAwareCLMLoss(ComputeLossFunction):
         num_items_in_batch: int | None = None,  # noqa: ARG002
         ignore_index: int = -100,
     ) -> torch.Tensor:
-        """Uncertainty-aware loss for causal language modeling.
+        """Uncertainty-aware loss for causal language modelling.
 
         Args:
         ----

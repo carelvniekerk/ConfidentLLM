@@ -104,7 +104,7 @@ class GeminiModel(BaseAPIModel):
         conversation: ChatConversation,
         max_new_tokens: int,
         temperature: float,
-        num_beams: int = 1,
+        num_beams: int = 1,  # noqa: ARG002
     ) -> list[str]:
         """Generate a response to a conversation.
 

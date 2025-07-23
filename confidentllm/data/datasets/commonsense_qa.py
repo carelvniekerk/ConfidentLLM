@@ -92,7 +92,7 @@ def load_commonsense_qa_data(
     use_cache: bool = True,
     **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
-    """Load the MMLU dataset.
+    """Load the Commonsense QA dataset.
 
     Args:
     ----

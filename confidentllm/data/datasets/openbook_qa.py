@@ -86,12 +86,12 @@ def _openbook_qa_map(
 def load_openbook_qa_data(
     split: DatasetSplit = DatasetSplit.TEST,
     transformation_batch_size: int = 512,
-    name: str = "OpenBookQA",  # noqa: ARG001
+    name: str = "OpenBookQA",
     *,
     use_cache: bool = True,
     **kwargs: dict,  # noqa: ARG001
 ) -> Dataset:
-    """Load the MMLU dataset.
+    """Load the OpenBookQA dataset.
 
     Args:
     ----
@@ -120,7 +120,7 @@ def load_openbook_qa_data(
         "open book, also provided with the dataset) and the language it is expressed in"
         ". In particular, it contains questions that require multi-step reasoning, use "
         "of additional common and commonsense knowledge, and rich text comprehension. "
-        "OpenBookQA is a new kind of question-answering dataset modeled after open "
+        "OpenBookQA is a new kind of question-answering dataset modelled after open "
         "book exams for assessing human understanding of a subject."
     )
     data._info.citation = (  # noqa: SLF001 # Adding citation to dataset
