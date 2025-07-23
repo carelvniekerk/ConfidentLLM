@@ -1,39 +1,4 @@
 {
-    // Editor settings
-    "editor.wordWrap": "on",
-    "editor.wordWrapColumn": 88,
-    "editor.formatOnSave": true,
-    "editor.formatOnSaveMode": "file",
-    "editor.formatOnType": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": "explicit",
-    },
-    "editor.suggestSelection": "first",
-    //
-    // File Management settings
-    "files.associations": {
-        ".env*": "dotenv",
-        ".rsync-exclude": "ignore",
-        ".rsync-results": "ignore",
-    },
-    "files.autoSave": "onFocusChange",
-    //
-    // Git settings
-    "git.ignoreLegacyWarning": true,
-    "git.openRepositoryInParentFolders": "always",
-    "git.confirmSync": false,
-    "git.autofetch": true,
-    //
-    // Github Copilot settings
-    "chat.agent.enabled": true,
-    "github.copilot.enable": {
-        "*": true,
-        "plaintext": true,
-        "markdown": true,
-        "scminput": false,
-    },
-    "github.copilot.nextEditSuggestions.enabled": true,
-    //
     // Python related settings
     "[python]": {
         "diffEditor.ignoreTrimWhitespace": false,
@@ -43,4 +8,8 @@
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.defaultFoldingRangeProvider": "charliermarsh.ruff"
     },
+    "python.terminal.activateEnvironment": false,
+    "python.useEnvironmentsExtension": false,
+    "python.languageServer": "None",
+    "ty.diagnosticMode": "workspace",
 }
