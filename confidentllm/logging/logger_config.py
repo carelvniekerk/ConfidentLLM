@@ -41,7 +41,7 @@ def create_logging_config(
             "%(blue)s%(message)s%(reset)s "
             "%(cyan)s(%(filename)s:%(lineno)s)"
         )
-        coloured_formatter: dict[str, str] = {
+        colored_formatter: dict[str, str] = {
             "()": "colorlog.ColoredFormatter",
             "format": color_format,
         }
@@ -55,7 +55,7 @@ def create_logging_config(
 
     formatters: dict[str, dict[str, str]] = {"simple": simple_formatter}
     if colorlog_console:
-        formatters["colored"] = coloured_formatter
+        formatters["colored"] = colored_formatter
 
     handlers: dict[str, dict[str, str]] = {
         "console": {
