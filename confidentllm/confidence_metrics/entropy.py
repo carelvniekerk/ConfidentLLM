@@ -46,9 +46,9 @@ class Entropy(ConfidenceMetric):
         log_probability: Tensor = torch.log(scores + 1e-8)
         entropy: Tensor = -torch.sum(scores * log_probability, dim=-1)
 
-        # Normalise the entropy
-        normalisation_factor: Tensor = torch.log(torch.tensor(scores.size(-1)))
-        entropy /= normalisation_factor
+        # Normalize the entropy
+        normalization_factor: Tensor = torch.log(torch.tensor(scores.size(-1)))
+        entropy /= normalization_factor
 
         return 1.0 - entropy
 
@@ -93,8 +93,8 @@ class PredictiveEntropy(PredictiveProbability):
             dim=-1,
         )
 
-        normalising_factor: Tensor = torch.log(torch.tensor(scores.size(0)))
-        predictive_entropy /= normalising_factor
+        normalizing_factor: Tensor = torch.log(torch.tensor(scores.size(0)))
+        predictive_entropy /= normalizing_factor
 
         predictive_entropy = predictive_entropy.repeat(scores.size(0))
         predictive_entropy = predictive_entropy.unsqueeze(-1).repeat(1, scores.size(-2))

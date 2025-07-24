@@ -37,9 +37,9 @@ from confidentllm.output_processing.numeric_answer_processor import (
     NumericAnswerProcessor,
 )
 from confidentllm.output_processing.types import OutputProcessor
-from confidentllm.output_processing.verbalised_confidence import (
-    VerbalisedConfidenceAnswerProcessor,
-    VerbalisedConfidenceNumericAnswerProcessor,
+from confidentllm.output_processing.verbalized_confidence import (
+    VerbalizedConfidenceAnswerProcessor,
+    VerbalizedConfidenceNumericAnswerProcessor,
 )
 
 __all__ = [
@@ -53,10 +53,10 @@ NumericAnswerProcessorConfig = builds(NumericAnswerProcessor)
 
 MultipleChoiceAnswerProcessorConfig = builds(MultipleChoiceAnswerProcessor)
 
-VerbalisedConfidenceProcessorConfig = builds(VerbalisedConfidenceAnswerProcessor)
+VerbalizedConfidenceProcessorConfig = builds(VerbalizedConfidenceAnswerProcessor)
 
-NumericVerbalisedConfidenceProcessorConfig = builds(
-    VerbalisedConfidenceNumericAnswerProcessor,
+NumericVerbalizedConfidenceProcessorConfig = builds(
+    VerbalizedConfidenceNumericAnswerProcessor,
 )
 
 IdentityAnswerProcessorConfig = builds(IdentityAnswerProcessor)
@@ -72,12 +72,12 @@ output_processor_store(
     name="multiple_choice_answer_with_token_confidence",
 )
 output_processor_store(
-    VerbalisedConfidenceProcessorConfig,
-    name="answer_with_verbalised_confidence",
+    VerbalizedConfidenceProcessorConfig,
+    name="answer_with_verbalized_confidence",
 )
 output_processor_store(
-    NumericVerbalisedConfidenceProcessorConfig,
-    name="numeric_answer_with_verbalised_confidence",
+    NumericVerbalizedConfidenceProcessorConfig,
+    name="numeric_answer_with_verbalized_confidence",
 )
 
 output_processor_store(IdentityAnswerProcessorConfig, name="identity_answer")

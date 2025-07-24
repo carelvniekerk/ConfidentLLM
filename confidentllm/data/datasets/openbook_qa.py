@@ -120,7 +120,7 @@ def load_openbook_qa_data(
         "open book, also provided with the dataset) and the language it is expressed in"
         ". In particular, it contains questions that require multi-step reasoning, use "
         "of additional common and commonsense knowledge, and rich text comprehension. "
-        "OpenBookQA is a new kind of question-answering dataset modelled after open "
+        "OpenBookQA is a new kind of question-answering dataset modeled after open "
         "book exams for assessing human understanding of a subject."
     )
     data._info.citation = (  # noqa: SLF001 # Adding citation to dataset

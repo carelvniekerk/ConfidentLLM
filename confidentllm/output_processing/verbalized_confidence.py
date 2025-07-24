@@ -42,15 +42,15 @@ from confidentllm.output_processing.numeric_answer_processor import (
 from confidentllm.output_processing.types import OutputProcessorKwargs
 
 __all__ = [
-    "VerbalisedConfidenceAnswerProcessor",
-    "VerbalisedConfidenceNumericAnswerProcessor",
+    "VerbalizedConfidenceAnswerProcessor",
+    "VerbalizedConfidenceNumericAnswerProcessor",
 ]
 
 MAX_CONTEXT_LENGTH: int = 2048
 
 
-class VerbalisedConfidenceAnswerProcessorProtocol(Protocol):
-    """Protocol for verbalised confidence answer processor."""
+class VerbalizedConfidenceAnswerProcessorProtocol(Protocol):
+    """Protocol for verbalized confidence answer processor."""
 
     tokenizer: PreTrainedTokenizer
     model: PreTrainedModel
@@ -63,21 +63,21 @@ class VerbalisedConfidenceAnswerProcessorProtocol(Protocol):
 
 
 @dataclass
-class VerbalisedConfidences:
-    """Dataclass for verbalised confidences."""
+class VerbalizedConfidences:
+    """Dataclass for verbalized confidences."""
 
     confidence_terms: list[str]
     confidences: torch.Tensor
 
 
-class VerbalisedConfidenceGenerator:
-    """Class for generating verbalised confidence."""
+class VerbalizedConfidenceGenerator:
+    """Class for generating verbalized confidence."""
 
-    def _generate_verbalised_confidences(
-        self: VerbalisedConfidenceAnswerProcessorProtocol,
+    def _generate_verbalized_confidences(
+        self: VerbalizedConfidenceAnswerProcessorProtocol,
         generation_output: GenerationOutput,
-    ) -> VerbalisedConfidences:
-        """Generate the verbalised confidence."""
+    ) -> VerbalizedConfidences:
+        """Generate the verbalized confidence."""
         output_text: list[str] = self.tokenizer.batch_decode(
             generation_output.generated_ids,
             skip_special_tokens=True,
@@ -126,7 +126,7 @@ class VerbalisedConfidenceGenerator:
             [self._extract_confidence(term) for term in confidence_terms],
         )
 
-        return VerbalisedConfidences(
+        return VerbalizedConfidences(
             confidence_terms=confidence_terms,
             confidences=confidences,
         )
@@ -150,11 +150,11 @@ class VerbalisedConfidenceGenerator:
         return 1.0  # Default confidence value (strict 100%)
 
 
-class VerbalisedConfidenceAnswerProcessor(
+class VerbalizedConfidenceAnswerProcessor(
     AnswerProcessor,
-    VerbalisedConfidenceGenerator,
+    VerbalizedConfidenceGenerator,
 ):
-    """Answer processor with verbalised confidence generation."""
+    """Answer processor with verbalized confidence generation."""
 
     def __init__(
         self,
@@ -196,7 +196,7 @@ class VerbalisedConfidenceAnswerProcessor(
             **kwargs,
         )
 
-        confidences: VerbalisedConfidences = self._generate_verbalised_confidences(  # type: ignore[misc]
+        confidences: VerbalizedConfidences = self._generate_verbalized_confidences(  # type: ignore[misc]
             generation_output,
         )
 
@@ -218,11 +218,11 @@ class VerbalisedConfidenceAnswerProcessor(
         )
 
 
-class VerbalisedConfidenceNumericAnswerProcessor(
+class VerbalizedConfidenceNumericAnswerProcessor(
     NumericAnswerProcessor,
-    VerbalisedConfidenceGenerator,
+    VerbalizedConfidenceGenerator,
 ):
-    """Numeric answer processor with verbalised confidence generation."""
+    """Numeric answer processor with verbalized confidence generation."""
 
     def __init__(
         self,
@@ -266,7 +266,7 @@ class VerbalisedConfidenceNumericAnswerProcessor(
             **kwargs,
         )
 
-        confidences: VerbalisedConfidences = self._generate_verbalised_confidences(  # type: ignore[misc]
+        confidences: VerbalizedConfidences = self._generate_verbalized_confidences(  # type: ignore[misc]
             generation_output,
         )
 

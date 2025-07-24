@@ -39,7 +39,7 @@ from confidentllm.train.types import BaseModelTrainer, IntervalStrategy, Logging
 
 __all__ = ["PPORLTrainer"]
 
-MIN_NORMALISATION_BATCH_SIZE: int = 8
+MIN_NORMALIZATION_BATCH_SIZE: int = 8
 
 
 class PPORLTrainer(BaseModelTrainer):
@@ -58,7 +58,7 @@ class PPORLTrainer(BaseModelTrainer):
         per_device_train_batch_size: int = 8,
         gradient_accumulation_steps: int = 4,
         num_train_epochs: float = 3.0,
-        normalise_rewards: bool = True,
+        normalize_rewards: bool = True,
         kl_coefficient: float = 0.05,
         ppo_clipping_range: float = 0.2,
         discount_factor: float = 1.0,
@@ -100,7 +100,7 @@ class PPORLTrainer(BaseModelTrainer):
                 Default is 4.
             num_train_epochs (float, optional): The number of training epochs.
                 Default is 3.0.
-            normalise_rewards (bool, optional): Whether to normalise rewards.
+            normalize_rewards (bool, optional): Whether to normalize rewards.
                 Default is True.
             kl_coefficient (float, optional): The coefficient for KL divergence.
                 Default is 0.05.
@@ -170,7 +170,7 @@ class PPORLTrainer(BaseModelTrainer):
         )
 
         self.gradient_accumulation_steps = gradient_accumulation_steps
-        self.normalise_rewards = normalise_rewards
+        self.normalize_rewards = normalize_rewards
         self.kl_coefficient = kl_coefficient
         self.ppo_clipping_range = ppo_clipping_range
         self.discount_factor = discount_factor
@@ -181,13 +181,13 @@ class PPORLTrainer(BaseModelTrainer):
         self.max_input_length = max_input_length
 
         if (
-            self.normalise_rewards
-            and self.per_device_train_batch_size < MIN_NORMALISATION_BATCH_SIZE
+            self.normalize_rewards
+            and self.per_device_train_batch_size < MIN_NORMALIZATION_BATCH_SIZE
         ):
-            self.normalise_rewards = False
+            self.normalize_rewards = False
             msg: str = (
-                "Normalising rewards requires a batch size of at least "
-                f"{MIN_NORMALISATION_BATCH_SIZE}. Setting normalise_rewards to False."
+                "Normalizing rewards requires a batch size of at least "
+                f"{MIN_NORMALIZATION_BATCH_SIZE}. Setting normalize_rewards to False."
             )
             logging.warning(msg)
 
@@ -207,7 +207,7 @@ class PPORLTrainer(BaseModelTrainer):
             load_best_model_at_end=self.load_best_model_at_end,
             num_ppo_epochs=int(self.num_train_epochs),
             num_train_epochs=self.num_train_epochs,
-            whiten_rewards=self.normalise_rewards,
+            whiten_rewards=self.normalize_rewards,
             kl_coef=self.kl_coefficient,
             cliprange=self.ppo_clipping_range,
             gamma=self.discount_factor,
