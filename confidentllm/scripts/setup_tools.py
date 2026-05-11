@@ -1,7 +1,7 @@
 # coding=utf-8
 # --------------------------------------------------------------------------------
 # Project: ConfidentLLM
-# Author: Carel van Niekerk, Benjamin Ruppik
+# Author: Carel van Niekerk, Renato Vukovic, Benjamin Ruppik
 # Year: 2025
 # Group: Dialogue Systems and Machine Learning Group
 # Institution: Heinrich Heine University Düsseldorf
