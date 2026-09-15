@@ -6,8 +6,8 @@ A framework for evaluating and improving large‐language model confidence using
 
 ## Paper Code
 
-This codebase implements the experiments from our EMNLP 2025 submission:
-**"Reinforcement Learning from Self-feedback for Fine-tuning Large Language Models (RLSF)"**.
+This codebase implements the experiments from the paper:
+**"Post-Training Large Language Models via Reinforcement Learning from Self-Feedback"**. (https://arxiv.org/abs/2507.21931)
 
 ### Installation
 
@@ -70,7 +70,7 @@ download-and-sync \
   data.split=validation
 ```
 
-### Reproducing EMNLP 2025 Experiments
+### Reproducing Experiments
 
 - **Evaluation on different tasks**:
   - **Greedy Decoding**:
